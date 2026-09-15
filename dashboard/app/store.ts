@@ -11,12 +11,16 @@ export const SEVERITY_LABEL: Record<Severity, string> = {
   ok: 'Agreed',
 }
 
-export const SEVERITY_COLOR: Record<Severity, string> = {
+/** Nuxt UI badge colours. `as const` keeps the literal types, which is what the
+ *  badge's own colour prop expects; `satisfies` still checks every severity has
+ *  one. Annotating this `Record<Severity, string>` widens the values back to
+ *  string and the badge rejects them. */
+export const SEVERITY_COLOR = {
   problem: 'error',
   review: 'warning',
   unchecked: 'neutral',
   ok: 'success',
-}
+} as const satisfies Record<Severity, string>
 
 export interface Row {
   severity: Severity

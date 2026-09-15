@@ -29,7 +29,7 @@ const store = useStore()
           variant="solid"
           size="sm"
         >
-          {{ store.report.checks[check.key].summary.problem }}
+          {{ store.report?.checks[check.key]?.summary.problem }}
         </u-badge>
       </nuxt-link>
     </nav>
