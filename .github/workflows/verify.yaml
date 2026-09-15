@@ -16,6 +16,9 @@ on:
       calibration_files_ref:
         description: "calibrationFiles ref"
         default: master
+      baseline_ref:
+        description: "optional: a second ref to compare against, e.g. master. Leave blank to skip."
+        default: ""
       publish:
         description: "upload the report to S3 for the dashboard"
         type: boolean
@@ -24,6 +27,7 @@ on:
 env:
   PYTHON_VERSION: 3.11
   REPORT: reports/report.json
+  COMPARISON: reports/comparison.json
 
 jobs:
   verify:
@@ -78,12 +82,39 @@ jobs:
             --clones repos \
             --out "$REPORT"
 
+      # Verifying a branch in isolation produces a report; verifying it against
+      # a baseline produces an answer about whether the change is safe. Both runs
+      # use the same checks, which is what lets a moved row be attributed to the
+      # data rather than to the check.
+      - name: Clone the baseline
+        if: ${{ inputs.baseline_ref != '' }}
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.asset_management_repo }}
+          ref: ${{ inputs.baseline_ref }}
+          path: baseline/asset-management
+          fetch-depth: 1
+
+      - name: Run the baseline and compare
+        if: ${{ inputs.baseline_ref != '' }}
+        run: |
+          # the other two repositories are the same in both runs
+          ln -s "$PWD/repos/calibrationFiles" baseline/calibrationFiles
+          ln -s "$PWD/repos/deployments" baseline/deployments
+          verify-metadata \
+            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.baseline_ref }}' \
+            --calibration-files 'OOI-CabledArray/calibrationFiles@${{ inputs.calibration_files_ref }}' \
+            --deployments 'OOI-CabledArray/deployments@main' \
+            --clones baseline \
+            --out reports/baseline.json
+          compare-metadata reports/baseline.json "$REPORT" --out "$COMPARISON"
+
       # Kept whether or not it is published, so a run can always be read back.
       - name: Keep the report
         uses: actions/upload-artifact@v4
         with:
           name: metadata-report
-          path: ${{ env.REPORT }}
+          path: reports/
 
       - name: Configure AWS credentials
         if: ${{ inputs.publish }}
@@ -105,3 +136,7 @@ jobs:
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
           aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/report_$stamp.json"
           aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/latest.json"
+          if [ -f "$COMPARISON" ]; then
+            aws s3 cp "$COMPARISON" "s3://${{ secrets.SITE_BUCKET }}/reports/comparison_$stamp.json"
+            aws s3 cp "$COMPARISON" "s3://${{ secrets.SITE_BUCKET }}/reports/comparison.json"
+          fi

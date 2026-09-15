@@ -68,8 +68,44 @@ export const CHECKS = [
     columns: ['refDes', 'deployNum', 'value', 'verdict'] },
 ] as const
 
+export interface Moved {
+  key: string[]
+  row: Row
+  was?: Severity
+  now?: Severity
+  fields?: string[]
+}
+
+export interface ComparedCheck {
+  newlyFailing: Moved[]
+  newlyPassing: Moved[]
+  new: Moved[]
+  gone: Moved[]
+  changed: Moved[]
+  unchanged: number
+}
+
+export interface Comparison {
+  baselineRunAt: string
+  currentRunAt: string
+  comparable: boolean
+  reasons: string[]
+  sources: Record<string, { baseline: Source | null; current: Source }>
+  checks: Record<string, ComparedCheck>
+}
+
+/** The buckets a reader works through, most consequential first. */
+export const MOVEMENTS = [
+  { key: 'newlyFailing', title: 'Newly failing', hint: 'what this change broke', tone: 'error' },
+  { key: 'newlyPassing', title: 'Newly passing', hint: 'what it fixed', tone: 'success' },
+  { key: 'new', title: 'New rows', hint: 'not present in the baseline', tone: 'neutral' },
+  { key: 'gone', title: 'Gone', hint: 'in the baseline, not in this run', tone: 'neutral' },
+  { key: 'changed', title: 'Changed otherwise', hint: 'same severity, different finding', tone: 'neutral' },
+] as const
+
 export const useStore = defineStore('report', () => {
   const report = shallowRef<Report | null>(null)
+  const comparison = shallowRef<Comparison | null>(null)
   const status = ref<'loading' | 'ready' | 'error'>('loading')
   const error = ref('')
 
@@ -90,6 +126,15 @@ export const useStore = defineStore('report', () => {
       }
       report.value = fetched
       status.value = 'ready'
+      // Absent unless a run was given a baseline, so a failure here is normal
+      // and must not take the rest of the dashboard down with it.
+      try {
+        comparison.value = await $fetch<Comparison>(
+          useRuntimeConfig().public.comparisonUrl as string,
+        )
+      } catch {
+        comparison.value = null
+      }
     } catch (caught) {
       error.value = caught instanceof Error ? caught.message : String(caught)
       status.value = 'error'
@@ -114,5 +159,5 @@ export const useStore = defineStore('report', () => {
     return `https://github.com/${source.repo}/blob/${source.ref}/${path}`
   }
 
-  return { report, status, error, load, checks, ageInDays, isStale, fileUrl }
+  return { report, comparison, status, error, load, checks, ageInDays, isStale, fileUrl }
 })

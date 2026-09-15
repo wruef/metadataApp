@@ -20,6 +20,7 @@ test = ["pytest"]
 
 [project.scripts]
 verify-metadata = "rca_metadata.cli:main"
+compare-metadata = "rca_metadata.cli:compareMain"
 
 
 [tool.setuptools.packages.find]

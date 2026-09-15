@@ -14,6 +14,8 @@ export default defineNuxtConfig({
     public: {
       // Where a run's report is published. Overridden at deploy time.
       reportUrl: '/reports/latest.json',
+      // Written only when a run is given a baseline to compare against.
+      comparisonUrl: '/reports/comparison.json',
     },
   },
 })

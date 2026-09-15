@@ -36,6 +36,14 @@ const store = useStore()
 
     <div class="bg-white h-px mb-3 mt-3 opacity-20" />
     <nuxt-link
+      to="/changes"
+      class="flex gap-3 items-center px-3 py-2 rounded-md text-gray-100 text-sm hover:bg-primary-700"
+      active-class="bg-primary-700 font-medium"
+    >
+      <i class="fa-code-compare fas w-4" />
+      <span>Changes</span>
+    </nuxt-link>
+    <nuxt-link
       to="/designators"
       class="flex gap-3 items-center px-3 py-2 rounded-md text-gray-100 text-sm hover:bg-primary-700"
       active-class="bg-primary-700 font-medium"

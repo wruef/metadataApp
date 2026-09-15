@@ -10,8 +10,10 @@ them over the wire.
 
 import argparse
 import glob
+import json
 import os
 
+from .compare import compareReports
 from .report import buildReport, writeReport
 from .run import AM_REPO, CAL_REPO, DEPLOY_REF, DEPLOY_REPO, verify
 from .sources import RepoSource
@@ -76,3 +78,33 @@ def main(argv=None):
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
+
+def compareMain(argv=None):
+    """Diff two run reports into an answer about what a change did."""
+    parser = argparse.ArgumentParser(description='Compare two verification runs.')
+    parser.add_argument('baseline', help='the report to compare against')
+    parser.add_argument('current', help='the report being judged')
+    parser.add_argument('--out', default='reports/comparison.json')
+    args = parser.parse_args(argv)
+
+    with open(args.baseline) as handle:
+        baseline = json.load(handle)
+    with open(args.current) as handle:
+        current = json.load(handle)
+    result = compareReports(baseline, current)
+
+    os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
+    with open(args.out, 'w') as handle:
+        json.dump(result, handle, indent=1)
+
+    if not result['comparable']:
+        print('These runs cannot be compared:')
+        for reason in result['reasons']:
+            print('  - ' + reason)
+    for name, check in result['checks'].items():
+        moved = {key: len(value) for key, value in check.items() if isinstance(value, list)}
+        if any(moved.values()):
+            print(f"{name:18} " + '  '.join(f'{key} {count}' for key, count in moved.items() if count))
+    print('wrote ' + args.out)
+    return 0
