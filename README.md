@@ -17,6 +17,22 @@ The package is the source of truth; nothing is maintained in two places.
     params/             instrument list, coefficient map and constants
     tests/
 
+## Parameter files
+
+`rawFileSN.csv` and `imageSN.csv` are cumulative: one row per deployment, with
+new rows appended each year after the cruise. They were previously a series of
+yearly snapshots (`rawFileSN_20250902.csv`, `imageSN_2025.csv`, ...), which meant
+the check only ever read the newest one and earlier years' curation went unused.
+
+Both are keyed on `referenceDesignator` + `deployNum`, not on year. An instrument
+can be deployed more than once in a season -- the shallow profilers usually are --
+so a year is not enough to identify a deployment, and looking one up by year
+silently returns whichever row came first.
+
+A blank `deployNum` means the row could not be tied to a single deployment: the
+reference designator has more than one deployment that year and nothing in the
+row separates them. Those rows need a person, and are the ones to resolve first.
+
 ## Running the tests
 
     pip install -e ".[test]"
