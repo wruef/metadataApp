@@ -10,7 +10,8 @@
     "build": "nuxi build",
     "generate": "nuxi generate",
     "serve": "nuxi preview",
-    "postinstall": "nuxi prepare"
+    "postinstall": "nuxi prepare",
+    "typecheck": "nuxi typecheck"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
@@ -23,5 +24,10 @@
     "tailwindcss": "^4.1.14",
     "vue": "^3.5.28",
     "vue-router": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "~5.9.3",
+    "vue-tsc": "^3.2.4"
   }
 }

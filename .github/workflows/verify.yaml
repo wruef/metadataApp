@@ -93,11 +93,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
 
+      # Into the same bucket the dashboard is served from, under reports/. The
+      # dashboard fetches its report with a relative url, so the two have to
+      # share an origin — served from elsewhere, the site loads and then finds
+      # nothing to show.
       # Named for the run, with latest.json pointing at it, so the dashboard has
       # something stable to read and older runs stay available as baselines.
       - name: Upload the report
         if: ${{ inputs.publish }}
         run: |
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
-          aws s3 cp "$REPORT" "s3://${{ secrets.REPORT_BUCKET }}/reports/report_$stamp.json"
-          aws s3 cp "$REPORT" "s3://${{ secrets.REPORT_BUCKET }}/reports/latest.json"
+          aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/report_$stamp.json"
+          aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/latest.json"
