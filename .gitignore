@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+*.egg-info/
+.venv/
+tmp/
+reports/
+
+# session transcript carried over from metadataVerification
+*.jsonl
+.pytest_cache/

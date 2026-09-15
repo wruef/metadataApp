@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rca-metadata"
+version = "0.1.0"
+description = "Verification of RCA deployment metadata and vendor calibration files"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "numpy",
+    "requests",
+    "beautifulsoup4",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
