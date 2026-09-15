@@ -10,3 +10,5 @@ reports/
 # session transcript carried over from metadataVerification
 *.jsonl
 .pytest_cache/
+build/
+dist/

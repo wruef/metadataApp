@@ -1,0 +1,103 @@
+name: Verify metadata
+
+# Runs every check against a chosen state of the repositories and writes one
+# report. There is no schedule: a run is an event someone chooses, usually once
+# a season after the cruise, and occasionally to check a branch before it merges.
+
+on:
+  workflow_dispatch:
+    inputs:
+      asset_management_ref:
+        description: "asset-management ref to verify (branch, tag or sha)"
+        default: master
+      asset_management_repo:
+        description: "asset-management repository — a fork, to check changes before they are pushed upstream"
+        default: oceanobservatories/asset-management
+      calibration_files_ref:
+        description: "calibrationFiles ref"
+        default: master
+      publish:
+        description: "upload the report to S3 for the dashboard"
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: 3.11
+  REPORT: reports/report.json
+
+jobs:
+  verify:
+    name: Run all checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v5
+
+      # Cloned rather than read over the API: the calibration comparison probes
+      # the filesystem for vendor files, so reading remotely would mean ~1,300
+      # downloads per run. Shallow, because only the working tree is needed.
+      - name: Clone asset-management
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.asset_management_repo }}
+          ref: ${{ inputs.asset_management_ref }}
+          path: repos/asset-management
+          fetch-depth: 1
+
+      - name: Clone calibrationFiles
+        uses: actions/checkout@v5
+        with:
+          repository: OOI-CabledArray/calibrationFiles
+          ref: ${{ inputs.calibration_files_ref }}
+          path: repos/calibrationFiles
+          fetch-depth: 1
+
+      - name: Clone deployments
+        uses: actions/checkout@v5
+        with:
+          repository: OOI-CabledArray/deployments
+          ref: main
+          path: repos/deployments
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install package
+        run: pip install .
+
+      - name: Run all checks
+        run: |
+          verify-metadata \
+            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}' \
+            --calibration-files 'OOI-CabledArray/calibrationFiles@${{ inputs.calibration_files_ref }}' \
+            --deployments 'OOI-CabledArray/deployments@main' \
+            --clones repos \
+            --out "$REPORT"
+
+      # Kept whether or not it is published, so a run can always be read back.
+      - name: Keep the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: metadata-report
+          path: ${{ env.REPORT }}
+
+      - name: Configure AWS credentials
+        if: ${{ inputs.publish }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      # Named for the run, with latest.json pointing at it, so the dashboard has
+      # something stable to read and older runs stay available as baselines.
+      - name: Upload the report
+        if: ${{ inputs.publish }}
+        run: |
+          stamp=$(date -u +%Y%m%dT%H%M%SZ)
+          aws s3 cp "$REPORT" "s3://${{ secrets.REPORT_BUCKET }}/reports/report_$stamp.json"
+          aws s3 cp "$REPORT" "s3://${{ secrets.REPORT_BUCKET }}/reports/latest.json"

@@ -1,0 +1,151 @@
+"""Tests for the run report: severity, the two-state rule, and round-tripping."""
+
+import json
+
+import pytest
+
+from rca_metadata.report import (SCHEMA_VERSION, asDifference, buildReport, scoreRows,
+                                 severityOf, summarise, writeReport)
+
+
+def test_agreeingRowIsOk():
+    assert severityOf('sensorBulk', {'verdict': 'MATCH'}) == 'ok'
+
+
+def test_disagreementIsAProblem():
+    assert severityOf('sensorBulk', {'verdict': 'MISMATCH'}) == 'problem'
+
+
+def test_nothingComparedIsNotAPass():
+    assert severityOf('calibrations', {'vendorMatch': 'NOTCOMPARED'}) == 'unchecked'
+
+
+def test_aRowTakesItsWorstVerdict():
+    """A deployment whose raw serial matches but whose calibration file is
+    missing is not a pass."""
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
+           'image_verify': 'NAN', 'calFile_verify': 'NO_VALID_FILE'}
+    assert severityOf('deployments', row) == 'problem'
+
+
+def test_verdictDetailAfterAColonIsIgnored():
+    row = {'rawFile_verify': 'MISMATCH: raw: 1130: ATAPL-58322-00003'}
+    assert severityOf('deployments', row) == 'problem'
+
+
+def test_anUnmappedVerdictGoesInFrontOfAPersonRatherThanPassing():
+    assert severityOf('positions', {'verdict': 'SOMETHING_NEW'}) == 'review'
+
+
+def test_aCheckWithNoMappingIsNotScored():
+    assert severityOf('nosuchcheck', {'verdict': 'MISMATCH'}) == 'ok'
+
+
+## --- the two-state rule ---
+
+def test_aSignedOffRowKeepsItsFailingCheck():
+    """A sign-off outranks a failing check, but the check stays visible on the
+    row -- cleared, calibration noted."""
+    rows = scoreRows('calibrations', [{'vendorMatch': 'MISMATCH', 'HITLstatus': 'Clear'}])
+    assert rows[0]['cleared'] is True
+    assert rows[0]['severity'] == 'problem'
+
+
+def test_notClearIsNotCleared():
+    rows = scoreRows('calibrations', [{'vendorMatch': 'MISMATCH', 'HITLstatus': 'NotClear'}])
+    assert rows[0]['cleared'] is False
+
+
+def test_rowWithNoSignOffIsNotCleared():
+    assert scoreRows('positions', [{'verdict': 'MATCH'}])[0]['cleared'] is False
+
+
+def test_summaryCountsEverySeverityAndTheClearedRows():
+    rows = scoreRows('sensorBulk', [
+        {'verdict': 'MATCH'}, {'verdict': 'MISMATCH'},
+        {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'NO_BULK_SERIAL'}])
+    assert summarise(rows) == {'problem': 2, 'review': 0, 'unchecked': 1, 'ok': 1,
+                               'cleared': 1, 'total': 4}
+
+
+## --- the document ---
+
+def test_differencesAreNamedNotPositional():
+    recorded = ['ATAPL-67627-00001__20150423', 'CC_pa0', 1.73, 1.733, -3e-07, 'vendor']
+    assert asDifference(recorded) == {
+        'file': 'ATAPL-67627-00001__20150423', 'coefficient': 'CC_pa0',
+        'github': 1.73, 'expected': 1.733, 'difference': -3e-07, 'source': 'vendor'}
+
+
+RESULT = {
+    'runAt': '2026-09-15T12:00:00',
+    'sources': {'assetManagement': {'repo': 'o/am', 'ref': 'master', 'local': None}},
+    'sensorBulk': [{'assetID': 'ATAPL-1', 'verdict': 'MISMATCH'}],
+    'calibrations': {'files': [{'fileName': 'a.csv', 'vendorMatch': 'MISMATCH',
+                                'differences': [['a', 'CC_x', 1.0, 2.0, -1.0, 'vendor']]}],
+                     'missingFromGithub': ['b']},
+    'deploymentSheets': [], 'deployments': [], 'positions': None,
+}
+
+
+def test_reportCarriesItsSchemaVersionAndProvenance(tmp_path):
+    doc = buildReport(RESULT, str(tmp_path))
+    assert doc['schemaVersion'] == SCHEMA_VERSION
+    assert doc['runAt'] == '2026-09-15T12:00:00'
+    assert doc['sources']['assetManagement']['ref'] == 'master'
+    assert set(doc['parameters']) == {'commit', 'dirty'}
+
+
+def test_aCheckThatDidNotRunIsAbsentRatherThanEmpty():
+    assert 'positions' not in buildReport(RESULT)['checks']
+
+
+def test_vendorFilesWithNoGithubFileAreCarried():
+    assert buildReport(RESULT)['checks']['calibrations']['missingFromGithub'] == ['b']
+
+
+def test_theWholeReportSurvivesJsonRoundTrip(tmp_path):
+    """The format this replaces could not be read back: its last column held a
+    python list literal full of commas."""
+    path = writeReport(buildReport(RESULT), str(tmp_path / 'report.json'))
+    doc = json.load(open(path))
+    difference = doc['checks']['calibrations']['rows'][0]['differences'][0]
+    assert difference['coefficient'] == 'CC_x'
+    assert difference['difference'] == -1.0
+
+
+## --- provenance ---
+
+def test_provenanceThatCannotBeDeterminedSaysSo(tmp_path, monkeypatch):
+    """A report nobody can trace back to its inputs should look wrong, not fine."""
+    monkeypatch.delenv('GITHUB_SHA', raising=False)
+    from rca_metadata.report import gitProvenance
+    assert gitProvenance(str(tmp_path))['commit'] == 'UNKNOWN'
+
+
+def test_theWorkflowsShaIsAuthoritative(tmp_path, monkeypatch):
+    monkeypatch.setenv('GITHUB_SHA', 'abc123')
+    from rca_metadata.report import gitProvenance
+    assert gitProvenance(str(tmp_path))['commit'] == 'abc123'
+
+
+def test_aSourceRecordsWhatItsRefResolvedTo():
+    """A ref names what was asked for; only the commit makes two runs
+    comparable, because master moves."""
+    from rca_metadata.report import describeSource
+
+    class Source:
+        repo, ref, local = 'o/r', 'master', '/Users/wruef/githubRepos/metadataApp'
+
+    described = describeSource(Source())
+    assert described['ref'] == 'master'
+    assert len(described['commit']) == 40
+
+
+def test_aSourceReadOverTheApiHasNoLocalCommit():
+    from rca_metadata.report import describeSource
+
+    class Source:
+        repo, ref, local = 'o/r', 'master', None
+
+    assert describeSource(Source())['commit'] is None

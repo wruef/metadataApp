@@ -22,6 +22,9 @@ HISTORY_COLUMNS = ['sensorType', 'referenceDesignator', 'startTime', 'endTime', 
 SEASON_COLUMNS = ['referenceDesignator', 'Cruise', 'instrumentType', '{date}', 'assetID',
                   'serialNumber']
 
+## Published alongside the per-type files: which reference designators exist.
+REFDES_FILE = 'refDesList.csv'
+
 
 def sensorTypeName(instrumentTypes):
     """The file-name form of an instrument type.
@@ -95,26 +98,55 @@ def _field(column, value):
     return str(value)
 
 
-def writeHistory(rows, outDir):
-    """One csv per sensor type, as the deployments repository publishes them.
+def referenceDesignators(rows):
+    """Every reference designator that has a deployment."""
+    return sorted({row['referenceDesignator'] for row in rows})
+
+
+def historyFiles(rows):
+    """The published files as {name: text} -- one csv per sensor type, plus the
+    list of reference designators that have deployments.
 
     Written by hand rather than through pandas so the published format holds:
     instrumentSN is a list and is always quoted, whether or not it contains a
     comma, so a diff against the previous publication shows only real changes.
     """
+    files = {}
+    for sensorType in sorted({row['sensorType'] for row in rows}):
+        lines = [','.join(HISTORY_COLUMNS)]
+        lines += [','.join(_field(column, row[column]) for column in HISTORY_COLUMNS)
+                  for row in rows if row['sensorType'] == sensorType]
+        files[f'{sensorType}_deployments.csv'] = '\n'.join(lines) + '\n'
+
+    files[REFDES_FILE] = '\n'.join(['referenceDesignator'] + referenceDesignators(rows)) + '\n'
+    return files
+
+
+def writeHistory(rows, outDir):
+    """The published files, on disk."""
     os.makedirs(outDir, exist_ok=True)
     written = []
-    for sensorType in sorted({row['sensorType'] for row in rows}):
-        path = os.path.join(outDir, f'{sensorType}_deployments.csv')
+    for name, content in historyFiles(rows).items():
+        path = os.path.join(outDir, name)
         with open(path, 'w') as handle:
-            handle.write(','.join(HISTORY_COLUMNS) + '\n')
-            for row in rows:
-                if row['sensorType'] != sensorType:
-                    continue
-                handle.write(','.join(_field(column, row[column])
-                                      for column in HISTORY_COLUMNS) + '\n')
+            handle.write(content)
         written.append(path)
     return written
+
+
+def publishHistory(rows, pullRequest, title=None):
+    """Propose the published files to the author's fork of the deployments repo.
+
+    Returns the pull request url, or None when nothing changed -- most runs
+    between cruises change nothing, and an empty pull request is noise.
+    """
+    title = title or f'Deployment history, {datetime.date.today().isoformat()}'
+    return pullRequest.open(
+        historyFiles(rows), title,
+        body='Regenerated from the asset-management deployment sheets and the '
+             'calibration files in both repositories.\n\n'
+             'Review here, then raise the pull request to the upstream '
+             'deployments repository by hand.')
 
 
 def _seasonRows(deployments, assets, dateColumn):

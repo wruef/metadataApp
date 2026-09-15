@@ -83,7 +83,8 @@ def test_aSensorTypeFileHoldsOnlyItsOwnType(tmp_path):
         (CAM, 'ATAPL-58317-00009', '2021-07-01T00:00:00', '')), ASSETS, {}, {})
     writeHistory(rows, str(tmp_path))
     written = sorted(p.name for p in tmp_path.iterdir())
-    assert written == ['CAMDSB_CAMDSC_deployments.csv', 'CAMDS_deployments.csv']
+    assert written == ['CAMDSB_CAMDSC_deployments.csv', 'CAMDS_deployments.csv',
+                       'refDesList.csv']
     camds = list(csv.DictReader(open(tmp_path / 'CAMDS_deployments.csv')))
     assert [row['sensorType'] for row in camds] == ['CAMDS']
 

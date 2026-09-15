@@ -146,6 +146,9 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
     spec = SENSORS[sensor]
     calCompare = ['NO_VENDOR_FILE'] if spec['sources'] else ['NAN']
     names = list(githubCal['name'])
+    ## Differences name the file, not where this run happened to keep it -- the
+    ## report is published, and a local path means nothing to whoever reads it.
+    stem = os.path.basename(vendorPath)
 
     for source in spec['sources']:
         path = vendorPath + source['suffix']
@@ -170,7 +173,7 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
                     ## The vendor file does not carry it, so nothing was checked.
                     ## Reported rather than skipped -- an unchecked coefficient
                     ## reading as a pass is the failure mode this rewrite exists for.
-                    recordDiff(calCompare, vendorPath, name, githubCoeff, None, None, 'missing')
+                    recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
                     continue
                 expected = vendorCals[key]
 
@@ -180,7 +183,7 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
                 expected = float(expected)
             coeffDiff = _difference(githubCoeff, expected)
             if coeffDiff:
-                recordDiff(calCompare, vendorPath, name, githubCoeff, expected, coeffDiff, coeffSource)
+                recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff, coeffSource)
         return calCompare
 
     if spec.get('pdf', True) and os.path.isfile(vendorPath + '.pdf'):

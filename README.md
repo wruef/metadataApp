@@ -33,10 +33,49 @@ A blank `deployNum` means the row could not be tied to a single deployment: the
 reference designator has more than one deployment that year and nothing in the
 row separates them. Those rows need a person, and are the ones to resolve first.
 
+## Running a verification
+
+    pip install .
+    verify-metadata --clones repos --out reports/report.json
+
+Repositories are named `owner/repo@ref`, and a clone under `--clones` is used
+when it is there. The two read paths give the same answers -- a clone is simply
+far cheaper, because the calibration comparison probes the filesystem for vendor
+files and would otherwise pull down ~1,300 of them over the wire.
+
+    verify-metadata \
+      --asset-management someone/asset-management@a-branch \
+      --calibration-files OOI-CabledArray/calibrationFiles@master \
+      --clones repos
+
+The same run happens in CI through `.github/workflows/verify.yaml`, on
+`workflow_dispatch` only. There is no schedule: a run is an event someone
+chooses, usually once a season after the cruise, and occasionally to check a
+branch before it merges.
+
 ## Running the tests
 
     pip install -e ".[test]"
     pytest
+
+## The run report
+
+A run emits one versioned JSON document — `schemaVersion`, when it ran, every
+input it read (both repository refs and the parameter-file commit), and the five
+checks. It replaces five CSV and TXT files that could not reliably be read back:
+the calibration report embedded a python list literal containing commas in its
+last column, and the season lists wrote multi-valued serial numbers unquoted, so
+27 of 154 rows in the 2022 list had more fields than the header.
+
+Every row carries two things the dashboard should not have to work out itself:
+
+- **`severity`** — `problem`, `review`, `unchecked` or `ok`, taken as the worst
+  of the row's verdicts, so a queue can be ranked by consequence rather than by
+  row order. A verdict with no mapping counts as `review`, so a new one reaches a
+  person instead of quietly passing.
+- **`cleared`** — whether a reviewer signed the row off, kept separate from its
+  severity. A sign-off outranks a failing check, but the failing check stays
+  visible on the row: *cleared, calibration noted*, never a plain pass.
 
 ## Verdicts
 

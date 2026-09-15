@@ -51,7 +51,7 @@ def loadPositions(xlsxPath, sheet=POSITION_SHEET):
     frame = pd.read_excel(xlsxPath, sheet_name=sheet)
     positions = {}
     for index, row in frame.iterrows():
-        positions.setdefault(row['name'], {})[row['deployed position start'].round('S')] = {
+        positions.setdefault(row['name'], {})[row['deployed position start'].round('s')] = {
             'positionStartTime': row['deployed position start'],
             'positionEndTime': row['deployed position end'],
             'lat': float(format(row['Latitude'], '.6f')),
@@ -182,8 +182,9 @@ def checkPositions(deployments, positions, nameMap, hitl):
 def applyPositions(deployments, positions, nameMap, hitl):
     """Deployment sheets with positions corrected, and a log of what changed.
 
-    This rewrites asset-management's own records, so its output is a proposal:
-    it goes to a pull request, never straight to the repository.
+    This rewrites asset-management's own records, so its output is a proposal.
+    It goes to a pull request on the author's own fork -- see
+    :func:`publishPositions` -- never straight to the upstream repository.
     """
     corrected = deployments.copy()
     log = []
@@ -217,3 +218,59 @@ def applyPositions(deployments, positions, nameMap, hitl):
     corrected = corrected.applymap(
         lambda v: int(v) if isinstance(v, float) and v.is_integer() else v)
     return corrected, log
+
+
+## A node is named SITE-NODE; an instrument adds a port and an instrument code.
+NODE_REFDES_LENGTH = 14
+
+
+def _asCsv(sheet):
+    return sheet.to_csv(index=False, na_rep='', float_format='%.6f')
+
+
+def positionFiles(corrected):
+    """Corrected instrument deployment sheets as {path: text}, one per array.
+
+    The checks work from every array concatenated, but asset-management keeps one
+    sheet per array, so they are split back apart on the way out. Node rows are
+    left out -- they belong to a different repository, and filing them here would
+    append them to the wrong sheet.
+    """
+    refDes = corrected['Reference Designator']
+    instruments = corrected[refDes.str.len() > NODE_REFDES_LENGTH]
+    return {f'deployment/{array}_Deploy.csv': _asCsv(sheet)
+            for array, sheet in instruments.groupby(refDes.str[0:8])}
+
+
+def nodePositionFile(corrected):
+    """Corrected node deployments, which the deployments repository holds."""
+    refDes = corrected['Reference Designator']
+    nodes = corrected[refDes.str.len() <= NODE_REFDES_LENGTH]
+    return {'NODE_deployments.csv': _asCsv(nodes)} if len(nodes) else {}
+
+
+def publishPositions(corrected, pullRequest, title=None):
+    """Propose corrected deployment sheets to the author's fork of asset-management.
+
+    Returns the pull request url, or None when the sheets already agree with the
+    spreadsheet. What changed is in the position check's own rows, so no separate
+    change log is written here.
+    """
+    return _propose(pullRequest, positionFiles(corrected), title, 'asset-management')
+
+
+def publishNodePositions(corrected, pullRequest, title=None):
+    """Propose corrected node deployments to the author's fork of the deployments repo."""
+    return _propose(pullRequest, nodePositionFile(corrected), title, 'deployments')
+
+
+def _propose(pullRequest, files, title, upstream):
+    if not files:
+        return None
+    title = title or f'Deployment positions, {datetime.date.today().isoformat()}'
+    return pullRequest.open(
+        files, title,
+        body='Latitude, longitude and depths taken from the RCA position '
+             'spreadsheet.\n\n'
+             f'Review here, then raise the pull request to the upstream {upstream} '
+             'repository by hand.')

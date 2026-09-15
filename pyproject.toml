@@ -12,10 +12,15 @@ dependencies = [
     "numpy",
     "requests",
     "beautifulsoup4",
+    "openpyxl",
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.scripts]
+verify-metadata = "rca_metadata.cli:main"
+
 
 [tool.setuptools.packages.find]
 where = ["src"]

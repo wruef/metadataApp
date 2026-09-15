@@ -10,12 +10,13 @@ import os
 
 import pandas as pd
 
-from . import checks, loading, positions
+from . import checks, loading, positions, report
 from .sources import RepoSource, VendorFiles
 
 AM_REPO = 'oceanobservatories/asset-management'
 CAL_REPO = 'OOI-CabledArray/calibrationFiles'
 DEPLOY_REPO = 'OOI-CabledArray/deployments'
+DEPLOY_REF = 'main'
 
 ## The nodes the instruments hang off are deployed too, and their positions are
 ## checked the same way -- they just live in a different repository.
@@ -36,8 +37,13 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
 
     return {
         'runAt': datetime.datetime.now().isoformat(timespec='seconds'),
-        'assetManagement': repr(amSource),
-        'calibrationFiles': repr(calSource),
+        ## Every input the run read, so any row can be traced back to it.
+        'sources': {
+            'assetManagement': report.describeSource(amSource),
+            'calibrationFiles': report.describeSource(calSource),
+            'deployments': report.describeSource(deploySource),
+            'positionSpreadsheet': positionFile,
+        },
         'sensorBulk': checks.checkSensorBulk(params['assets'], params['serialByAsset']),
         'calibrations': checks.checkCalibrations(amSource, calFiles, vendorFiles, params, hitl),
         'deploymentSheets': checks.checkDeploymentSheets(deployments, params),
@@ -46,6 +52,9 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
             loading.calibrationHistory(calFiles),
             amSource.listDirs('calibration')),
         'positions': _checkPositions(amSource, deploySource, positionFile, deployments, paramsDir),
+        ## Not a check -- the inventory of what the run covered, which the
+        ## dashboard offers as a view of its own.
+        'referenceDesignators': sorted(set(deployments['Reference Designator'].dropna())),
     }
 
 
@@ -70,4 +79,11 @@ def _checkPositions(amSource, deploySource, positionFile, deployments, paramsDir
 def verifyLocal(amPath, calPath, deployPath=None, **kwargs):
     """Run against local clones -- the pre-cruise case, before anything is pushed."""
     return verify(RepoSource(AM_REPO, local=amPath), RepoSource(CAL_REPO, local=calPath),
-                  RepoSource(DEPLOY_REPO, local=deployPath) if deployPath else None, **kwargs)
+                  RepoSource(DEPLOY_REPO, DEPLOY_REF, local=deployPath) if deployPath else None,
+                  **kwargs)
+
+
+def verifyToReport(amSource, calSource, outPath, **kwargs):
+    """Run every check and write the report the dashboard reads."""
+    result = verify(amSource, calSource, **kwargs)
+    return report.writeReport(report.buildReport(result), outPath)
