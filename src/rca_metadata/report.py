@@ -14,6 +14,7 @@ but the failing check stays visible on the row.
 
 import datetime
 import json
+import math
 import os
 import subprocess
 
@@ -196,7 +197,32 @@ def _encode(value):
     return str(value)
 
 
+def _finite(value):
+    """Replace values JSON cannot express with null.
+
+    Python writes a non-finite float as the bare token ``NaN``, which is valid
+    Python and invalid JSON. Python reads it back without complaint, so a report
+    can look fine from this side while every browser refuses to parse it and
+    hands the reader 2MB of text instead of a report.
+
+    numpy floats subclass float, so this catches those too -- json serializes
+    them directly and never consults ``default``.
+    """
+    if isinstance(value, dict):
+        return {key: _finite(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_finite(item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
+
+
 def writeReport(report, path):
+    """Write the report as strict JSON.
+
+    ``allow_nan=False`` is the guard: if anything non-finite survives, this
+    raises rather than writing a file no browser can read.
+    """
     with open(path, 'w') as handle:
-        json.dump(report, handle, default=_encode, indent=1)
+        json.dump(_finite(report), handle, default=_encode, indent=1, allow_nan=False)
     return path

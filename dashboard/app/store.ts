@@ -34,10 +34,16 @@ export interface Check {
   missingFromGithub?: string[]
 }
 
+export interface Source {
+  repo: string
+  ref: string
+  commit: string | null
+}
+
 export interface Report {
   schemaVersion: number
   runAt: string
-  sources: Record<string, { repo: string; ref: string; commit: string | null } | string | null>
+  sources: Record<string, Source | string | null>
   parameters: { commit: string; dirty: boolean }
   referenceDesignators: string[]
   checks: Record<string, Check>
@@ -71,7 +77,18 @@ export const useStore = defineStore('report', () => {
     status.value = 'loading'
     try {
       const url = useRuntimeConfig().public.reportUrl as string
-      report.value = await $fetch<Report>(url)
+      const fetched = await $fetch<Report>(url)
+      // A report that is not a report must say so. Fetching the wrong url
+      // returns the page itself, and a truthy non-report renders as a blank
+      // screen with an error only the console sees.
+      if (!fetched || typeof fetched !== 'object' || !fetched.checks) {
+        const got =
+          fetched && typeof fetched === 'object'
+            ? `an object with: ${Object.keys(fetched).join(', ')}`
+            : `${typeof fetched}`
+        throw new Error(`${url} did not return a run report — got ${got}`)
+      }
+      report.value = fetched
       status.value = 'ready'
     } catch (caught) {
       error.value = caught instanceof Error ? caught.message : String(caught)
@@ -79,7 +96,7 @@ export const useStore = defineStore('report', () => {
     }
   }
 
-  const checks = computed(() => CHECKS.filter((check) => report.value?.checks[check.key]))
+  const checks = computed(() => CHECKS.filter((check) => report.value?.checks?.[check.key]))
 
   /** Nothing refreshes on its own, so a report that is no longer current has to
    *  look it. A season runs roughly a year, so anything older is out of date. */
@@ -89,5 +106,13 @@ export const useStore = defineStore('report', () => {
   })
   const isStale = computed(() => ageInDays.value > 365)
 
-  return { report, status, error, load, checks, ageInDays, isStale }
+  /** A link to a file as it stood in the run being read — the ref the report
+   *  names, not whatever the branch has moved on to since. */
+  function fileUrl(sourceName: string, path: string) {
+    const source = report.value?.sources?.[sourceName]
+    if (!source || typeof source !== 'object') return null
+    return `https://github.com/${source.repo}/blob/${source.ref}/${path}`
+  }
+
+  return { report, status, error, load, checks, ageInDays, isStale, fileUrl }
 })

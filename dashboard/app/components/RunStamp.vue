@@ -2,12 +2,12 @@
 import { useStore } from '~/store'
 
 const store = useStore()
-const report = computed(() => store.report!)
+const report = computed(() => store.report)
 
 /** A ref names what was asked for; the commit is the state it resolved to, and
  *  only that makes two runs comparable. */
 const sources = computed(() =>
-  Object.entries(report.value.sources)
+  Object.entries(report.value?.sources ?? {})
     .filter(([, value]) => value && typeof value === 'object')
     .map(([name, value]) => {
       const source = value as { repo: string; ref: string; commit: string | null }
@@ -15,12 +15,14 @@ const sources = computed(() =>
     }),
 )
 
-const runAt = computed(() => new Date(report.value.runAt).toLocaleString())
+const runAt = computed(() => (report.value ? new Date(report.value.runAt).toLocaleString() : ''))
 const days = computed(() => Math.round(store.ageInDays))
 </script>
 
 <template>
-  <div class="border border-gray-200 rounded-lg bg-white">
+  <!-- Every view carries the stamp, so nothing is read without knowing which
+       run it came from. Renders nothing at all rather than a half-filled one. -->
+  <div v-if="report" class="border border-gray-200 rounded-lg bg-white">
     <div class="flex flex-wrap gap-x-8 gap-y-3 items-baseline px-5 py-4">
       <div>
         <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">Run</div>

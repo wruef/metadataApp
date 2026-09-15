@@ -37,7 +37,7 @@ const check = computed(() => store.report?.checks[route.params.check as string])
         </template>
       </u-alert>
 
-      <check-table :check="check" :columns="definition.columns" />
+      <check-table :check="check" :check-key="definition.key" :columns="definition.columns" />
     </template>
   </div>
 </template>

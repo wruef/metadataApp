@@ -24,12 +24,12 @@ const store = useStore()
         <span class="grow">{{ check.title }}</span>
         <!-- The count that decides whether it is worth opening. -->
         <u-badge
-          v-if="store.report?.checks[check.key]?.summary.problem"
+          v-if="store.report?.checks?.[check.key]?.summary.problem"
           color="error"
           variant="solid"
           size="sm"
         >
-          {{ store.report?.checks[check.key]?.summary.problem }}
+          {{ store.report?.checks?.[check.key]?.summary.problem }}
         </u-badge>
       </nuxt-link>
     </nav>

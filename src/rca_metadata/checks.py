@@ -138,6 +138,13 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
             row['HITLstatus'] = hitlCal.loc[fileName, 'Status']
             row['HITLnotes'] = hitlCal.loc[fileName, 'HITLnotes']
         row['calRepo_check'] = 'MATCH' if stem in vendorFiles else 'NOMATCH'
+        ## Where the vendor original lives, so a reader can open it beside the
+        ## repository file. The two repos do not always name a sensor directory
+        ## the same way, so this cannot be derived from the instrument.
+        entries = vendorFiles.stems.get(stem, [])
+        if entries:
+            row['vendorDirectory'] = entries[0][0]
+            row['vendorFiles'] = sorted(name for _, name in entries)
 
         githubCal, row['fileParse'] = _loadGithubCal(
             amSource.path(f'calibration/{instrument}/{fileName}'))

@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Severity } from '~/store'
 
-const { check, columns } = defineProps<{ check: Check; columns: readonly string[] }>()
+const { check, checkKey, columns } = defineProps<{
+  check: Check
+  checkKey: string
+  columns: readonly string[]
+}>()
+
+/** One row open at a time — the detail is for reading a finding in context,
+ *  not for comparing several at once. */
+const opened = ref<number | null>(null)
+function toggle(index: number) {
+  opened.value = opened.value === index ? null : index
+}
 
 const search = ref('')
 const chosen = ref<Severity[]>([])
@@ -61,6 +72,7 @@ function label(column: string) {
       <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-600">
           <tr>
+            <th class="w-8" />
             <th class="font-semibold px-3 py-2 text-left text-xs tracking-wide uppercase">Severity</th>
             <th
               v-for="column in columns"
@@ -72,16 +84,30 @@ function label(column: string) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, index) in rows" :key="index" class="border-t border-gray-100 hover:bg-gray-50">
-            <td class="px-3 py-2 whitespace-nowrap">
-              <severity-badge :severity="row.severity" :cleared="row.cleared" />
-            </td>
-            <td v-for="column in columns" :key="column" class="px-3 py-2 whitespace-nowrap">
-              {{ cell(row[column]) }}
-            </td>
-          </tr>
+          <template v-for="(row, index) in rows" :key="index">
+            <tr
+              class="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
+              :class="{ 'bg-gray-50': opened === index }"
+              @click="toggle(index)"
+            >
+              <td class="pl-3 text-gray-400">
+                <i :class="['fas', opened === index ? 'fa-chevron-down' : 'fa-chevron-right', 'text-[10px]']" />
+              </td>
+              <td class="px-3 py-2 whitespace-nowrap">
+                <severity-badge :severity="row.severity" :cleared="row.cleared" />
+              </td>
+              <td v-for="column in columns" :key="column" class="px-3 py-2 whitespace-nowrap">
+                {{ cell(row[column]) }}
+              </td>
+            </tr>
+            <tr v-if="opened === index" class="bg-gray-50 border-t border-gray-100">
+              <td :colspan="columns.length + 2" class="px-6 py-4">
+                <row-detail :check="checkKey" :row="row" />
+              </td>
+            </tr>
+          </template>
           <tr v-if="!rows.length">
-            <td :colspan="columns.length + 1" class="px-3 py-8 text-center text-gray-500">
+            <td :colspan="columns.length + 2" class="px-3 py-8 text-center text-gray-500">
               Nothing matches those filters.
             </td>
           </tr>

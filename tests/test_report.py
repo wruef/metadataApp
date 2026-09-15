@@ -149,3 +149,40 @@ def test_aSourceReadOverTheApiHasNoLocalCommit():
         repo, ref, local = 'o/r', 'master', None
 
     assert describeSource(Source())['commit'] is None
+
+
+## --- the report has to be readable by something other than python ---
+
+def test_nonFiniteValuesBecomeNull(tmp_path):
+    """Python writes float('nan') as the bare token NaN, which is valid Python
+    and invalid JSON. Python reads it back without complaint, so the report can
+    look fine from this side while every browser refuses to parse it."""
+    result = {**RESULT, 'sensorBulk': [{'assetID': 'A', 'bulkSerial': float('nan'),
+                                        'verdict': 'MISMATCH'}]}
+    path = writeReport(buildReport(result), str(tmp_path / 'report.json'))
+    row = json.load(open(path))['checks']['sensorBulk']['rows'][0]
+    assert row['bulkSerial'] is None
+
+
+def test_noPythonOnlyTokensSurviveIntoTheFile(tmp_path):
+    result = {**RESULT, 'sensorBulk': [
+        {'assetID': 'A', 'bulkSerial': float('nan'), 'verdict': 'MISMATCH'},
+        {'assetID': 'B', 'bulkSerial': float('inf'), 'verdict': 'MISMATCH'},
+    ]}
+    path = writeReport(buildReport(result), str(tmp_path / 'report.json'))
+    text = open(path).read()
+    for token in ('NaN', 'Infinity', '-Infinity'):
+        assert token not in text
+
+
+def test_nonFiniteValuesNestedInAListAreCaughtToo(tmp_path):
+    """Calibration differences carry the values that disagree, and a missing
+    vendor coefficient is nan."""
+    result = {**RESULT, 'calibrations': {
+        'files': [{'fileName': 'a.csv', 'vendorMatch': 'MISMATCH',
+                   'differences': [['a', 'CC_x', 1.0, float('nan'), float('nan'), 'vendor']]}],
+        'missingFromGithub': []}}
+    path = writeReport(buildReport(result), str(tmp_path / 'report.json'))
+    assert 'NaN' not in open(path).read()
+    difference = json.load(open(path))['checks']['calibrations']['rows'][0]['differences'][0]
+    assert difference['expected'] is None

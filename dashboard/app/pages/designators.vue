@@ -24,7 +24,7 @@ const designators = computed(() => {
     <div class="flex gap-3 items-center">
       <u-input v-model="search" placeholder="Filter" icon="i-lucide-search" class="max-w-xs" />
       <span class="text-gray-500 text-sm">
-        {{ designators.length }} of {{ store.report?.referenceDesignators.length ?? 0 }}
+        {{ designators.length }} of {{ store.report?.referenceDesignators?.length ?? 0 }}
       </span>
     </div>
 
