@@ -79,6 +79,10 @@ class RepoSource:
             return os.path.join(self.local, path)
         return f'{RAW}{self.repo}/{self.ref}/{path}'
 
+    def blobUrl(self, path):
+        """A link a person can open, as opposed to one pandas can read."""
+        return f'https://github.com/{self.repo}/blob/{self.ref}/{path}'
+
     def fetch(self, path):
         return self.session.get(f'{RAW}{self.repo}/{self.ref}/{path}').content
 
