@@ -108,3 +108,35 @@ def test_sensorWithNoRuleReportsNan(tmp_path):
 def test_optaaHasNoComparisonRule(tmp_path):
     cal = githubCal(CC_a=1.0)
     assert compare(cal, str(tmp_path / 'ATAPL-69943-00001__20130422')) == ['NAN']
+
+
+## --- vendor files are found whatever case their extension is spelled in ---
+
+def test_vendorFileIsFoundWhenItsExtensionIsUppercase(tmp_path):
+    """27 vendor files carry .CAL or .DEV. A case-insensitive filesystem finds
+    them and a case-sensitive one does not, so the check answered differently on
+    a laptop than on a Linux runner."""
+    from rca_metadata.calibrations import findVendorFile
+    stem = tmp_path / 'ATOSU-68020-00005__20200801'
+    stem.with_suffix('.CAL').write_text('')
+    found = findVendorFile(str(stem), '.cal')
+    ## the name as the directory spells it, not the name we asked for --
+    ## which is what makes this independent of the filesystem
+    assert found.endswith('.CAL')
+
+
+def test_anUppercaseVendorFileIsActuallyCompared(tmp_path):
+    stem = tmp_path / 'ATAPL-70110-00001__20130422'
+    stem.with_suffix('.DEV.lambda').write_text(VENDOR_LINES)
+    cal = githubCal(CC_scale_factor_chlorophyll_a=0.0121, CC_dark_counts_chlorophyll_a=50.0)
+    assert compare(cal, str(stem)) == ['COMPARED']
+
+
+def test_aVendorFileThatIsGenuinelyAbsentIsStillReported(tmp_path):
+    from rca_metadata.calibrations import findVendorFile
+    assert findVendorFile(str(tmp_path / 'ATOSU-68020-00005__20200801'), '.cal') is None
+
+
+def test_missingDirectoryIsNotAnError():
+    from rca_metadata.calibrations import findVendorFile
+    assert findVendorFile('/no/such/directory/ATAPL-1__20200101', '.cal') is None

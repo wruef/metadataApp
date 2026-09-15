@@ -12,3 +12,7 @@ reports/
 .pytest_cache/
 build/
 dist/
+dashboard/node_modules/
+dashboard/.nuxt/
+dashboard/.output/
+dashboard/public/reports/

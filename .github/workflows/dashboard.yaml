@@ -1,0 +1,65 @@
+name: Dashboard
+
+# Builds the read-only dashboard. The build is the check: nothing here can be
+# verified on a machine with an older Node, so CI is where it is proven.
+
+on:
+  push:
+    branches: [main]
+    paths: ["dashboard/**"]
+  pull_request:
+    paths: ["dashboard/**"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "publish the built site to S3"
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # A static site: the report is a file it fetches, and there is no backend.
+      - name: Build
+        run: npm run generate
+
+      - name: Keep the built site
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard
+          path: dashboard/.output/public
+
+      - name: Configure AWS credentials
+        if: ${{ inputs.deploy }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      # The reports directory is written by the verify workflow, so it is left
+      # alone here — the site and the runs it reads are deployed separately.
+      - name: Deploy
+        if: ${{ inputs.deploy }}
+        run: |
+          aws s3 sync .output/public "s3://${{ secrets.DASHBOARD_BUCKET }}" --delete --exclude "reports/*"

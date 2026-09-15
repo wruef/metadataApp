@@ -21,6 +21,7 @@ Verdicts, strongest first:
 """
 
 import ast
+import functools
 import os
 
 from . import vendor
@@ -94,6 +95,29 @@ SENSORS = {
 }
 
 
+@functools.lru_cache(maxsize=None)
+def _directoryIndex(directory):
+    """Lowercased file name -> the name as the directory actually spells it."""
+    try:
+        return {name.lower(): name for name in os.listdir(directory)}
+    except OSError:
+        return {}
+
+
+def findVendorFile(vendorPath, suffix):
+    """The vendor file for a stem and suffix, whatever case it is spelled in.
+
+    27 vendor files carry .CAL or .DEV rather than .cal or .dev. A
+    case-insensitive filesystem finds those and a case-sensitive one does not,
+    so probing for an exact name made the check answer differently on a laptop
+    than on a Linux runner -- 9 NUTNR calibrations reported as having no vendor
+    file in CI while appearing fully compared on macOS.
+    """
+    directory, stem = os.path.split(vendorPath)
+    actual = _directoryIndex(directory).get((stem + suffix).lower())
+    return os.path.join(directory, actual) if actual else None
+
+
 def identifySensor(vendorPath):
     for sensor, spec in SENSORS.items():
         if any(assetId in vendorPath for assetId in spec['assetIds']):
@@ -151,8 +175,8 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
     stem = os.path.basename(vendorPath)
 
     for source in spec['sources']:
-        path = vendorPath + source['suffix']
-        if not os.path.isfile(path):
+        path = findVendorFile(vendorPath, source['suffix'])
+        if path is None:
             continue
         vendorCals = (source['reader'](path, coeffMap, names) if source.get('needsMap')
                       else source['reader'](path))
@@ -186,6 +210,6 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
                 recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff, coeffSource)
         return calCompare
 
-    if spec.get('pdf', True) and os.path.isfile(vendorPath + '.pdf'):
+    if spec.get('pdf', True) and findVendorFile(vendorPath, '.pdf'):
         calCompare[0] = 'PDF_NOTCOMPARED'
     return calCompare
