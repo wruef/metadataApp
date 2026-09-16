@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "runAt": "2026-09-16T16:19:53",
+ "runAt": "2026-09-16T16:40:17",
  "sources": {
   "assetManagement": {
    "repo": "oceanobservatories/asset-management",
@@ -23,7 +23,7 @@
   "positionSpreadsheet": "inputs/RSN_Positions_TEAM_20251113.xlsx"
  },
  "parameters": {
-  "commit": "fe49abd5d4a2c1b8890977d110880c837d6fb6db",
+  "commit": "a63b4b90e91730ea270e02f6f038ad4b034556a6",
   "dirty": true
  },
  "referenceDesignators": [
@@ -59961,7 +59961,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -59979,7 +59979,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -59997,9 +59997,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60015,7 +60015,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60033,9 +60033,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -60051,7 +60051,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60069,7 +60069,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60087,9 +60087,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60105,9 +60105,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60123,9 +60123,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60141,9 +60141,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60172,9 +60172,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60190,9 +60190,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60208,9 +60208,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60226,9 +60226,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60257,9 +60257,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60275,9 +60275,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60293,9 +60293,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60311,7 +60311,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60329,9 +60329,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -60360,9 +60360,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60378,9 +60378,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60396,9 +60396,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60414,9 +60414,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60432,7 +60432,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -60463,9 +60463,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60481,9 +60481,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60499,9 +60499,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60517,7 +60517,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60535,9 +60535,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60553,9 +60553,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -60571,9 +60571,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60589,7 +60589,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60607,9 +60607,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60625,9 +60625,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60643,9 +60643,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60661,9 +60661,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60679,7 +60679,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -60697,9 +60697,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60715,7 +60715,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60733,9 +60733,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60751,9 +60751,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60769,9 +60769,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60787,9 +60787,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60805,9 +60805,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60823,9 +60823,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60841,9 +60841,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60859,9 +60859,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60877,7 +60877,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -60895,9 +60895,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -60913,9 +60913,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60931,9 +60931,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60949,9 +60949,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60967,9 +60967,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -60985,9 +60985,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61003,7 +61003,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61021,9 +61021,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -61039,9 +61039,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61057,9 +61057,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61075,9 +61075,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61093,9 +61093,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61111,9 +61111,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61129,7 +61129,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61147,9 +61147,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -61165,9 +61165,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61183,9 +61183,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61201,9 +61201,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61219,9 +61219,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61237,9 +61237,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61255,9 +61255,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61273,9 +61273,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61291,9 +61291,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61309,7 +61309,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61327,9 +61327,24 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-58320-00015__20180910",
+       "coefficient": "CC_conc_coef",
+       "github": [
+        -0.9765852,
+        1.081678
+       ],
+       "expected": [
+        -0.9768582,
+        1.081678
+       ],
+       "difference": "1 of 2 values differ, the first at index 0: -0.9765852 against -0.9768582",
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
      "cleared": true
     },
     {
@@ -61345,9 +61360,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61363,9 +61378,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61381,7 +61396,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61399,9 +61414,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61417,9 +61432,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -61435,9 +61450,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61453,9 +61468,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61471,9 +61486,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61489,9 +61504,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61507,9 +61522,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61525,7 +61540,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61543,9 +61558,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61561,7 +61576,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -61579,9 +61594,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61610,9 +61625,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61628,9 +61643,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61646,9 +61661,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61664,9 +61679,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61682,7 +61697,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -61700,7 +61715,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61731,9 +61746,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61749,9 +61764,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61767,7 +61782,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61785,9 +61800,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61803,7 +61818,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -61821,9 +61836,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61839,9 +61854,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61857,9 +61872,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61875,9 +61890,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61893,9 +61908,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61911,7 +61926,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61929,7 +61944,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -61947,9 +61962,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -61965,7 +61980,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -61983,9 +61998,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62001,9 +62016,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62019,7 +62034,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -62037,9 +62052,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62055,7 +62070,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -62073,9 +62088,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62091,7 +62106,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -62109,7 +62124,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -62127,7 +62142,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -62145,9 +62160,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62163,9 +62178,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62181,7 +62196,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -62199,9 +62214,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62230,9 +62245,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62248,9 +62263,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62266,9 +62281,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62284,9 +62299,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62302,7 +62317,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -62320,7 +62335,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -62351,9 +62366,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62369,9 +62384,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62387,9 +62402,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -62405,9 +62420,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62423,7 +62438,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -62441,9 +62456,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62459,9 +62474,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62477,9 +62492,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62495,9 +62510,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62513,9 +62528,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -62531,7 +62546,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -62549,7 +62564,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -71113,7 +71128,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71131,7 +71146,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71149,7 +71164,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71167,9 +71182,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71185,9 +71200,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -71203,9 +71218,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71221,9 +71236,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71239,9 +71254,24 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-58336-00002__20171016",
+       "coefficient": "CC_cal_range",
+       "github": [
+        100,
+        1190
+       ],
+       "expected": [
+        100,
+        1199
+       ],
+       "difference": "1 of 2 values differ, the first at index 1: 1190 against 1199",
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
      "cleared": true
     },
     {
@@ -71257,9 +71287,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71275,9 +71305,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71293,9 +71323,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -71311,9 +71341,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71329,7 +71359,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71347,9 +71377,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71365,9 +71395,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71383,9 +71413,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71401,9 +71431,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -71419,9 +71449,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71437,9 +71467,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71455,7 +71485,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71473,9 +71503,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71491,9 +71521,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71509,9 +71539,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71527,7 +71557,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71545,9 +71575,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71563,9 +71593,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71581,9 +71611,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71599,9 +71629,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -71617,7 +71647,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71635,7 +71665,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71653,9 +71683,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71671,7 +71701,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71689,9 +71719,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71707,9 +71737,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71725,9 +71755,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71743,7 +71773,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71761,9 +71791,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71779,9 +71809,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71797,9 +71827,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71815,9 +71845,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -71833,9 +71863,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71851,9 +71881,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71869,9 +71899,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71887,7 +71917,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71905,9 +71935,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71923,9 +71953,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71941,9 +71971,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71959,9 +71989,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -71977,7 +72007,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -71995,7 +72025,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72013,9 +72043,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72031,9 +72061,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72049,9 +72079,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -72067,9 +72097,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72085,7 +72115,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72103,9 +72133,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72121,9 +72151,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72139,9 +72169,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72157,9 +72187,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72175,9 +72205,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72193,9 +72223,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72211,9 +72241,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72229,7 +72259,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72247,7 +72277,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72265,9 +72295,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72283,9 +72313,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72301,7 +72331,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -72319,9 +72349,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72337,9 +72367,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72355,7 +72385,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72373,9 +72403,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72391,9 +72421,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72409,9 +72439,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72427,7 +72457,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": false
@@ -72445,9 +72475,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72463,9 +72493,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72481,7 +72511,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72499,9 +72529,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72517,9 +72547,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72535,9 +72565,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72553,9 +72583,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72571,9 +72601,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -72589,9 +72619,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72607,7 +72637,7 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
      "cleared": true
@@ -72625,9 +72655,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72643,9 +72673,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72661,9 +72691,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72679,9 +72709,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": true
     },
     {
@@ -72697,9 +72727,9 @@
      "fileParse": "SUCCESS_TYPE2",
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
-     "vendorMatch": "NOTCOMPARED",
+     "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "unchecked",
+     "severity": "ok",
      "cleared": false
     },
     {
@@ -73714,6 +73744,14 @@
        "expected": 38676.0,
        "difference": 0.5,
        "source": "vendor"
+      },
+      {
+       "file": "ATAPL-58337-00013__20231122",
+       "coefficient": "CC_sami_bits",
+       "github": 16.0,
+       "expected": 12.0,
+       "difference": 4.0,
+       "source": "constant"
       }
      ],
      "severity": "problem",
@@ -76091,10 +76129,10 @@
     }
    ],
    "summary": {
-    "problem": 72,
+    "problem": 74,
     "review": 119,
-    "unchecked": 288,
-    "ok": 695,
+    "unchecked": 117,
+    "ok": 864,
     "cleared": 362,
     "total": 1174
    },

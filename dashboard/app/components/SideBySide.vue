@@ -152,7 +152,7 @@ function blobUrl(name: string, path: string) {
             v-for="each in differences"
             :key="each.coefficient"
             class="bg-white border border-gray-200 border-l-[3px] px-3 py-1.5 rounded-md"
-            :style="{ borderLeftColor: `var(--${each.source === 'constant' ? 'warn' : 'crit'})` }"
+            :style="{ borderLeftColor: `var(--${each.source === 'vendor' ? 'crit' : 'warn'})` }"
           >
             <div class="font-mono font-semibold text-[11.5px]">{{ each.coefficient }}</div>
             <div class="font-mono mt-0.5 text-[11px] text-gray-600">
@@ -161,7 +161,7 @@ function blobUrl(name: string, path: string) {
                 <span class="text-[var(--crit)]">not in the vendor file</span>
               </template>
               <template v-else>
-                {{ each.source === 'constant' ? 'constant' : 'vendor' }}
+                {{ each.source === 'vendor' ? 'vendor' : each.source }}
                 <span class="text-[var(--crit)]">{{ each.expected }}</span> · Δ {{ each.difference }}
               </template>
             </div>

@@ -276,6 +276,8 @@ disagreements that are an artefact of the choice rather than a fault in the data
 | OPTAA | `.dev` | the pure-water calibration. The `.cal` beside it is the **air** calibration and is not what asset-management is built from |
 | PARA | `.tdf`, else `.pdf` | the vendor shipped a `.tdf` for some; the rest were typed in from the certificate |
 | PHSEN | `.pdf` | typed in from the certificate |
+| PCO2W | `.pdf` | typed in from the certificate |
+| DOSTAD | `.pdf` | typed in from the certificate |
 
 Where the named format is absent but some other vendor file is on record, the
 result is `FORMAT_NOTCOMPARED` rather than a comparison against whatever happens
@@ -314,10 +316,18 @@ certificates carry a text layer**, so the numbers can be read exactly rather
 than recognised from an image; OCR is only needed for the 95 that are scans, and
 is not implemented.
 
-PAR and PHSEN are done: **119 calibrations that nothing had ever checked now
-compare**, and the first run found a real transcription error — `CC_eb578`
-entered as `38676.5` where the certificate says `38676.0`, with the other three
-values on the same page correct.
+All four are done: **288 calibrations that nothing had ever checked now
+compare**, and they found three real transcription errors:
+
+| | in the record | on the certificate |
+|---|---|---|
+| PHSEN `CC_eb578` | `38676.5` | `38676.0` |
+| PCO2W `CC_cal_range` | `[100, 1190]` | `100–1199` |
+| DOSTAD `CC_conc_coef` | `-0.9765852` | `-0.9768582` |
+
+The last is a digit transposition — `8582` typed as `5852`. In every case the
+other values on the same page are correct, which is what makes them typing slips
+rather than a parse going wrong. Only the 95 scans are left.
 
 Reading them is not "extract the text". The certificates are laid out for a
 person, and every defect found while building this was in reassembling that
@@ -331,15 +341,53 @@ layout:
   position, left to right, not by the order the page draws them.
 - One breaks `2.5063877597725e-006` after the decimal point. Split numbers are
   rejoined **only** where a number is already expected, because widening that
-  rule runs columns together: a PCO2W range of 202 to 1191 already reads as
-  `2021191` once the en-dash between them — a glyph with no Unicode mapping —
-  is silently dropped by a text extractor.
+  rule runs columns together.
+- A PCO2W calibration range arrives four ways: `206–1197` with a real en-dash,
+  `200-600` with a hyphen, `202(cid:21)1191` where the dash is a glyph with no
+  Unicode mapping, and split across two cells as `200` then `-1500`. A fifth
+  way — `2021191`, the dash dropped entirely — is **not** read as a range at
+  all. There is no way to know where to split it, and a guess would invent a
+  number, so it reports as missing instead.
+- Two vendors misspell their own coefficient names — `SUVFoilCoef` for
+  `SVUFoilCoef` on ten certificates, and `Conentration Coef` on another
+  template. Both spellings are matched rather than corrected: the file on record
+  is the file on record.
+- One optode template prints the seven SVU coefficients as `C0-C3` on one line
+  and `C4-C6` on the next. The index *is* the coefficient, so the halves have to
+  go back together the right way round, and a half-read set is reported as
+  nothing at all rather than as four values disagreeing with seven.
+- The range is taken only from where the page labels it. Searched for freely, a
+  part number three lines up (`4830-58336`) reads as a perfectly good range. And
+  one certificate prints its range backwards, `1388-200`; those are the ends of
+  an interval, so both sides are sorted before they are compared.
 
-A coefficient the certificate does not carry at all is declared per sensor in
-`notVendor` rather than reported missing on every row. PHSEN's salinity and ADC
-bit depth are configuration, not vendor measurements — they vary across the
-archive, so they are not constants either, and asset-management's own notes say
-so: *"no sal listed on cal sheet; using default 35"*.
+Not every coefficient on the page comes from the vendor, and the three cases are
+kept apart:
+
+- **Constant.** PCO2W's `ea434`, `eb434`, `ea620` and `eb620` are identical on
+  all 89 RCA calibrations, which is why they are not printed on the certificate.
+  They live in `params/coefficientConstants.csv`, as does the ADC bit depth —
+  12 for both instruments, and a deviation is then a finding rather than a gap.
+  It already is one: two calibrations of `ATAPL-58337-00013` run at 16, noted as
+  a Rev K circuit board.
+- **Absent on purpose.** A DOSTAD certificate with no 2-point recalibration
+  prints no concentration coefficient at all, and the record then carries the
+  identity — no correction. That is declared per sensor in `defaults`, so the
+  record is held to it: 14 calibrations pass *because* they say `[0.0, 1.0]`,
+  and one claiming a correction its certificate never made would not.
+- **Measured.** PHSEN's salinity is a real measurement on four deployments and
+  the default 35 on the rest, and nothing on the vendor's page could check it
+  either way. Declared per sensor in `notVendor`, so it reads as a stated limit
+  of the check rather than as silence. Asset-management's own note agrees:
+  *"no sal listed on cal sheet; using default 35"*.
+- **Vendor.** Everything else, including PHSEN's four E values — those vary
+  across the archive and are printed on the certificate, which is how the
+  transcription error above was found.
+
+A constant is only checked when the vendor file could be read, because a file
+whose only evidence is a scan must not report `COMPARED` on the strength of
+three constants. That leaves the second Rev K calibration unverified — it is one
+of the 36 PHSEN scans.
 
 ### A calibration date is not an asset ID
 

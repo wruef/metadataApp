@@ -202,9 +202,10 @@ def test_aCalibrationDateIsNotMistakenForAnAssetId():
 
     assert identifySensor('/any/where/ATOSU-68020-00008__20170111') == 'NUTNR'
     assert identifySensor('/any/where/ATAPL-58341-00006__20170110') == 'SPKIR'
-    ## and an instrument with no rule stays without one, rather than being
-    ## claimed by whichever asset ID its date happens to spell
-    assert identifySensor('/any/where/ATAPL-58336-00001__20170111') is None
+    ## and a PCO2W dated the same day is a PCO2W, not the FLCDR its date spells
+    assert identifySensor('/any/where/ATAPL-58336-00001__20170111') == 'PCO2W'
+    ## an instrument with no rule at all stays without one
+    assert identifySensor('/any/where/ATAPL-12345-00001__20170111') is None
 
 
 def test_theSurroundingPathCannotDecideTheSensor():
@@ -322,3 +323,29 @@ def test_theCalibrationTemperatureIsFoundHoweverTheInstrumentSpeltIt(tmp_path):
             '"tcal: 21.3 C, ical: 22.7 C. The offsets were saved to this file on 9/18/13."',
             header))
         assert readOPTAA(str(path))['CC_tcal'] == 21.3, header
+
+
+## --- a coefficient the certificate leaves out on purpose ---
+
+def test_aCoefficientTheVendorOmitsIsHeldToItsDeclaredDefault(vendorStem, monkeypatch):
+    """An optode with no 2-point recalibration prints no concentration
+    coefficient, and the record carries the identity. That is not an unchecked
+    coefficient -- it is one the certificate answers by saying nothing."""
+    from rca_metadata.calibrations import SENSORS
+
+    monkeypatch.setitem(SENSORS['FLNTU'], 'defaults', {'CC_absent': 7.0})
+    assert compare(githubCal(CC_absent=7.0), vendorStem) == ['COMPARED']
+
+
+def test_aRecordClaimingMoreThanTheCertificateShowsIsStillAFinding(vendorStem, monkeypatch):
+    from rca_metadata.calibrations import SENSORS
+
+    monkeypatch.setitem(SENSORS['FLNTU'], 'defaults', {'CC_absent': 7.0})
+    verdict, *differences = compare(githubCal(CC_absent=9.0), vendorStem)
+    assert verdict == 'CONSTANT_MISMATCH'
+    assert differences[0][5] == 'default'
+
+
+def test_withoutADefaultAnOmittedCoefficientIsStillUnchecked(vendorStem):
+    verdict, *differences = compare(githubCal(CC_absent=7.0), vendorStem)
+    assert verdict == 'MISSING_COEFFICIENT'

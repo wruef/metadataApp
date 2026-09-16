@@ -343,3 +343,128 @@ def readPHSENpdf(path):
     rows = pdfRows(path)
     found = _labelled(rows, set(PHSEN_EVALUES)) or _tabulated(rows, PHSEN_EVALUES)
     return {f'CC_{name.lower()}': value for name, value in found.items()}
+
+
+## Table 1 of the newer SAMI2 CO2 certificate, in the order it prints them. The
+## two K values are on the page but are not carried in asset-management.
+PCO2W_TABLE = ('A', 'B', 'C', 'K434', 'K620', 'Tavg')
+PCO2W_COLUMNS = {'A': 'CC_cala', 'B': 'CC_calb', 'C': 'CC_calc', 'Tavg': 'CC_calt'}
+## The older certificate prints one per line, and names the same four differently.
+PCO2W_LABELS = {'a': 'CC_cala', 'b': 'CC_calb', 'c': 'CC_calc', 'T': 'CC_calt'}
+
+## ``206–1197``, and the same range where the en-dash arrived as an unmapped
+## glyph. A separator that vanished altogether leaves ``2021191``, which is not
+## read as a range at all: there is no way to know where to split it, and
+## guessing would invent a number.
+RANGE = re.compile(r'^(\d+)(?:[-‐-―]|\(cid:\d+\))(\d+)$')
+
+
+def _span(cells):
+    """A low and a high, however the page broke them apart."""
+    for index, cell in enumerate(cells):
+        after = cells[index + 1] if index + 1 < len(cells) else ''
+        for joined in (cell, cell + after):
+            found = RANGE.match(joined)
+            if found:
+                ## Sorted, because these are the ends of an interval and one
+                ## certificate prints them the wrong way round: 1388-200 for a
+                ## range the record sensibly keeps as 200 to 1388.
+                return sorted([int(found.group(1)), int(found.group(2))])
+    return None
+
+
+def _calibrationRange(rows):
+    """The calibration range, taken only from where the page labels it.
+
+    Anchored rather than searched for: a line higher up carries the part number,
+    ``4830-58336``, which reads as a perfectly good range and is not one.
+    """
+    for index, row in enumerate(rows):
+        ## One template writes the column head as `Range (ppm)` and another as
+        ## `Range(ppm)`, which is a different token.
+        if not any(cell.startswith('Range') for cell in row):
+            continue
+        ## The older certificate puts the label and the value on one line; the
+        ## newer one labels the column and prints the value on the row beneath.
+        beneath = rows[index + 1] if index + 1 < len(rows) else []
+        for cells in (list(row), list(beneath)):
+            span = _span(cells)
+            if span:
+                return span
+    return None
+
+
+def readPCO2Wpdf(path):
+    """Sunburst SAMI2 CO2 calibration certificate.
+
+    Four coefficients and the calibration range. The blank intensities and the
+    two K values printed alongside them are not carried in asset-management, and
+    the four E values are the same on every RCA instrument -- they live in
+    coefficientConstants.csv, which is why the certificate never prints them.
+    """
+    rows = pdfRows(path)
+    found = {PCO2W_COLUMNS[name]: value
+             for name, value in _tabulated(rows, PCO2W_TABLE).items()
+             if name in PCO2W_COLUMNS}
+    if not found:
+        found = {PCO2W_LABELS[name]: value
+                 for name, value in _labelled(rows, set(PCO2W_LABELS)).items()}
+    span = _calibrationRange(rows)
+    if span:
+        found['CC_cal_range'] = span
+    return found
+
+
+## An Aanderaa optode certificate names its two coefficients five ways across
+## three templates. Two of those spellings are typographical errors on the
+## vendor's own page -- SUVFoilCoef for SVUFoilCoef, and Conentration for
+## Concentration -- and they are matched rather than corrected, because the file
+## on record is the file on record.
+DOSTAD_CONC = ('conccoef', 'concentrationcoef', 'conentrationcoef')
+## One template prints all seven across a row; another splits them C0-C3, C4-C6.
+DOSTAD_CSV = ('svufoilcoef', 'suvfoilcoef')
+DOSTAD_CSV_PARTS = ('svuc0-c3', 'svuc4-c6')
+
+
+def _leadingLabel(row):
+    """What a row is called, and the numbers printed after the name."""
+    index = 0
+    while index < len(row) and not NUMBER.match(row[index]):
+        index += 1
+    label = ''.join(row[:index]).lower()
+    return label, [float(cell) for cell in row[index:] if NUMBER.match(cell)]
+
+
+def readDOSTADpdf(path):
+    """Aanderaa oxygen optode calibration certificate.
+
+    Two coefficients: the concentration offset and slope, and the seven SVU foil
+    coefficients. Both are indexed, so both are compared in order.
+    """
+    return dostadCoefficients(pdfRows(path))
+
+
+def dostadCoefficients(rows):
+    conc, csv = [], []
+    for row in rows:
+        label, values = _leadingLabel(row)
+        if not values:
+            continue
+        if label in DOSTAD_CONC:
+            conc = values
+        elif label in DOSTAD_CSV:
+            csv = values
+        elif label in DOSTAD_CSV_PARTS:
+            ## C0-C3 prints above C4-C6, and rows arrive in the order the page
+            ## sets them, so appending keeps the coefficients on their indices.
+            csv = csv + values
+
+    ## Reported only when the whole coefficient is there. A half-read set would
+    ## compare four values against seven and call it a disagreement, which says
+    ## the data is wrong when it is the reading that fell short.
+    found = {}
+    if len(conc) == 2:
+        found['CC_conc_coef'] = conc
+    if len(csv) == 7:
+        found['CC_csv'] = csv
+    return found

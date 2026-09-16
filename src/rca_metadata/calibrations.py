@@ -48,6 +48,13 @@ OPTAA    ``.dev``       the pure-water calibration. The ``.cal`` beside it is
 PARA     ``.tdf``, then the ``.pdf`` certificate the coefficients were typed
          in from. Both require CC_a0, so a certificate for the other PAR
          family falls through rather than being half compared
+DOSTAD   ``.pdf``       the concentration and SVU foil coefficients. A
+                        certificate with no 2-point recalibration prints no
+                        concentration coefficient; the record is then held
+                        to the identity, declared in ``defaults``
+PCO2W    ``.pdf``       four coefficients and the calibration range; the E
+                        values are the same on every RCA instrument and live
+                        in coefficientConstants.csv
 PHSEN    ``.pdf``       the certificate carries the four E values and nothing
                         else; salinity and ADC bit depth are configuration,
                         listed in ``notVendor``
@@ -122,17 +129,39 @@ SENSORS = {
             {'suffix': '.pdf', 'reader': vendor.readPARpdf, 'requires': 'CC_a0'},
         ],
     },
+    'DOSTAD': {
+        'assetIds': ['58320'],
+        'parseGithub': 'floatOrList',
+        ## Ordered: both coefficients are indexed, C0 through C6.
+        'sources': [{'suffix': '.pdf', 'reader': vendor.readDOSTADpdf,
+                     'requires': 'CC_csv', 'ordered': True}],
+        ## A certificate without a 2-point recalibration prints no concentration
+        ## coefficient at all, and the record then carries the identity: no
+        ## correction. Held to that rather than reported unchecked, so a record
+        ## claiming a correction the certificate never made still surfaces.
+        'defaults': {'CC_conc_coef': [0.0, 1.0]},
+    },
+    'PCO2W': {
+        'assetIds': ['58336', '70570'],
+        'parseGithub': 'floatOrList',
+        ## Ordered, because the calibration range is a low and a high: compared
+        ## as a set, 200 to 600 and 600 to 200 would read the same.
+        'sources': [{'suffix': '.pdf', 'reader': vendor.readPCO2Wpdf,
+                     'requires': 'CC_cala', 'ordered': True}],
+    },
     'PHSEN': {
         'assetIds': ['58337', '70571', '91990'],
         'parseGithub': 'raw',
         'sources': [{'suffix': '.pdf', 'reader': vendor.readPHSENpdf, 'requires': 'CC_ea434'}],
         ## The certificate carries the four E values and nothing else. Salinity
-        ## and the ADC bit depth are chosen when the instrument is configured --
-        ## they vary across the archive, so they are not constants either -- and
-        ## there is nothing on the vendor's page to check them against. Declared
-        ## rather than reported missing on every row, which would bury the four
-        ## values that can be checked.
-        'notVendor': ['CC_psal', 'CC_sami_bits'],
+        ## is measured, not calibrated: four deployments record the real thing
+        ## rather than the default 35, and nothing on the vendor's page could
+        ## check it either way. Declared rather than reported missing on every
+        ## row, which would bury the four values that can be checked.
+        ##
+        ## The ADC bit depth is not here: it is a constant of 12, so the two Rev
+        ## K boards that run at 16 surface for a person instead of passing.
+        'notVendor': ['CC_psal'],
     },
     'SPKIR': {
         'assetIds': ['58341'],
@@ -222,6 +251,7 @@ def recordDiff(calCompare, fileName, coeffName, githubCoeff, expectedCoeff, coef
     verdict, and a real vendor disagreement always outranks it.
     """
     verdict = {'vendor': 'MISMATCH', 'constant': 'CONSTANT_MISMATCH',
+               'default': 'CONSTANT_MISMATCH',
                'missing': 'MISSING_COEFFICIENT'}[coeffSource]
     if RANK[verdict] > RANK.get(calCompare[0], 0):
         calCompare[0] = verdict
@@ -337,12 +367,22 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
                 ## spell -- an ac-s .dev with no tcal line -- and that reached
                 ## float(None) and took the whole run down.
                 if key not in vendorCals or vendorCals[key] is None:
-                    ## The vendor file does not carry it, so nothing was checked.
-                    ## Reported rather than skipped -- an unchecked coefficient
-                    ## reading as a pass is the failure mode this rewrite exists for.
-                    recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
-                    continue
-                expected = vendorCals[key]
+                    ## Some certificates leave a coefficient out because it does
+                    ## not apply: an optode with no 2-point recalibration prints
+                    ## no concentration coefficient, and the record then carries
+                    ## the identity. Where a sensor says what that absence means,
+                    ## the record is held to it, so a file claiming a correction
+                    ## its certificate never made is still a finding.
+                    expected = spec.get('defaults', {}).get(name)
+                    if expected is None:
+                        ## Otherwise nothing was checked. Reported rather than
+                        ## skipped -- an unchecked coefficient reading as a pass
+                        ## is the failure mode this rewrite exists for.
+                        recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
+                        continue
+                    coeffSource = 'default'
+                else:
+                    expected = vendorCals[key]
 
             ## vendors publish scalars as text ('1.733339e+000'); the report
             ## carries the number, not the spelling
