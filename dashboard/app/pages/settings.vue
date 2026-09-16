@@ -17,7 +17,8 @@ async function submit() {
       <h1 class="font-semibold text-2xl">Sign in</h1>
       <p class="max-w-prose mt-1 text-gray-600">
         Clearing a row or correcting a position opens a pull request under your own GitHub identity,
-        so the reviewer column fills honestly. That needs a token.
+        so the reviewer column fills honestly — and starting a verification run runs it in your own
+        repository. Both need a token.
       </p>
     </div>
 
@@ -110,6 +111,10 @@ async function submit() {
           </li>
           <li>Under <b>Repository access</b>, select only your forks of the three repositories below.</li>
           <li>Under <b>Permissions</b>, set <b>Contents</b> and <b>Pull requests</b> to read and write.</li>
+          <li>
+            On your <b>metadataApp</b> fork, also set <b>Actions</b> to read and write. That is what
+            lets you start a verification run from the bar at the top, and nothing else needs it.
+          </li>
           <li>Give it an expiry you are comfortable with, then paste it above.</li>
         </ol>
         <p class="mt-2">

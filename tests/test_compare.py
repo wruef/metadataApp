@@ -125,3 +125,20 @@ def test_aRunWithUnknownProvenanceCannotCertifyAComparison():
     result = comparability(report([], commit='UNKNOWN'), report([]))
     assert result['comparable'] is False
     assert any('which version of the checks' in reason for reason in result['reasons'])
+
+
+def test_runsThatDoNotRecordWhichRepositoryStateTheyReadCannotBeCompared():
+    """The parameter commit says which checks ran, not which data they ran
+    against. A pair of reports whose sources carry no commit were being diffed
+    happily, and a row reported as newly failing could not be attributed to the
+    data at all."""
+    unknown = report([], sources={'assetManagement': {'repo': 'o/am', 'ref': 'master', 'commit': None}})
+    result = comparability(unknown, unknown)
+    assert result['comparable'] is False
+    assert 'assetManagement' in result['reasons'][0]
+
+
+def test_sourcesAtDifferentCommitsAreTheWholePointOfComparing():
+    before = report([], sources={'assetManagement': {'repo': 'o/am', 'ref': 'master', 'commit': 'a' * 40}})
+    after = report([], sources={'assetManagement': {'repo': 'o/am', 'ref': 'branch', 'commit': 'b' * 40}})
+    assert comparability(before, after)['comparable'] is True

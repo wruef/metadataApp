@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { SEVERITIES, SEVERITY_LABEL, type Check, type Severity } from '~/store'
+import { identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
+import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
+import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
 
-const { check, checkKey, columns } = defineProps<{
+const { check, checkKey, columns, facets } = defineProps<{
   check: Check
   checkKey: string
   columns: readonly string[]
+  facets: readonly Facet[]
 }>()
 
 /** One row open at a time — the detail is for reading a finding in context,
@@ -20,27 +23,146 @@ function toggle(index: number) {
 const PAGE_SIZE = 50
 const page = ref(1)
 
-const search = ref('')
-const chosen = ref<Severity[]>([])
-const clearedOnly = ref<'all' | 'cleared' | 'open'>('all')
+/** A link from the overview names the rows it counted, so the table it opens
+ *  shows exactly those and not a superset the reader has to narrow again. */
+const route = useRoute()
+const asked = (key: string) => (typeof route.query[key] === 'string' ? route.query[key] : '')
+
+/** Otherwise the check opens on its queue, not on the 1,558 rows that already
+ *  agree. A check with nothing outstanding opens on everything instead, so it
+ *  never greets you with an empty table. */
+const fallback = check.summary.problem + check.summary.review > 0 ? ATTENTION : ALL
+
+const severity = ref<string>(asked('severity') || fallback)
+/** Empty means the facet is not narrowing anything. */
+const picked = reactive<Record<string, string>>(
+  Object.fromEntries(facets.map((facet) => [facet.key, asked(facet.key)])),
+)
+const clearedOnly = ref<string>(asked('cleared') || 'all')
+const search = ref(asked('q'))
+
+/**
+ * The filters as one clause, optionally leaving one out.
+ *
+ * Leaving one out is what lets a control show honest counts: the choices in the
+ * instrument dropdown are counted against every *other* filter, so picking one
+ * narrows the table without the numbers beside the alternatives going stale.
+ */
+function where(skip?: string): Where {
+  const built: Where = { cleared: clearedOnly.value, q: search.value }
+  if (skip !== 'severity') built.severity = severity.value
+  for (const facet of facets) {
+    if (facet.key !== skip && picked[facet.key]) built[facet.key] = picked[facet.key]
+  }
+  return built
+}
+
+function matches(row: Row, skip?: string) {
+  return matchesWhere(row, facets, where(skip), columns)
+}
 
 /** Ranked by consequence rather than row order — which is the whole reason the
  *  report carries a severity. */
-const rows = computed(() => {
-  const term = search.value.trim().toLowerCase()
-  return check.rows
-    .filter((row) => !chosen.value.length || chosen.value.includes(row.severity))
-    .filter((row) =>
-      clearedOnly.value === 'all' ? true : clearedOnly.value === 'cleared' ? row.cleared : !row.cleared,
-    )
-    .filter((row) => !term || columns.some((column) => String(row[column] ?? '').toLowerCase().includes(term)))
-    .sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
+const rows = computed(() =>
+  check.rows
+    .filter((row) => matches(row))
+    .sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)),
+)
+
+const severityCounts = computed(() => {
+  const base = check.rows.filter((row) => matches(row, 'severity'))
+  const counts: Record<string, number> = { [ALL]: base.length, [ATTENTION]: 0 }
+  for (const row of base) {
+    counts[row.severity] = (counts[row.severity] ?? 0) + 1
+    if (row.severity === 'problem' || row.severity === 'review') counts[ATTENTION]!++
+  }
+  return counts
 })
 
+/** The segments, in the order a queue is worked. A severity the check has none
+ *  of anywhere is left out rather than shown as a permanent zero. */
+const segments = computed(() => [
+  { value: ATTENTION, label: 'Needs attention' },
+  ...SEVERITIES.filter((s) => check.summary[s] > 0).map((s) => ({
+    value: s as string,
+    label: SEVERITY_LABEL[s],
+  })),
+  { value: ALL, label: 'All' },
+])
+
+const dropdowns = computed(() =>
+  facets.map((facet) => {
+    const counts = new Map<string, number>()
+    for (const row of check.rows) {
+      if (!matches(row, facet.key)) continue
+      const value = facet.of(row)
+      if (value) counts.set(value, (counts.get(value) ?? 0) + 1)
+    }
+    const options = [...counts.entries()].sort(([a], [b]) => a.localeCompare(b))
+    // A chosen value whose rows the other filters have excluded still has to be
+    // in the list, or the dropdown goes blank and cannot be undone.
+    const chosen = picked[facet.key]
+    if (chosen && !counts.has(chosen)) options.unshift([chosen, 0])
+    return { facet, options }
+  }),
+)
+
+const filtered = computed(
+  () =>
+    severity.value !== fallback ||
+    clearedOnly.value !== 'all' ||
+    search.value.trim() !== '' ||
+    facets.some((facet) => picked[facet.key]),
+)
+
+function reset() {
+  severity.value = fallback
+  for (const facet of facets) picked[facet.key] = ''
+  clearedOnly.value = 'all'
+  search.value = ''
+}
+
 const pageCount = computed(() => Math.max(1, Math.ceil(rows.value.length / PAGE_SIZE)))
-const paged = computed(() => rows.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
 const firstShown = computed(() => (rows.value.length ? (page.value - 1) * PAGE_SIZE + 1 : 0))
 const lastShown = computed(() => Math.min(page.value * PAGE_SIZE, rows.value.length))
+
+/** What each cell renders as, worked out once per page rather than three times
+ *  per cell in the template. */
+interface Cell {
+  tone: Tone | null
+  token: string
+  detail: string
+  dim: string
+  strong: string
+  tail: string
+  text: string
+}
+
+const paged = computed(() =>
+  rows.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE).map((row) => ({
+    row,
+    stripe: SEVERITY_TONE[row.severity],
+    cells: columns.map((column): Cell => {
+      const raw = row[column]
+      const text =
+        raw === null || raw === undefined || raw === ''
+          ? '—'
+          : Array.isArray(raw)
+            ? raw.join(', ')
+            : String(raw)
+      const named = identity(column, text)
+      if (named) {
+        return { tone: null, token: '', detail: '', text: '', ...named, tail: named.tail ?? '' } as Cell
+      }
+      const tone = toneOf(checkKey, column, text)
+      if (tone) {
+        const { token, detail } = splitVerdict(text)
+        return { tone, token, detail, dim: '', strong: '', tail: '', text: '' }
+      }
+      return { tone: null, token: '', detail: '', dim: '', strong: '', tail: '', text }
+    }),
+  })),
+)
 
 /** Narrowing the filters can leave you past the end, and an open row on one page
  *  is not the same row on another. */
@@ -52,86 +174,135 @@ watch(page, () => {
   opened.value = null
 })
 
-function cell(value: unknown) {
-  if (value === null || value === undefined || value === '') return '—'
-  return Array.isArray(value) ? value.join(', ') : String(value)
-}
-
 function label(column: string) {
   return column.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
 }
 </script>
 
 <template>
-  <div class="space-y-3">
-    <div class="flex flex-wrap gap-2 items-center">
-      <u-input v-model="search" placeholder="Search rows" icon="i-lucide-search" class="max-w-xs" />
-      <u-select-menu
-        v-model="chosen"
-        :items="[...SEVERITIES]"
-        multiple
-        placeholder="Any severity"
-        class="min-w-44"
-      >
-        <template #default="{ modelValue }">
-          {{ modelValue?.length ? modelValue.map((s: Severity) => SEVERITY_LABEL[s]).join(', ') : 'Any severity' }}
-        </template>
-      </u-select-menu>
-      <u-select
-        v-model="clearedOnly"
-        :items="[
-          { label: 'Cleared and open', value: 'all' },
-          { label: 'Open only', value: 'open' },
-          { label: 'Cleared only', value: 'cleared' },
-        ]"
-        class="min-w-44"
-      />
-      <span class="text-gray-500 text-sm">
-        Showing {{ firstShown }}–{{ lastShown }} of {{ rows.length }}
-        <span v-if="rows.length !== check.rows.length">filtered from {{ check.rows.length }}</span>
-      </span>
+  <div>
+    <!-- Stays put while a long table scrolls under it: the filters are how a
+         queue is worked, and scrolling back up to change one is the friction
+         that stops people narrowing at all. -->
+    <div class="-mx-6 bg-gray-50 border-b border-gray-200 px-6 py-3 sticky top-0 z-20">
+      <div class="flex flex-wrap gap-2 items-center">
+        <div class="seg">
+          <button
+            v-for="segment in segments"
+            :key="segment.value"
+            :aria-pressed="severity === segment.value"
+            @click="severity = segment.value"
+          >
+            {{ segment.label }}
+            <span class="c">{{ severityCounts[segment.value] ?? 0 }}</span>
+          </button>
+        </div>
+
+        <!-- One dropdown per column worth narrowing by, built from the rows the
+             report actually holds. A facet the current filters leave with a
+             single choice is hidden rather than shown as a dead control. -->
+        <select
+          v-for="entry in dropdowns"
+          v-show="entry.options.length > 1 || picked[entry.facet.key]"
+          :key="entry.facet.key"
+          v-model="picked[entry.facet.key]"
+          class="sel"
+          :aria-label="entry.facet.label"
+        >
+          <option value="">{{ entry.facet.label }}</option>
+          <option v-for="[value, count] in entry.options" :key="value" :value="value">
+            {{ value }} ({{ count }})
+          </option>
+        </select>
+
+        <select v-model="clearedOnly" class="sel" aria-label="Sign-off">
+          <option value="all">Cleared and open</option>
+          <option value="open">Open only</option>
+          <option value="cleared">Cleared only</option>
+        </select>
+
+        <input
+          v-model="search"
+          type="search"
+          placeholder="Search rows"
+          aria-label="Search rows"
+          class="bg-white border border-gray-300 min-w-52 px-2.5 py-1 rounded-md text-[12.5px] focus:border-primary-500 focus:outline-none"
+        >
+
+        <button
+          v-if="filtered"
+          class="px-2 py-1 text-[12.5px] text-gray-500 hover:text-primary-700"
+          @click="reset"
+        >
+          Reset
+        </button>
+
+        <span class="font-mono ml-auto tabular-nums text-gray-500 text-xs">
+          {{ firstShown }}–{{ lastShown }} of {{ rows.length }}
+          <span v-if="rows.length !== check.rows.length">· {{ check.rows.length }} in the check</span>
+        </span>
+      </div>
     </div>
 
-    <div class="border border-gray-200 rounded-lg overflow-x-auto">
+    <div class="border border-gray-200 border-t-0 overflow-x-auto rounded-b-lg">
       <table class="min-w-full text-sm">
         <thead class="bg-gray-50 text-gray-600">
           <tr>
+            <th class="w-1" />
             <th class="w-8" />
-            <th class="font-semibold px-3 py-2 text-left text-xs tracking-wide uppercase">Severity</th>
+            <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">
+              Severity
+            </th>
             <th
               v-for="column in columns"
               :key="column"
-              class="font-semibold px-3 py-2 text-left text-xs tracking-wide uppercase whitespace-nowrap"
+              class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase whitespace-nowrap"
             >
               {{ label(column) }}
             </th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(row, index) in paged" :key="index">
+          <template v-for="(entry, index) in paged" :key="index">
             <tr
-              class="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
-              :class="{ 'bg-gray-50': opened === index }"
+              class="border-t border-gray-100 cursor-pointer hover:bg-primary-50"
+              :class="{ 'bg-primary-50': opened === index }"
               @click="toggle(index)"
             >
+              <!-- The severity, readable down the edge of the table without
+                   reading a single word. -->
+              <td class="stripe"><i :style="{ background: `var(--${entry.stripe})` }" /></td>
               <td class="pl-3 text-gray-400">
                 <i :class="['fas', opened === index ? 'fa-chevron-down' : 'fa-chevron-right', 'text-[10px]']" />
               </td>
               <td class="px-3 py-2 whitespace-nowrap">
-                <severity-badge :severity="row.severity" :cleared="row.cleared" />
+                <severity-badge :severity="entry.row.severity" :cleared="entry.row.cleared" />
               </td>
-              <td v-for="column in columns" :key="column" class="px-3 py-2 whitespace-nowrap">
-                {{ cell(row[column]) }}
+              <td
+                v-for="(cell, column) in entry.cells"
+                :key="column"
+                class="px-3 py-2 whitespace-nowrap"
+              >
+                <span v-if="cell.strong" class="refdes">
+                  <span class="dim">{{ cell.dim }}</span><b>{{ cell.strong }}</b><span class="dim">{{ cell.tail }}</span>
+                </span>
+                <template v-else-if="cell.tone">
+                  <span class="b" :class="cell.tone">{{ cell.token }}</span>
+                  <span v-if="cell.detail" class="font-mono ml-2 text-[11px] text-gray-500">
+                    {{ cell.detail }}
+                  </span>
+                </template>
+                <template v-else>{{ cell.text }}</template>
               </td>
             </tr>
-            <tr v-if="opened === index" class="bg-gray-50 border-t border-gray-100">
-              <td :colspan="columns.length + 2" class="px-6 py-4">
-                <row-detail :check="checkKey" :row="row" />
+            <tr v-if="opened === index" class="bg-primary-50 border-t border-gray-100">
+              <td :colspan="columns.length + 3" class="px-6 py-4">
+                <row-detail :check="checkKey" :row="entry.row" />
               </td>
             </tr>
           </template>
           <tr v-if="!paged.length">
-            <td :colspan="columns.length + 2" class="px-3 py-8 text-center text-gray-500">
+            <td :colspan="columns.length + 3" class="px-3 py-8 text-center text-gray-500">
               Nothing matches those filters.
             </td>
           </tr>
@@ -139,7 +310,7 @@ function label(column: string) {
       </table>
     </div>
 
-    <div v-if="pageCount > 1" class="flex gap-3 items-center justify-end">
+    <div v-if="pageCount > 1" class="flex gap-3 items-center justify-end mt-3">
       <u-button size="sm" color="neutral" variant="subtle" :disabled="page === 1" @click="page--">
         Previous
       </u-button>

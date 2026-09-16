@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+import { siteOf, yearOf } from '~/display'
+
 /** Worst first — the order a queue is worked in. */
 export const SEVERITIES = ['problem', 'review', 'unchecked', 'ok'] as const
 export type Severity = (typeof SEVERITIES)[number]
@@ -49,24 +51,74 @@ export interface Report {
   checks: Record<string, Check>
 }
 
+/**
+ * A dropdown over one column of a check.
+ *
+ * Which ones a check gets is a property of that check: an instrument means
+ * something to a calibration file and nothing to a deployment sheet. Options
+ * are built from the rows actually in the report rather than declared here, so
+ * a new instrument or a new verdict appears without anything being edited.
+ */
+export interface Facet {
+  key: string
+  /** Shown when nothing is picked — "All instruments". */
+  label: string
+  of: (row: Row) => string
+}
+
 /** The checks, in the order they are worth working. */
 export const CHECKS = [
   { key: 'calibrations', title: 'Calibrations', icon: 'fa-flask',
     blurb: 'Repository calibration files against the vendor originals.',
-    columns: ['fileName', 'instrument', 'vendorMatch', 'calRepo_check', 'serialNumber', 'HITLstatus'] },
+    columns: ['fileName', 'instrument', 'vendorMatch', 'calRepo_check', 'serialNumber', 'HITLstatus'],
+    facets: [
+      { key: 'instrument', label: 'All instruments', of: (row) => String(row.instrument ?? '') },
+      { key: 'vendorMatch', label: 'Any comparison', of: (row) => String(row.vendorMatch ?? '') },
+      { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
+    ] },
   { key: 'deployments', title: 'Deployments', icon: 'fa-anchor',
     blurb: 'Every deployment: its calibration file, its raw serial number, its sign-off.',
-    columns: ['refDes', 'deployNum', 'AssetID', 'verificationStatus', 'rawFile_verify', 'image_verify', 'calFile_verify'] },
+    columns: ['refDes', 'deployNum', 'AssetID', 'verificationStatus', 'rawFile_verify', 'image_verify', 'calFile_verify'],
+    facets: [
+      { key: 'site', label: 'All sites', of: (row) => siteOf(row.refDes) },
+      { key: 'year', label: 'All years', of: (row) => yearOf(row.deployDate) },
+      { key: 'verificationStatus', label: 'Any status', of: (row) => String(row.verificationStatus ?? '') },
+      { key: 'calFile_verify', label: 'Any calibration', of: (row) => String(row.calFile_verify ?? '') },
+      // The raw verdict carries the serial numbers behind it in the same string
+      // — MISMATCH: raw: 379: ATAPL-… — so the verdict is what it groups on.
+      { key: 'rawFile_verify', label: 'Any raw file', of: (row) => String(row.rawFile_verify ?? '').split(':')[0]!.trim() },
+      { key: 'image_verify', label: 'Any image', of: (row) => String(row.image_verify ?? '') },
+    ] },
   { key: 'positions', title: 'Positions', icon: 'fa-location-dot',
     blurb: 'Deployment sheets against the RCA position spreadsheet.',
-    columns: ['refDes', 'deployNum', 'deployYear', 'positionName', 'verdict', 'sourceRow'] },
+    columns: ['refDes', 'deployNum', 'deployYear', 'positionName', 'verdict', 'sourceRow'],
+    facets: [
+      { key: 'site', label: 'All sites', of: (row) => siteOf(row.refDes) },
+      { key: 'deployYear', label: 'All years', of: (row) => String(row.deployYear ?? '') },
+      { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
+      // How the spreadsheet row was found: by a curated HITL entry, by year, or
+      // carried over from the previous deployment.
+      { key: 'resolution', label: 'Any match', of: (row) => String(row.resolution ?? '') },
+    ] },
   { key: 'sensorBulk', title: 'Sensor bulk', icon: 'fa-barcode',
     blurb: 'Serial numbers between the RCA instrument list and the OOI sensor bulk record.',
-    columns: ['assetID', 'rcaSerials', 'bulkSerial', 'verdict'] },
+    columns: ['assetID', 'rcaSerials', 'bulkSerial', 'verdict'],
+    facets: [{ key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') }] },
   { key: 'deploymentSheets', title: 'Sheet integrity', icon: 'fa-table',
     blurb: 'Deployment sheet entries that name something no other record knows about.',
-    columns: ['refDes', 'deployNum', 'value', 'verdict'] },
-] as const
+    columns: ['refDes', 'deployNum', 'value', 'verdict'],
+    facets: [
+      { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
+      { key: 'refDes', label: 'All designators', of: (row) => String(row.refDes ?? '') },
+    ] },
+] as const satisfies readonly {
+  key: string
+  title: string
+  icon: string
+  blurb: string
+  columns: readonly string[]
+  facets: readonly Facet[]
+}[]
 
 export interface Moved {
   key: string[]
@@ -172,12 +224,14 @@ export const useStore = defineStore('report', () => {
   })
   const isStale = computed(() => ageInDays.value > 365)
 
-  /** A link to a file as it stood in the run being read — the ref the report
-   *  names, not whatever the branch has moved on to since. */
+  /** A link to a file as it stood in the run being read — at the commit where
+   *  the run resolved one, because a ref moves and the link would then point at
+   *  a different file than the check saw. */
   function fileUrl(sourceName: string, path: string) {
     const source = report.value?.sources?.[sourceName]
     if (!source || typeof source !== 'object') return null
-    return `https://github.com/${source.repo}/blob/${source.ref}/${path}`
+    const at = source.commit && source.commit !== 'UNKNOWN' ? source.commit : source.ref
+    return `https://github.com/${source.repo}/blob/${at}/${path}`
   }
 
   return { report, comparison, runs, selected, status, error, load, checks, ageInDays, isStale, fileUrl }

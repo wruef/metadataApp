@@ -151,8 +151,14 @@ def describeSource(source):
     """
     if source is None:
         return None
+    ## 'UNKNOWN' rather than None, for the same reason gitProvenance does it: a
+    ## run nobody can trace back to a state of the repository should look wrong.
+    ## A directory copied rather than cloned has no .git to ask, and that read as
+    ## a plain absent value -- so two runs were compared while neither recorded
+    ## which asset-management they had read.
+    commit = commitOf(source.local) if source.local else None
     return {'repo': source.repo, 'ref': source.ref, 'local': source.local,
-            'commit': commitOf(source.local) if source.local else None}
+            'commit': commit or 'UNKNOWN'}
 
 
 def buildReport(result, paramsPath='.'):

@@ -5,7 +5,7 @@ import { defineStore } from 'pinia'
  *  shared repository, and the onward pull request is raised by hand. */
 export const FORKS = [
   { key: 'hitl', repo: 'metadataApp', base: 'main',
-    what: 'HITL sign-offs, written to 2i_HITL/*.csv' },
+    what: 'HITL sign-offs, and the workflows a run is started from' },
   { key: 'assetManagement', repo: 'asset-management', base: 'master',
     what: 'position corrections to the deployment sheets' },
   { key: 'deployments', repo: 'deployments', base: 'main',
@@ -124,6 +124,13 @@ export const useAuth = defineStore('auth', () => {
   /** Ready to sign off, as opposed to merely signed in. */
   const canSignOff = computed(() => signedIn.value && initials.value.length >= 2)
 
+  /** Where a run is started. The same repository the sign-offs go to: it holds
+   *  the workflows and the parameter files, so a run verifies against the
+   *  parameters the reviewer actually has. */
+  const workflowRepo = computed(() => forkFor('hitl'))
+  const workflowRef = FORKS.find((fork) => fork.key === 'hitl')!.base
+
   return { token, user, forks, initials, status, error, signedIn, canSignOff,
+           workflowRepo, workflowRef,
            signIn, signOut, restore, forkFor, setFork, setInitials }
 })

@@ -5,9 +5,11 @@ const API = 'https://api.github.com/repos'
 /** A regular file, as git spells it in a tree entry. */
 const FILE_MODE = '100644'
 
-function headers(token: string) {
+export function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
 }
+
+const headers = authHeaders
 
 /** A file as the fork currently holds it. Returns null when the fork does not
  *  have it — a fresh fork of a repository that never had the file. */

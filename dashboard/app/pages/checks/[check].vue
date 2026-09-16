@@ -37,7 +37,15 @@ const check = computed(() => store.report?.checks[route.params.check as string])
         </template>
       </u-alert>
 
-      <check-table :check="check" :check-key="definition.key" :columns="definition.columns" />
+      <!-- Keyed, so moving between checks builds a fresh table rather than
+           reusing one carrying the previous check's filters. -->
+      <check-table
+        :key="definition.key"
+        :check="check"
+        :check-key="definition.key"
+        :columns="definition.columns"
+        :facets="definition.facets"
+      />
     </template>
   </div>
 </template>

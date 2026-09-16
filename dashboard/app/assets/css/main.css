@@ -27,3 +27,224 @@
     @apply disabled:cursor-not-allowed;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The prototype's vocabulary, as plain CSS rather than components.
+
+   A check table can hold well over a thousand rows and several controls per
+   row. Every one of these could be a Nuxt UI component, and each would cost a
+   component instance on every re-render — which is what made the first build
+   stop responding. They are classes instead.
+   --------------------------------------------------------------------------- */
+:root {
+  --ok: #1f8a6c;
+  --ok-bg: #e6f4ef;
+  --ok-ink: #14604b;
+  --warn: #c98518;
+  --warn-bg: #fbf1de;
+  --warn-ink: #8a5a08;
+  --crit: #9e3226;
+  --crit-bg: #f8e9e6;
+  --crit-ink: #7d271d;
+  --na: #5f7f96;
+  --na-bg: #edf1f5;
+  --na-ink: #4a6373;
+  --line: #dde5ec;
+  --line-soft: #e9eff4;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---- status badge: a dot carries the severity, the word carries the verdict ---- */
+.b {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.b::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+.b.ok { background: var(--ok-bg); color: var(--ok-ink) }
+.b.ok::before { background: var(--ok) }
+.b.warn { background: var(--warn-bg); color: var(--warn-ink) }
+.b.warn::before { background: var(--warn) }
+.b.crit { background: var(--crit-bg); color: var(--crit-ink) }
+.b.crit::before { background: var(--crit) }
+.b.na { background: var(--na-bg); color: var(--na-ink) }
+.b.na::before { background: var(--na) }
+.b.plain { background: #eef3f7; color: #3c5464 }
+.b.plain::before { display: none }
+
+/* ---- segmented control: the severity filter, with its own counts in it ---- */
+.seg {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+.seg button {
+  padding: 5px 11px;
+  font-size: 12.5px;
+  color: #3c5464;
+  border-right: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+.seg button:last-child { border-right: 0 }
+.seg button:hover:not([aria-pressed='true']) { background: #f2f9fd }
+.seg button[aria-pressed='true'] {
+  background: var(--color-primary-600);
+  color: #fff;
+  font-weight: 600;
+}
+.seg button .c {
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0.75;
+  margin-left: 5px;
+}
+
+/* ---- a native select, styled to sit beside the segmented control ---- */
+.sel {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 26px 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff
+    url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%235f7286' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat right 8px center / 12px;
+  color: #16242e;
+  appearance: none;
+  max-width: 15rem;
+}
+.sel:hover { border-color: var(--color-primary-400) }
+
+/* ---- the severity stripe down the left edge of every row ---- */
+.stripe { padding: 0; width: 4px }
+.stripe i { display: block; width: 4px; height: 100%; min-height: 30px }
+
+/* ---- identifiers: the part that distinguishes the row is the part in bold ---- */
+.refdes {
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.refdes .dim { color: #5f7286 }
+.refdes b { font-weight: 600; color: #1b445f }
+
+/* ---- the rail ---- */
+.rail {
+  background: linear-gradient(180deg, #1f73a3 10%, #040f30 100%);
+}
+.rail .nav a {
+  border-left: 3px solid transparent;
+}
+.rail .nav a:hover { background: rgba(255, 255, 255, 0.07) }
+.rail .nav a.on {
+  background: rgba(255, 255, 255, 0.12);
+  border-left-color: #7fc4e8;
+  font-weight: 600;
+  color: #fff;
+}
+.rail .n {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #e8f2f8;
+}
+.rail .n.hot { background: #9e3226; color: #fff }
+.rail-label {
+  font-size: 10px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+}
+
+/* ---- the source bar: what a run would verify, and the control to start it ---- */
+.srcbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 24px;
+  background: var(--color-primary-900);
+  color: #dceaf3;
+  font-size: 12.5px;
+}
+/* Amber the moment it points somewhere other than production, so a run against
+   a branch can never be mistaken for a run against what is merged. */
+.srcbar.testing { background: #7a5209 }
+.srcbar .lbl {
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 700;
+}
+.srcbar .seg { border-color: rgba(255, 255, 255, 0.24); background: rgba(255, 255, 255, 0.08) }
+.srcbar .seg button { color: #cfe2ee; border-right-color: rgba(255, 255, 255, 0.18) }
+.srcbar .seg button:hover:not([aria-pressed='true']) { background: rgba(255, 255, 255, 0.1) }
+.srcbar .seg button[aria-pressed='true'] { background: #fff; color: var(--color-primary-900) }
+.srcbar .src { font-family: var(--mono); font-size: 11.5px; color: #bcd6e6 }
+.srcbar .src b { color: #fff; font-weight: 600 }
+.srcbar input,
+.srcbar select {
+  font: inherit;
+  font-size: 11.5px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+}
+.srcbar input { font-family: var(--mono) }
+.srcbar input::placeholder { color: rgba(255, 255, 255, 0.45) }
+.srcbar option { color: #16242e }
+.srcbar .go {
+  background: #fff;
+  color: var(--color-primary-900);
+  border-radius: 5px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.srcbar .go:disabled { opacity: 0.45 }
+
+/* ---- a run in flight ---- */
+.step {
+  display: flex;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: flex-start;
+}
+.step:last-child { border-bottom: 0 }
+.step .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line);
+  margin-top: 5px;
+  flex: none;
+}
+.step.done .dot { background: var(--ok) }
+.step.run .dot { background: var(--warn); animation: pulse 1s infinite }
+.step.bad .dot { background: var(--crit) }
+@keyframes pulse { 50% { opacity: 0.35 } }
+@media (prefers-reduced-motion: reduce) {
+  .step.run .dot { animation: none }
+}

@@ -4,34 +4,22 @@ Verification of Regional Cabled Array deployment metadata and vendor calibration
 files. Every deployed sensor should be correctly assigned, and every calibration
 file in `asset-management` should match the vendor original in `calibrationFiles`.
 
+A run produces one JSON report. A dashboard reads that report, ranks what it
+found by consequence, and lets a reviewer sign rows off — each sign-off going
+back to GitHub as a pull request on the reviewer's own fork.
+
 This package replaces the notebooks in the `metadataVerification` repository.
 The package is the source of truth; nothing is maintained in two places.
 
-## Layout
+## What is checked
 
-    src/rca_metadata/
-      calibrations.py   github cal file vs vendor original
-      vendor.py         one reader per vendor file format
-      rawarchive.py     listing the OOI raw data archive
-      serials.py        serial numbers out of raw files
-    params/             instrument list, coefficient map and constants
-    tests/
-
-## Parameter files
-
-`rawFileSN.csv` and `imageSN.csv` are cumulative: one row per deployment, with
-new rows appended each year after the cruise. They were previously a series of
-yearly snapshots (`rawFileSN_20250902.csv`, `imageSN_2025.csv`, ...), which meant
-the check only ever read the newest one and earlier years' curation went unused.
-
-Both are keyed on `referenceDesignator` + `deployNum`, not on year. An instrument
-can be deployed more than once in a season -- the shallow profilers usually are --
-so a year is not enough to identify a deployment, and looking one up by year
-silently returns whichever row came first.
-
-A blank `deployNum` means the row could not be tied to a single deployment: the
-reference designator has more than one deployment that year and nothing in the
-row separates them. Those rows need a person, and are the ones to resolve first.
+| check | question it answers |
+|---|---|
+| `calibrations` | does each repository calibration file match the vendor original? |
+| `deployments` | does each deployment have its calibration file, raw serial number and sign-off? |
+| `positions` | do the deployment sheets agree with the RCA position spreadsheet? |
+| `sensorBulk` | do serial numbers agree between the RCA instrument list and the OOI sensor bulk record? |
+| `deploymentSheets` | does a sheet entry name something no other record knows about? |
 
 ## Running a verification
 
@@ -39,7 +27,7 @@ row separates them. Those rows need a person, and are the ones to resolve first.
     verify-metadata --clones repos --out reports/report.json
 
 Repositories are named `owner/repo@ref`, and a clone under `--clones` is used
-when it is there. The two read paths give the same answers -- a clone is simply
+when it is there. The two read paths give the same answers — a clone is simply
 far cheaper, because the calibration comparison probes the filesystem for vendor
 files and would otherwise pull down ~1,300 of them over the wire.
 
@@ -54,29 +42,152 @@ whether a change is safe:
     compare-metadata reports/baseline.json reports/report.json
 
 Every comparison says whether it can be trusted. A row can move because the data
-changed or because the *check* changed -- fixing the silent-pass bug moved 114
-rows with nothing in the repositories moving at all -- so two runs produced by
+changed or because the *check* changed — fixing the silent-pass bug moved 114
+rows with nothing in the repositories moving at all — so two runs produced by
 different versions of the checks are refused rather than diffed.
+
+A run must also record the commit of every repository it read, and a comparison
+is refused when one does not. The ref is not enough: `master` today and `master`
+next season are different data, so a moved row could not be attributed to either.
+A directory copied rather than cloned has no `.git` to ask, which is exactly how
+two runs came to be diffed while neither recorded which asset-management it had
+seen — the commit now reads `UNKNOWN` rather than coming back empty.
+
+## The dashboard
+
+A Nuxt 4 single-page app that reads a published report. No backend: the report
+is a file it fetches, and everything else happens in the browser.
+
+    cd dashboard
+    npm install
+    npm run dev
+
+**Node 22 or newer is required** — the build fails on older versions, and the
+typecheck cannot run at all. To point it at a report other than the default
+`/reports/latest.json`:
+
+    NUXT_PUBLIC_REPORT_URL=/reports/report_20260915T162613Z.json npm run dev
+
+The overview opens on **what needs a person**: not a count of problems, but the
+situations behind them — *coefficients that disagree with the vendor*, *positions
+the spreadsheet contradicts*, *deployments an extraction would settle* — each
+with its count and a link that opens the check already filtered to exactly those
+rows. The count and the table it opens are the same filter, so they cannot drift
+apart. Below it, deployments by the year they went in the water, split by
+severity, which is where a bad season shows up as a shape rather than a number.
+
+The other views: one per check, ranked worst first; **Changes**, the diff between
+two runs when a run was given a baseline; **Reference designators**, the list the
+run saw; and **Sign-offs**, the queue of decisions waiting to be proposed. The run
+stamp at the top of every page names the run being read — nothing refreshes on
+its own, so a report older than a season is marked stale rather than left to look
+current.
+
+A filtered table is a URL. Sending someone
+`/checks/calibrations?instrument=NUTNRA&vendorMatch=MISMATCH` sends them the view,
+not instructions for reproducing it.
+
+Opening a calibration row offers **the two files side by side** — the repository
+CSV and the vendor original, at the refs the run read rather than at whatever the
+branches hold now. The coefficients that disagree are marked on both sides and
+each pane scrolls to the first one. The vendor side is matched on the parsed
+number rather than its text, because the same value is written `1.022921e+003`
+in one file and `1022.921` in the other and the two share no substring at all.
+Nothing is marked on the vendor side for a `CONSTANT_MISMATCH`: the value came
+from `params/coefficientConstants.csv` and is not in the vendor file to point at.
+A PDF-only vendor calibration is left for a person to read.
+
+A check opens on its queue — problems and rows needing a person — rather than on
+everything, so a check with 1,558 agreeing rows does not bury the 105 that do
+not. The segmented control at the top switches that, and carries the count for
+each severity so the distribution is visible without changing anything.
+
+Beside it are dropdowns over the columns worth narrowing by: instrument and
+comparison result for calibrations, site and year for deployments and positions,
+verdict for the rest. Their options come from the rows in the report rather than
+from a list in the code, so a new instrument or a new verdict appears on its own.
+Each option carries a count measured against every *other* active filter, so
+narrowing one does not leave the numbers beside the alternatives stale.
+
+Checks with more than 50 rows are paged. The report is around 2 MB, which gzips
+to roughly 74 KB over the wire.
+
+## Signing in, and signing off
+
+Sign-offs are recorded in `2i_HITL/*.csv` — the team's record of who checked
+what. Writing to them needs a GitHub token, entered under **Settings**:
+
+1. Create a [fine-grained token](https://github.com/settings/personal-access-tokens/new).
+2. Under **Repository access**, select only *your own forks* of `metadataApp`,
+   `asset-management` and `deployments`.
+3. Under **Permissions**, set **Contents** and **Pull requests** to read and write.
+4. On your `metadataApp` fork only, also set **Actions** to read and write. That is
+   what lets you start a run from the dashboard; nothing else needs it.
+
+Nothing else is needed — no organisation access, and no permission on any
+upstream repository. The token is kept in the browser's local storage, is sent to
+`api.github.com` and nowhere else, and is revalidated rather than trusted when a
+session is restored.
+
+Set your initials too: the HITL sheets identify reviewers by initials (`KB,WR`),
+not by GitHub login.
+
+Clearing or flagging a row queues a decision. Submitting the queue opens **one**
+pull request carrying the whole batch, against **your own fork**. You raise the
+onward pull request to the shared repository by hand — a person decides when a
+batch is worth proposing to everyone else.
+
+## Starting a run from the dashboard
+
+The bar across the top says what a run would verify. **Production** is what has
+been merged; **Testing** takes a repository and a ref, and optionally a baseline
+to compare against — the pre-cruise check, without leaving for the Actions tab.
+The bar turns amber the moment it points anywhere other than production, so a
+run against a branch cannot be mistaken for a run against what is merged.
+
+Starting one dispatches `verify.yaml` **in your own fork of this repository**,
+so it runs against the parameter files you have. The run is then followed in a
+tray, step by step. Closing the tray stops following the run; it does not stop
+the run.
+
+Nothing on screen changes when a run finishes. The report is a file, and it is
+only replaced if the run was told to publish — which needs the bucket and the
+AWS credentials below. Reload from the tray once it has.
+
+Serial extraction is deliberately not here. It cannot complete without a person
+in the middle, so a button implying otherwise would be a lie; run it by hand
+until that changes.
 
 ## Publishing the generated files
 
 Three products are generated rather than checked. Each is written to disk, and
-proposed to **your own fork** when you name one -- never to a shared repository.
-The onward pull request is raised by hand.
+proposed to **your own fork** when you name one — never to a shared repository.
 
     publish-metadata history --fork you/deployments
     publish-metadata seasons --year 2026
     publish-metadata positions --fork you/asset-management --node-fork you/deployments
 
-The same run happens in CI through `.github/workflows/verify.yaml`, on
-`workflow_dispatch` only. There is no schedule: a run is an event someone
-chooses, usually once a season after the cruise, and occasionally to check a
-branch before it merges.
+Positions need two forks because instrument sheets live in `asset-management`
+and node deployments live in `deployments`; a single combined write would file
+half of them into the wrong sheet.
 
-## Running the tests
+## In CI
 
-    pip install -e ".[test]"
-    pytest
+`.github/workflows/verify.yaml` runs the checks on `workflow_dispatch` only.
+There is no schedule: a run is an event someone chooses, usually once a season
+after the cruise, and occasionally to check a branch before it merges. Inputs
+select the asset-management repository and ref, an optional `baseline_ref` to
+compare against, and whether to publish to S3. The report is kept as a build
+artifact either way, so a run can always be read back.
+
+`.github/workflows/dashboard.yaml` builds the site, with typecheck and tests
+blocking. Deployment is opt-in through its `deploy` input.
+
+Both write to one bucket, `secrets.SITE_BUCKET`: the site at the root, the runs
+under `reports/`. They share an origin because the dashboard fetches its report
+with a relative URL — served from elsewhere, the site loads and then finds
+nothing to show. `reports/index.json` lists every published run, which is what
+lets the dashboard open an earlier one.
 
 ## The run report
 
@@ -97,6 +208,9 @@ Every row carries two things the dashboard should not have to work out itself:
   severity. A sign-off outranks a failing check, but the failing check stays
   visible on the row: *cleared, calibration noted*, never a plain pass.
 
+Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
+happily and neither is valid JSON, which a browser refuses to parse.
+
 ## Verdicts
 
 A calibration comparison returns a verdict and the differences behind it:
@@ -114,6 +228,56 @@ A calibration comparison returns a verdict and the differences behind it:
 Comparison is exact — there is no tolerance. Where a vendor file publishes fewer
 significant figures than the github csv carries, that gap is a transcription to
 fix in the data, not noise to absorb in code.
+
+## Parameter files
+
+`rawFileSN.csv` and `imageSN.csv` are cumulative: one row per deployment, with
+new rows appended each year after the cruise. They were previously a series of
+yearly snapshots (`rawFileSN_20250902.csv`, `imageSN_2025.csv`, ...), which meant
+the check only ever read the newest one and earlier years' curation went unused.
+
+Both are keyed on `referenceDesignator` + `deployNum`, not on year. An instrument
+can be deployed more than once in a season — the shallow profilers usually are —
+so a year is not enough to identify a deployment, and looking one up by year
+silently returns whichever row came first.
+
+A blank `deployNum` means the row could not be tied to a single deployment: the
+reference designator has more than one deployment that year and nothing in the
+row separates them. Those rows need a person, and are the ones to resolve first.
+
+## Layout
+
+    src/rca_metadata/
+      run.py            one verification run, all five checks
+      checks.py         the deployment, sensor-bulk and sheet checks
+      calibrations.py   github cal file vs vendor original
+      positions.py      deployment sheets vs the position spreadsheet
+      vendor.py         one reader per vendor file format
+      loading.py        reading the repositories and the parameter files
+      sources.py        a repository at a ref, local clone or GitHub API
+      report.py         the run report contract, and severity
+      compare.py        two reports into what moved between them
+      history.py        deployment history and the season lists
+      publish.py        proposing generated files as a pull request
+      rawarchive.py     listing the OOI raw data archive
+      serials.py        serial numbers out of raw files
+      cli.py            the four entry points
+    dashboard/          the Nuxt SPA
+    params/             instrument list, coefficient map and constants
+    2i_HITL/            reviewer sign-off sheets
+    inputs/             the RCA position spreadsheet drops
+    tests/
+
+## Running the tests
+
+    pip install -e ".[test]"
+    pytest
+
+    cd dashboard && npm test
+
+The dashboard tests cover the code that rewrites the HITL sheets, against the
+real 380-row calibration sheet. A bug there corrupts years of sign-offs, and the
+first version of it would have rewritten every line of the file on every commit.
 
 ## Reports predating the correctness fixes are not a baseline
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isText } from '~/files'
 import { HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
@@ -37,6 +38,15 @@ const notes = computed(() => String(row.HITLnotes ?? '').trim())
 
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
+
+/** Reading a mismatch means reading both files. Offered only when there is a
+ *  vendor original that can be put on screen — a PDF is on file but cannot. */
+const comparable = computed(
+  () =>
+    check === 'calibrations' &&
+    ((row.vendorFiles as string[] | undefined) ?? []).some(isText),
+)
+const comparing = ref(false)
 </script>
 
 <template>
@@ -83,6 +93,13 @@ const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null)
       </table>
     </div>
 
+    <div v-if="comparable">
+      <u-button size="xs" icon="i-lucide-columns-2" @click="comparing = true">
+        View files side by side
+      </u-button>
+    </div>
+    <side-by-side v-if="comparing" :row="row" @close="comparing = false" />
+
     <div v-if="row.sourceRow" class="text-gray-600">
       Position taken from row {{ row.sourceRow }} of the RCA position spreadsheet.
     </div>
@@ -92,7 +109,7 @@ const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null)
       <p class="text-gray-700">{{ notes }}</p>
     </div>
 
-    <div v-if="!links.length && !differences.length && !notes && !row.sourceRow" class="text-gray-500">
+    <div v-if="!links.length && !differences.length && !notes && !row.sourceRow && !comparable" class="text-gray-500">
       Nothing further recorded for this row.
     </div>
 

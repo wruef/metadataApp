@@ -142,13 +142,21 @@ def test_aSourceRecordsWhatItsRefResolvedTo():
     assert len(described['commit']) == 40
 
 
-def test_aSourceReadOverTheApiHasNoLocalCommit():
+def test_anUnresolvedCommitSaysUnknownRatherThanNothing():
+    """Read over the API, or from a directory copied rather than cloned,
+    there is nothing to ask for a commit. That has to read as unknown, not
+    as absent: absent looked fine, and two runs were compared while neither
+    recorded which asset-management they had read."""
     from rca_metadata.report import describeSource
 
-    class Source:
+    class NoCheckout:
         repo, ref, local = 'o/r', 'master', None
 
-    assert describeSource(Source())['commit'] is None
+    class NotAClone:
+        repo, ref, local = 'o/r', 'master', '/tmp'
+
+    assert describeSource(NoCheckout())['commit'] == 'UNKNOWN'
+    assert describeSource(NotAClone())['commit'] == 'UNKNOWN'
 
 
 ## --- the report has to be readable by something other than python ---

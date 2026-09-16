@@ -16,3 +16,5 @@ dashboard/node_modules/
 dashboard/.nuxt/
 dashboard/.output/
 dashboard/public/reports/
+# symlink nuxi generate leaves behind; "dist/" does not match a symlink
+dashboard/dist

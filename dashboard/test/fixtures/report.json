@@ -1,0 +1,1986 @@
+{
+ "schemaVersion": 1,
+ "runAt": "2026-09-15T16:26:13",
+ "checks": {
+  "sensorBulk": {
+   "rows": [
+    {
+     "assetID": "ATAPL-58319-00001",
+     "rcaSerials": null,
+     "bulkSerial": "5259243-0075",
+     "verdict": "MISSING_FROM_RCA_LIST",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58326-00001",
+     "rcaSerials": null,
+     "bulkSerial": "196",
+     "verdict": "MISSING_FROM_RCA_LIST",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58328-00006",
+     "rcaSerials": null,
+     "bulkSerial": "T1080",
+     "verdict": "MISSING_FROM_RCA_LIST",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATOSU-69825-00001",
+     "rcaSerials": [
+      "21498"
+     ],
+     "bulkSerial": "21498",
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "assetID": "ATOSU-69825-00002",
+     "rcaSerials": [
+      "18153"
+     ],
+     "bulkSerial": "18153",
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "assetID": "ATOSU-69825-00003",
+     "rcaSerials": [
+      "18919"
+     ],
+     "bulkSerial": "18919",
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-70248-00001",
+     "rcaSerials": [
+      "13115",
+      "12108",
+      "12110",
+      "70502"
+     ],
+     "bulkSerial": "P1-SUBC13115",
+     "verdict": "FORMAT_MATCH",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-70248-00002",
+     "rcaSerials": [
+      "13114",
+      "12099",
+      "12100",
+      "70501"
+     ],
+     "bulkSerial": "P2-SUBC13114",
+     "verdict": "FORMAT_MATCH",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATOSU-69827-00001",
+     "rcaSerials": [
+      "16P71176-7230"
+     ],
+     "bulkSerial": "16-7230",
+     "verdict": "FORMAT_MATCH",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-75664-00001",
+     "rcaSerials": [
+      "120177"
+     ],
+     "bulkSerial": null,
+     "verdict": "MISSING_FROM_SENSOR_BULK",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-75664-00002",
+     "rcaSerials": [
+      "120178"
+     ],
+     "bulkSerial": null,
+     "verdict": "MISSING_FROM_SENSOR_BULK",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-75664-00003",
+     "rcaSerials": [
+      "120179"
+     ],
+     "bulkSerial": null,
+     "verdict": "MISSING_FROM_SENSOR_BULK",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58693-00005",
+     "rcaSerials": [
+      "299470"
+     ],
+     "bulkSerial": "299464",
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "PIRSN-CAMPIA-00001",
+     "rcaSerials": [
+      "SUBC17758,SUBC18936"
+     ],
+     "bulkSerial": "1",
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "PIRSN-OVRSRA-00001",
+     "rcaSerials": [
+      "1"
+     ],
+     "bulkSerial": "101409",
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58338-00001",
+     "rcaSerials": [
+      "12881-04"
+     ],
+     "bulkSerial": "nan",
+     "verdict": "NO_BULK_SERIAL",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58338-00002",
+     "rcaSerials": [
+      "13003-01"
+     ],
+     "bulkSerial": "nan",
+     "verdict": "NO_BULK_SERIAL",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "assetID": "ATAPL-58340-00001",
+     "rcaSerials": [
+      "12881-01"
+     ],
+     "bulkSerial": "nan",
+     "verdict": "NO_BULK_SERIAL",
+     "severity": "unchecked",
+     "cleared": false
+    }
+   ],
+   "summary": {
+    "problem": 6,
+    "review": 6,
+    "unchecked": 3,
+    "ok": 3,
+    "cleared": 0,
+    "total": 18
+   }
+  },
+  "deploymentSheets": {
+   "rows": [
+    {
+     "refDes": "RS01SBPD-DP01A-06-DOSTAD104",
+     "deployNum": 1,
+     "value": "ATAPL-58320-00002",
+     "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03AXPS-PC03A-4A-DOSTAD303",
+     "deployNum": 1,
+     "value": "ATAPL-58320-00002",
+     "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-07-RASFLA301",
+     "deployNum": 1,
+     "value": "ATAPL-58340-00003",
+     "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
+     "severity": "problem",
+     "cleared": false
+    }
+   ],
+   "summary": {
+    "problem": 3,
+    "review": 0,
+    "unchecked": 0,
+    "ok": 0,
+    "cleared": 0,
+    "total": 3
+   }
+  },
+  "deployments": {
+   "rows": [
+    {
+     "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
+     "deployNum": 3,
+     "deployDate": "2018-07-05T00:00:00",
+     "deployEnd": null,
+     "AssetID": "ATAPL-67979-00003",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
+     "deployNum": 2,
+     "deployDate": "2016-07-26T23:10:00",
+     "deployEnd": "2018-07-05T00:00:00",
+     "AssetID": "ATAPL-67979-00009",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
+     "deployNum": 1,
+     "deployDate": "2014-07-24T23:20:00",
+     "deployEnd": "2016-07-26T00:00:00",
+     "AssetID": "ATAPL-67979-00002",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
+     "deployNum": 3,
+     "deployDate": "2026-08-15T18:26:00",
+     "deployEnd": null,
+     "AssetID": "ATCWK-67627-00012",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00012__20251207.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "-99999",
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "RAW_SN_POSSIBLE",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
+     "deployNum": 2,
+     "deployDate": "2025-08-24T00:55:00",
+     "deployEnd": "2026-08-15T01:48:00",
+     "AssetID": "ATCWK-67627-00009",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00009__20241115.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": 325,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS03INT2/MJ03D/CTDPFB307/2025/08/CTDPFB307_10.31.9.11_2101_20250824T0056_UTC.dat",
+     "rawFile_verify": "MATCH",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
+     "deployNum": 1,
+     "deployDate": "2024-09-01T03:36:00",
+     "deployEnd": "2025-08-23T17:58:00",
+     "AssetID": "ATCWK-67627-00012",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00012__20240203.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": 601,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS03INT2/MJ03D/CTDPFB307/2024/09/CTDPFB307_10.31.9.11_2101_20240901T0336_UTC.dat",
+     "rawFile_verify": "MATCH",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT2-MJ03D-05-OBSSPA305",
+     "deployNum": 1,
+     "deployDate": "2014-07-21T06:36:00",
+     "deployEnd": null,
+     "AssetID": "ATAPL-58331-00001",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with IP address ping",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-09-THSPHA301",
+     "deployNum": 2,
+     "deployDate": "2015-07-11T18:03:47",
+     "deployEnd": "2015-07-12T18:00:00",
+     "AssetID": "ATAPL-58342-00003",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with OEK deployment notes",
+     "calFile": "ATAPL-58342-00003__20150711.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-09-THSPHA301",
+     "deployNum": 1,
+     "deployDate": "2014-09-27T03:44:00",
+     "deployEnd": "2015-07-11T18:00:00",
+     "AssetID": "ATAPL-58342-00002",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with post-recovery logs",
+     "calFile": "ATAPL-58342-00002__20140927.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-07-RASFLA301",
+     "deployNum": 8,
+     "deployDate": "2022-08-13T20:16:00",
+     "deployEnd": "2023-09-04T11:52:00",
+     "AssetID": "ATAPL-58340-00002",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "ATAPL-58340-00002",
+     "image_verify": "MATCH",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
+     "deployNum": 7,
+     "deployDate": "2026-08-13T18:17:00",
+     "deployEnd": null,
+     "AssetID": "ATCWK-67627-00008",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00008__20251207.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "-99999",
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "RAW_SN_POSSIBLE",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03CCAL-MJ03F-12-CTDPFB305",
+     "deployNum": 7,
+     "deployDate": "2026-08-14T15:49:00",
+     "deployEnd": null,
+     "AssetID": "ATCWK-67627-00013",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00013__20251204.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "-99999",
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "RAW_SN_POSSIBLE",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
+     "deployNum": 8,
+     "deployDate": "2022-08-13T03:30:00",
+     "deployEnd": "2025-08-19T14:12:00",
+     "AssetID": "ATAPL-67653-00001",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATAPL-67653-00001__20150711.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
+     "deployNum": 7,
+     "deployDate": "2021-08-30T02:44:00",
+     "deployEnd": "2022-08-12T17:44:00",
+     "AssetID": "ATAPL-67653-00002",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATAPL-67653-00002__20160727.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
+     "deployNum": 6,
+     "deployDate": "2020-08-08T00:46:00",
+     "deployEnd": "2021-08-29T02:12:00",
+     "AssetID": "ATAPL-67653-00001",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATAPL-67653-00001__20150711.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03ECAL-MJ03E-09-HYDLFA304",
+     "deployNum": 1,
+     "deployDate": "2014-07-23T22:50:02",
+     "deployEnd": null,
+     "AssetID": "ATAPL-58693-00002",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with IP address ping",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03ECAL-MJ03E-08-OBSSPA304",
+     "deployNum": 1,
+     "deployDate": "2013-07-26T23:57:57",
+     "deployEnd": null,
+     "AssetID": "ATAPL-58331-00006",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with IP address ping",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPS-SF03A-4A-NUTNRA301",
+     "deployNum": 2,
+     "deployDate": "2015-07-09T04:16:00",
+     "deployEnd": "2016-07-14T00:00:00",
+     "AssetID": "ATAPL-68020-00007",
+     "HITLstatus": "Clear",
+     "HITLnotes": "deployment sheet is correct; script pulled old file",
+     "calFile": "ATAPL-68020-00007__20150709.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": 379,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS03AXPS/SF03A/NUTNRA301/2015/07/NUTNRA301_10.31.3.206_2101_20150708T0000_UTC.dat",
+     "rawFile_verify": "MISMATCH: raw: 379: ATAPL-68020-00002",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPS-PC03A-08-HYDBBA303",
+     "deployNum": 5,
+     "deployDate": "2019-06-14T13:26:00",
+     "deployEnd": "2020-08-04T18:59:10",
+     "AssetID": "ATAPL-58324-00009",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with IP address ping",
+     "calFile": "ATAPL-58324-00009__20150709.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPS-PC03A-06-VADCPA301",
+     "deployNum": 3,
+     "deployDate": "2016-07-14T21:18:00",
+     "deployEnd": "2017-07-30T14:00:00",
+     "AssetID": "ATAPL-58345-00006",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with post-recovery logs",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
+     "deployNum": 4,
+     "deployDate": "2018-07-26T00:00:00",
+     "deployEnd": "2019-07-03T06:37:00",
+     "AssetID": "ATAPL-58320-00010",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with deployment logs, instrument deployment and refurb records, DP team notes",
+     "calFile": "ATAPL-58320-00010__20170301.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
+     "deployNum": 1,
+     "deployDate": "2014-08-09T21:00:00",
+     "deployEnd": "2015-07-26T14:11:08",
+     "AssetID": "ATAPL-58320-00001",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with deployment logs and images",
+     "calFile": "ATAPL-58320-00001__20121219.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
+     "deployNum": 6,
+     "deployDate": "2020-08-19T12:00:00",
+     "deployEnd": "2021-08-27T05:00:00",
+     "AssetID": "ATAPL-58346-00004",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": 1148,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS03AXPD/PD03A/eng_data/2020/08/19/sernums_hi-res_551_20200819T181153_UTC.txt",
+     "rawFile_verify": "MATCH",
+     "imageAssetID": "ATAPL-58346-00004",
+     "image_verify": "MATCH",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
+     "deployNum": 4,
+     "deployDate": "2018-07-26T00:00:00",
+     "deployEnd": "2019-07-03T06:37:00",
+     "AssetID": "ATAPL-58346-00004",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with deployment logs, instrument deployment and refurb records, DP team notes",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
+     "deployNum": 3,
+     "deployDate": "2017-08-23T09:30:00",
+     "deployEnd": "2018-07-26T00:00:00",
+     "AssetID": "ATAPL-58346-00005",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with deployment logs, instrument deployment and refurb records, DP team notes",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03AXBS-LJ03A-12-DOSTAD301",
+     "deployNum": 1,
+     "deployDate": "2014-08-07T17:45:00",
+     "deployEnd": "2015-06-13T00:00:00",
+     "AssetID": "ATAPL-58320-00003",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03AXBS-LJ03A-09-HYDBBA302",
+     "deployNum": 3,
+     "deployDate": "2016-07-12T00:00:00",
+     "deployEnd": "2017-07-31T01:00:00",
+     "AssetID": "ATOSU-58324-00016",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "noValidCalFile",
+     "calFile_verify": "NO_VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
+     "deployNum": 6,
+     "deployDate": "2025-08-20T11:34:00",
+     "deployEnd": "2026-08-13T12:18:00",
+     "AssetID": "ATCWK-67627-00010",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATCWK-67627-00010__20241205.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": 326,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS03ECAL/MJ03E/CTDPFB306/2025/08/CTDPFB306_10.31.10.12_2101_20250820T0000_UTC.dat",
+     "rawFile_verify": "MATCH",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
+     "deployNum": 5,
+     "deployDate": "2019-07-03T20:30:00",
+     "deployEnd": "2020-01-17T20:05:00",
+     "AssetID": "ATAPL-58320-00001",
+     "HITLstatus": "Clear",
+     "HITLnotes": "verified with deployment logs, instrument deployment and refurb records, DP team notes",
+     "calFile": "ATAPL-58320-00001__20181111.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": -99999,
+     "firstRawFile": "none",
+     "rawFile_verify": "NO_FILE",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "refDes": "RS01SLBS-MJ01A-06-PRESTA101",
+     "deployNum": 1,
+     "deployDate": "2014-09-13T00:00:01",
+     "deployEnd": "2018-06-26T10:00:00",
+     "AssetID": "ATAPL-67639-00004",
+     "HITLstatus": "Clear",
+     "HITLnotes": "put on seafloor in 2013 but not plugged in until 2014; deployment sheet is correct",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": 0,
+     "firstRawFile": "https://rawdata.oceanobservatories.org/files/RS01SLBS/MJ01A/PRESTA101/2014/09/PRESTA101_10.33.2.6_2101_20140912T2300_UTC.dat",
+     "rawFile_verify": "MATCH",
+     "imageAssetID": "undef",
+     "image_verify": "NAN",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-09-TRHPHA302",
+     "deployNum": 1,
+     "deployDate": "2023-09-05T15:24:00",
+     "deployEnd": "2026-08-15T01:46:00",
+     "AssetID": "ATAPL-67653-00002",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "ATAPL-67653-00002__20160727.csv",
+     "calFile_verify": "VALID_FILE_CAL_OLDER_THAN_15MONTHS",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": null,
+     "image_verify": "MISMATCH",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-07-RASFLA301",
+     "deployNum": 9,
+     "deployDate": "2023-09-05T01:47:00",
+     "deployEnd": "2024-08-31T01:09:00",
+     "AssetID": "ATAPL-58340-00001",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": null,
+     "image_verify": "MISMATCH",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
+     "deployNum": 9,
+     "deployDate": "2023-09-05T01:47:00",
+     "deployEnd": "2024-08-31T01:09:00",
+     "AssetID": "ATAPL-58338-00001",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "ATAPL-58338-00001",
+     "image_verify": "MATCH",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
+     "deployNum": 8,
+     "deployDate": "2022-08-13T20:16:00",
+     "deployEnd": "2023-09-04T11:52:00",
+     "AssetID": "ATAPL-58338-00003",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "ATAPL-58338-00003",
+     "image_verify": "MATCH",
+     "verificationStatus": "VERIFIED",
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "refDes": "RS03INT1-MJ03C-05-CAMDSB303",
+     "deployNum": 7,
+     "deployDate": "2023-09-05T13:37:00",
+     "deployEnd": "2024-08-12T16:31:00",
+     "AssetID": "ATAPL-78437-00006",
+     "HITLstatus": "NA",
+     "HITLnotes": "",
+     "calFile": "undef",
+     "calFile_verify": "none",
+     "calibrationRequired": false,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": "ATAPL-70101-00022",
+     "image_verify": "MISMATCH",
+     "verificationStatus": "NOT_VERIFIED",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-10-PHSENH110",
+     "deployNum": 1,
+     "deployDate": "2025-08-28T15:17:00",
+     "deployEnd": "2026-08-09T19:27:00",
+     "AssetID": "ATAPL-91990-00003",
+     "HITLstatus": "Clear",
+     "HITLnotes": "manually verified by instrument team",
+     "calFile": "ATAPL-91990-00003__20240819.csv",
+     "calFile_verify": "VALID_FILE",
+     "calibrationRequired": true,
+     "rawSN": "undef",
+     "firstRawFile": "undef",
+     "rawFile_verify": "NAN",
+     "imageAssetID": null,
+     "image_verify": "MISMATCH",
+     "verificationStatus": "VERIFIED",
+     "severity": "problem",
+     "cleared": true
+    }
+   ],
+   "summary": {
+    "problem": 11,
+    "review": 13,
+    "unchecked": 12,
+    "ok": 0,
+    "cleared": 15,
+    "total": 36
+   }
+  },
+  "positions": {
+   "rows": [
+    {
+     "refDes": "CE02SHBP-LJ01D-05-ADCPTB104",
+     "deployNum": 1,
+     "deployYear": 2014,
+     "positionName": "LJ01D",
+     "resolution": "YEAR",
+     "sourceRow": 241,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
+     "deployNum": 1,
+     "deployYear": 2014,
+     "positionName": "LJ01D",
+     "resolution": "YEAR",
+     "sourceRow": 241,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
+     "deployNum": 1,
+     "deployYear": 2014,
+     "positionName": "LJ01D",
+     "resolution": "YEAR",
+     "sourceRow": 241,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-05-ADCPTB104",
+     "deployNum": 13,
+     "deployYear": 2026,
+     "positionName": "LJ01D",
+     "resolution": "PRIOR",
+     "sourceRow": 252,
+     "differences": [
+      {
+       "field": "lat",
+       "current": 44.637213,
+       "expected": 44.637184
+      },
+      {
+       "field": "lon",
+       "current": -124.305724,
+       "expected": -124.305648
+      }
+     ],
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
+     "deployNum": 13,
+     "deployYear": 2026,
+     "positionName": "LJ01D",
+     "resolution": "PRIOR",
+     "sourceRow": 252,
+     "differences": [
+      {
+       "field": "lat",
+       "current": 44.637213,
+       "expected": 44.637184
+      },
+      {
+       "field": "lon",
+       "current": -124.305724,
+       "expected": -124.305648
+      }
+     ],
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
+     "deployNum": 13,
+     "deployYear": 2026,
+     "positionName": "LJ01D",
+     "resolution": "PRIOR",
+     "sourceRow": 252,
+     "differences": [
+      {
+       "field": "lat",
+       "current": 44.637213,
+       "expected": 44.637184
+      },
+      {
+       "field": "lon",
+       "current": -124.305724,
+       "expected": -124.305648
+      }
+     ],
+     "verdict": "MISMATCH",
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "refDes": "CE02SHBP-MJ01C-08-CAMDSB107",
+     "deployNum": 4,
+     "deployYear": 2017,
+     "positionName": "CAMDSB107",
+     "resolution": "PRIOR",
+     "sourceRow": 39,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
+     "deployNum": 1,
+     "deployYear": 2014,
+     "positionName": "LJ01A",
+     "resolution": "HITL",
+     "sourceRow": 219,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
+     "deployNum": 2,
+     "deployYear": 2015,
+     "positionName": "LJ01A",
+     "resolution": "HITL",
+     "sourceRow": 220,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "refDes": "RS01SUM2-MJ01B-05-CAMDSB103",
+     "deployNum": 4,
+     "deployYear": 2018,
+     "positionName": "CAMDSB103",
+     "resolution": "HITL",
+     "sourceRow": 18,
+     "differences": [],
+     "verdict": "MATCH",
+     "severity": "ok",
+     "cleared": false
+    }
+   ],
+   "summary": {
+    "problem": 3,
+    "review": 0,
+    "unchecked": 0,
+    "ok": 7,
+    "cleared": 0,
+    "total": 10
+   }
+  },
+  "calibrations": {
+   "rows": [
+    {
+     "fileName": "ATOSU-69825-00001__20150803.csv",
+     "instrument": "ADCPSI",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "fileName": "ATOSU-69825-00002__20140815.csv",
+     "instrument": "ADCPSI",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "fileName": "ATOSU-69825-00002__20160722.csv",
+     "instrument": "ADCPSI",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-69827-10004__20240616.csv",
+     "instrument": "CTDBPN",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDBPN",
+     "vendorFiles": [
+      "ATAPL-69827-10004__20240616.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-69827-10004__20240616",
+       "coefficient": "CC_C1",
+       "github": 1022.922,
+       "expected": 1022.921,
+       "difference": 0.0009999999999763531,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-69827-10004__20241109.csv",
+     "instrument": "CTDBPN",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDBPN",
+     "vendorFiles": [
+      "ATAPL-69827-10004__20241109.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "COMPARED",
+     "differences": [],
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-69827-10005__20240609.csv",
+     "instrument": "CTDBPN",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDBPN",
+     "vendorFiles": [
+      "ATAPL-69827-10005__20240609.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "COMPARED",
+     "differences": [],
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-69827-10005__20260306.csv",
+     "instrument": "CTDBPN",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDBPN",
+     "vendorFiles": [
+      "ATAPL-69827-10005__20260306.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "COMPARED",
+     "differences": [],
+     "severity": "ok",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-66662-00002__20160303.csv",
+     "instrument": "CTDPFA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDPFA",
+     "vendorFiles": [
+      "ATAPL-66662-00002__20160303.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "CONSTANT_MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-66662-00002__20160303",
+       "coefficient": "CC_offset",
+       "github": 4.13,
+       "expected": 0.0,
+       "difference": 4.13,
+       "source": "constant"
+      }
+     ],
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-66662-00008__20150412.csv",
+     "instrument": "CTDPFA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDPFA",
+     "vendorFiles": [
+      "ATAPL-66662-00008__20150412.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "CONSTANT_MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-66662-00008__20150412",
+       "coefficient": "CC_offset",
+       "github": -1.7,
+       "expected": 0.0,
+       "difference": -1.7,
+       "source": "constant"
+      }
+     ],
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-66662-00009__20150419.csv",
+     "instrument": "CTDPFA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDPFA",
+     "vendorFiles": [
+      "ATAPL-66662-00009__20150419.xmlcon"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "CONSTANT_MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-66662-00009__20150419",
+       "coefficient": "CC_offset",
+       "github": -5.24,
+       "expected": 0.0,
+       "difference": -5.24,
+       "source": "constant"
+      }
+     ],
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-67627-00001__20150423.csv",
+     "instrument": "CTDPFB",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDPFB",
+     "vendorFiles": [
+      "ATAPL-67627-00001__20150423.cal"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_pa0",
+       "github": 1.7333387,
+       "expected": 1.733339,
+       "difference": -2.9999999995311555e-07,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_pa1",
+       "github": 0.0157143164,
+       "expected": 0.01571432,
+       "difference": -3.5999999994928977e-09,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_pa2",
+       "github": -6.68779159e-10,
+       "expected": -6.687792e-10,
+       "difference": 4.1000000017205525e-17,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptca0",
+       "github": 524944.174,
+       "expected": 524944.2,
+       "difference": -0.025999999954365194,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptca1",
+       "github": 4.20704654,
+       "expected": 4.207047,
+       "difference": -4.599999998688986e-07,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptca2",
+       "github": 0.0333027516,
+       "expected": 0.03330275,
+       "difference": 1.6000000005456094e-09,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptempa0",
+       "github": -68.1250017,
+       "expected": -68.125,
+       "difference": -1.6999999985500835e-06,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptempa1",
+       "github": 49.854817,
+       "expected": 49.85482,
+       "difference": -2.9999999995311555e-06,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-67627-00001__20150423",
+       "coefficient": "CC_ptempa2",
+       "github": -0.0340818524,
+       "expected": -0.03408185,
+       "difference": -2.400000004287861e-09,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-67627-00005__20170307.csv",
+     "instrument": "CTDPFB",
+     "HITLstatus": "Clear",
+     "HITLnotes": "erroneous XMLCON file was sent by vendor; cals entered from PDF; vendor cannot locate correct XMLCON",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "CTDPFB",
+     "vendorFiles": [
+      "ATAPL-67627-00005__20170307.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATOSU-58694-00007__20200922.csv",
+     "instrument": "DOFSTA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOFSTA",
+     "vendorFiles": [
+      "ATOSU-58694-00007__20200922.cal",
+      "ATOSU-58694-00007__20200922.xml"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_frequency_offset",
+       "github": -0.5064574,
+       "expected": -0.4839777,
+       "difference": -0.022479699999999936,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_oxygen_signal_slope",
+       "github": 0.5022414,
+       "expected": 0.4520641,
+       "difference": 0.050177299999999925,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_residual_temperature_correction_factor_a",
+       "github": -0.003577813,
+       "expected": -0.004208362,
+       "difference": 0.0006305490000000002,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_residual_temperature_correction_factor_b",
+       "github": 0.0001487795,
+       "expected": 0.000190347,
+       "difference": -4.156750000000001e-05,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_residual_temperature_correction_factor_c",
+       "github": -2.488514e-06,
+       "expected": -2.901039e-06,
+       "difference": 4.125249999999999e-07,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-58694-00007__20200922",
+       "coefficient": "CC_voltage_offset",
+       "github": -0.5064574,
+       "expected": -0.4839777,
+       "difference": -0.022479699999999936,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-58320-00001__20121219.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": null,
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00001__20121219.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00001__20181111.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": null,
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00001__20181111.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00001__20201118.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": null,
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00001__20201118.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00001__20241208.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00001__20241208.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-58320-00003__20160302.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": "coefficients re-calculated by MIOs after erroneous vendor cals",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00004__20160302.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": "coefficients re-calculated by MIOs after erroneous vendor cals",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00004__20241208.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00004__20241208.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-58320-00005__20160302.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "Clear",
+     "HITLnotes": "coefficients re-calculated by MIOs after erroneous vendor cals",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-58320-00005__20260317.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATAPL-58320-00005__20260317.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-70110-00001__20130422.csv",
+     "instrument": "FLNTUA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "uses 2014 scatter dark counts",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "FLNTUA",
+     "vendorFiles": [
+      "ATAPL-70110-00001__20130422.dev"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-70110-00001__20130422",
+       "coefficient": "CC_dark_counts_volume_scatter",
+       "github": 48.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-70110-00001__20130422",
+       "coefficient": "CC_measurement_wavelength",
+       "github": 700.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-70110-00001__20130422",
+       "coefficient": "CC_scale_factor_volume_scatter",
+       "github": 1.871e-05,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-70110-00002__20131205.csv",
+     "instrument": "FLNTUA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "uses 2015 volume scatter calibration",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "FLNTUA",
+     "vendorFiles": [
+      "ATAPL-70110-00002__20131205.dev"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATAPL-70110-00002__20131205",
+       "coefficient": "CC_dark_counts_volume_scatter",
+       "github": 48.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-70110-00002__20131205",
+       "coefficient": "CC_measurement_wavelength",
+       "github": 700.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATAPL-70110-00002__20131205",
+       "coefficient": "CC_scale_factor_volume_scatter",
+       "github": 1.877e-05,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-70110-00003__20140129.csv",
+     "instrument": "FLNTUA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "uses 2015 volume scatter calibration",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "FLNTUA",
+     "vendorFiles": [
+      "ATAPL-70110-00003__20140129.dev",
+      "ATAPL-70110-00003__20140129.dev.lambda"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "COMPARED",
+     "differences": [],
+     "severity": "ok",
+     "cleared": true
+    },
+    {
+     "fileName": "ATOSU-70110-00007__20131205.csv",
+     "instrument": "FLNTUA",
+     "HITLstatus": "Clear",
+     "HITLnotes": "uses 2015 volume scatter calibration",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "FLNTUA",
+     "vendorFiles": [
+      "ATOSU-70110-00007__20131205.dev"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "MISMATCH",
+     "differences": [
+      {
+       "file": "ATOSU-70110-00007__20131205",
+       "coefficient": "CC_dark_counts_volume_scatter",
+       "github": 49.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-70110-00007__20131205",
+       "coefficient": "CC_measurement_wavelength",
+       "github": 700.0,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      },
+      {
+       "file": "ATOSU-70110-00007__20131205",
+       "coefficient": "CC_scale_factor_volume_scatter",
+       "github": 1.873e-05,
+       "expected": null,
+       "difference": null,
+       "source": "vendor"
+      }
+     ],
+     "severity": "problem",
+     "cleared": true
+    },
+    {
+     "fileName": "ATOSU-68020-00008__20170111.csv",
+     "instrument": "NUTNRA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "NUTNRA",
+     "vendorFiles": [
+      "ATOSU-68020-00008__20170111.cal"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NO_VENDOR_FILE",
+     "differences": [],
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-66645-00001__20110913.csv",
+     "instrument": "PARADA",
+     "HITLstatus": "Clear",
+     "HITLnotes": null,
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "PARADA",
+     "vendorFiles": [
+      "ATAPL-66645-00001__20110913.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-66645-00002__20140128.csv",
+     "instrument": "PARADA",
+     "HITLstatus": "Clear",
+     "HITLnotes": null,
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "PARADA",
+     "vendorFiles": [
+      "ATAPL-66645-00002__20140128.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": true
+    },
+    {
+     "fileName": "ATAPL-78452-00003__20241008.csv",
+     "instrument": "PARADA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "PARADA",
+     "vendorFiles": [
+      "ATAPL-78452-00003__20241008.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-78452-00004__20241008.csv",
+     "instrument": "PARADA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "PARADA",
+     "vendorFiles": [
+      "ATAPL-78452-00004__20241008.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-78452-00005__20241008.csv",
+     "instrument": "PARADA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "PARADA",
+     "vendorFiles": [
+      "ATAPL-78452-00005__20241008.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE1",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "PDF_NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-58341-00006__20170110.csv",
+     "instrument": "SPKIRA",
+     "HITLstatus": "NA",
+     "HITLnotes": " ",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "SPKIRA",
+     "vendorFiles": [
+      "ATAPL-58341-00006__20170110.cal"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NO_VENDOR_FILE",
+     "differences": [],
+     "severity": "problem",
+     "cleared": false
+    },
+    {
+     "fileName": "ATOSU-58320-00019__20150519.csv",
+     "instrument": "DOSTAD",
+     "HITLstatus": "NotClear",
+     "HITLnotes": "is 2015 using the correct foil coefficients...different than 2014?",
+     "calRepo_check": "MATCH",
+     "vendorDirectory": "DOSTAD",
+     "vendorFiles": [
+      "ATOSU-58320-00019__20150519.pdf"
+     ],
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NOTCOMPARED",
+     "differences": [],
+     "severity": "unchecked",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-68020-00001__20170202.csv",
+     "instrument": "NUTNRA",
+     "HITLstatus": "NotClear",
+     "HITLnotes": "should be 20170201??? sn234",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": false
+    },
+    {
+     "fileName": "ATAPL-68020-00002__20140927.csv",
+     "instrument": "NUTNRA",
+     "HITLstatus": "NotClear",
+     "HITLnotes": "different from 20131125...ship board cal? sn 379",
+     "calRepo_check": "NOMATCH",
+     "fileParse": "SUCCESS_TYPE2",
+     "serialNumber": "MATCH_SENSORBULK",
+     "duplicateCoeff": "NONE",
+     "vendorMatch": "NAN",
+     "severity": "review",
+     "cleared": false
+    }
+   ],
+   "summary": {
+    "problem": 8,
+    "review": 11,
+    "unchecked": 13,
+    "ok": 4,
+    "cleared": 16,
+    "total": 36
+   }
+  }
+ }
+}

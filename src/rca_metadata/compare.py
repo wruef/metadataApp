@@ -63,6 +63,14 @@ def comparability(baseline, current):
         reasons.append('the checks and parameter files are at different commits')
     if baseline.get('parameters', {}).get('dirty') or current.get('parameters', {}).get('dirty'):
         reasons.append('one of the runs had uncommitted changes')
+    ## The parameter commit says which checks ran; it says nothing about which
+    ## state of the repositories they ran against. 'master' today and 'master'
+    ## next season are different data, so a source whose commit was never
+    ## resolved makes a moved row unattributable just as surely.
+    for report in (baseline, current):
+        for name, source in (report.get('sources') or {}).items():
+            if isinstance(source, dict) and source.get('commit') in (None, 'UNKNOWN'):
+                reasons.append(f'a run does not record which commit of {name} it read')
     return {'comparable': not reasons, 'reasons': reasons}
 
 
