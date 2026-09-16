@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
 const { check, row } = defineProps<{ check: string; row: Row }>()
@@ -33,6 +34,9 @@ const links = computed(() => {
 })
 
 const notes = computed(() => String(row.HITLnotes ?? '').trim())
+
+/** Only two checks are signed off; the rest have no sheet to record it in. */
+const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
 </script>
 
 <template>
@@ -91,5 +95,7 @@ const notes = computed(() => String(row.HITLnotes ?? '').trim())
     <div v-if="!links.length && !differences.length && !notes && !row.sourceRow" class="text-gray-500">
       Nothing further recorded for this row.
     </div>
+
+    <sign-off v-if="sheet" :sheet="sheet" :row="row" />
   </div>
 </template>

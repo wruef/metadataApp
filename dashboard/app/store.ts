@@ -103,16 +103,31 @@ export const MOVEMENTS = [
   { key: 'changed', title: 'Changed otherwise', hint: 'same severity, different finding', tone: 'neutral' },
 ] as const
 
+export interface RunEntry {
+  name: string
+  runAt: string
+  parameters: { commit: string; dirty: boolean }
+  sources: Record<string, Source>
+  summary: Record<string, Record<string, number>>
+}
+
 export const useStore = defineStore('report', () => {
   const report = shallowRef<Report | null>(null)
   const comparison = shallowRef<Comparison | null>(null)
+  const runs = shallowRef<RunEntry[]>([])
+  /** null means whichever run is current. */
+  const selected = ref<string | null>(null)
   const status = ref<'loading' | 'ready' | 'error'>('loading')
   const error = ref('')
 
-  async function load() {
+  async function load(name?: string) {
     status.value = 'loading'
+    selected.value = name ?? null
     try {
-      const url = useRuntimeConfig().public.reportUrl as string
+      const config = useRuntimeConfig().public
+      const latest = config.reportUrl as string
+      // Runs sit beside the current one, so a name replaces the last segment.
+      const url = name ? latest.replace(/[^/]+$/, name) : latest
       const fetched = await $fetch<Report>(url)
       // A report that is not a report must say so. Fetching the wrong url
       // returns the page itself, and a truthy non-report renders as a blank
@@ -134,6 +149,12 @@ export const useStore = defineStore('report', () => {
         )
       } catch {
         comparison.value = null
+      }
+      // Absent until a run has been published, and never fatal.
+      try {
+        runs.value = await $fetch<RunEntry[]>(config.indexUrl as string)
+      } catch {
+        runs.value = []
       }
     } catch (caught) {
       error.value = caught instanceof Error ? caught.message : String(caught)
@@ -159,5 +180,5 @@ export const useStore = defineStore('report', () => {
     return `https://github.com/${source.repo}/blob/${source.ref}/${path}`
   }
 
-  return { report, comparison, status, error, load, checks, ageInDays, isStale, fileUrl }
+  return { report, comparison, runs, selected, status, error, load, checks, ageInDays, isStale, fileUrl }
 })

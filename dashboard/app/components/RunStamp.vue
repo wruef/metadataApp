@@ -17,6 +17,17 @@ const sources = computed(() =>
 
 const runAt = computed(() => (report.value ? new Date(report.value.runAt).toLocaleString() : ''))
 const days = computed(() => Math.round(store.ageInDays))
+
+/** Earlier runs, so a baseline can be reached rather than only the newest
+ *  report. Reports predating a fix to the checks are not comparable with later
+ *  ones, which is why each carries its own provenance. */
+const runOptions = computed(() => [
+  { label: 'Current run', value: '' },
+  ...store.runs.map((run) => ({
+    label: `${new Date(run.runAt).toLocaleString()} · ${run.name.replace(/^report_|\.json$/g, '')}`,
+    value: run.name,
+  })),
+])
 </script>
 
 <template>
@@ -26,7 +37,14 @@ const days = computed(() => Math.round(store.ageInDays))
     <div class="flex flex-wrap gap-x-8 gap-y-3 items-baseline px-5 py-4">
       <div>
         <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">Run</div>
-        <div class="font-medium">{{ runAt }}</div>
+        <div v-if="store.runs.length < 2" class="font-medium">{{ runAt }}</div>
+        <u-select
+          v-else
+          :model-value="store.selected ?? ''"
+          :items="runOptions"
+          class="min-w-64"
+          @update:model-value="(name: string) => store.load(name || undefined)"
+        />
       </div>
       <div v-for="source in sources" :key="source.name">
         <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">

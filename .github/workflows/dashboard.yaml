@@ -45,6 +45,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # Covers the code that rewrites the 2i-HITL sheets — the team's record of
+      # who checked what, where a bug corrupts years of sign-offs.
+      - name: Test
+        run: npm test
+
       # A static site: the report is a file it fetches, and there is no backend.
       # The report url is baked in at build time; the default is relative, which
       # is why the site and the reports share one bucket.

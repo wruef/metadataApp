@@ -48,6 +48,26 @@ files and would otherwise pull down ~1,300 of them over the wire.
       --calibration-files OOI-CabledArray/calibrationFiles@master \
       --clones repos
 
+Two runs can be compared, which is what turns a report into an answer about
+whether a change is safe:
+
+    compare-metadata reports/baseline.json reports/report.json
+
+Every comparison says whether it can be trusted. A row can move because the data
+changed or because the *check* changed -- fixing the silent-pass bug moved 114
+rows with nothing in the repositories moving at all -- so two runs produced by
+different versions of the checks are refused rather than diffed.
+
+## Publishing the generated files
+
+Three products are generated rather than checked. Each is written to disk, and
+proposed to **your own fork** when you name one -- never to a shared repository.
+The onward pull request is raised by hand.
+
+    publish-metadata history --fork you/deployments
+    publish-metadata seasons --year 2026
+    publish-metadata positions --fork you/asset-management --node-fork you/deployments
+
 The same run happens in CI through `.github/workflows/verify.yaml`, on
 `workflow_dispatch` only. There is no schedule: a run is an event someone
 chooses, usually once a season after the cruise, and occasionally to check a

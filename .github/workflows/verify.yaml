@@ -134,9 +134,16 @@ jobs:
         if: ${{ inputs.publish }}
         run: |
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
-          aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/report_$stamp.json"
-          aws s3 cp "$REPORT" "s3://${{ secrets.SITE_BUCKET }}/reports/latest.json"
+          bucket="s3://${{ secrets.SITE_BUCKET }}/reports"
+          aws s3 cp "$REPORT" "$bucket/report_$stamp.json"
+          aws s3 cp "$REPORT" "$bucket/latest.json"
+          # The index is what lets the dashboard offer an earlier run — a
+          # baseline has to be reachable, not just the newest report.
+          aws s3 cp "$bucket/index.json" existing-index.json || echo '[]' > existing-index.json
+          index-metadata --report "$REPORT" --name "report_$stamp.json" \
+            --index existing-index.json --out reports/index.json
+          aws s3 cp reports/index.json "$bucket/index.json"
           if [ -f "$COMPARISON" ]; then
-            aws s3 cp "$COMPARISON" "s3://${{ secrets.SITE_BUCKET }}/reports/comparison_$stamp.json"
-            aws s3 cp "$COMPARISON" "s3://${{ secrets.SITE_BUCKET }}/reports/comparison.json"
+            aws s3 cp "$COMPARISON" "$bucket/comparison_$stamp.json"
+            aws s3 cp "$COMPARISON" "$bucket/comparison.json"
           fi

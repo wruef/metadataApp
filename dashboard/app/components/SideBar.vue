@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useAuth } from '~/auth'
+import { useSignoff } from '~/signoff'
 import { CHECKS, useStore } from '~/store'
 
 const store = useStore()
+const auth = useAuth()
+const signoff = useSignoff()
 </script>
 
 <template>
@@ -50,6 +54,29 @@ const store = useStore()
     >
       <i class="fa-list fas w-4" />
       <span>Reference designators</span>
+    </nuxt-link>
+
+    <nuxt-link
+      v-if="signoff.count"
+      to="/queue"
+      class="flex gap-3 items-center px-3 py-2 rounded-md text-gray-100 text-sm hover:bg-primary-700"
+      active-class="bg-primary-700 font-medium"
+    >
+      <i class="fa-pen-to-square fas w-4" />
+      <span class="grow">Sign-offs</span>
+      <u-badge color="primary" variant="solid" size="sm">{{ signoff.count }}</u-badge>
+    </nuxt-link>
+
+    <!-- Who a sign-off would be attributed to, kept in sight rather than buried
+         in a settings page. -->
+    <nuxt-link
+      to="/settings"
+      class="flex gap-3 items-center mt-auto px-3 py-2 rounded-md text-gray-100 text-sm hover:bg-primary-700"
+      active-class="bg-primary-700 font-medium"
+    >
+      <img v-if="auth.user" :src="auth.user.avatarUrl" alt="" class="h-5 rounded-full w-5" >
+      <i v-else class="fa-right-to-bracket fas w-4" />
+      <span class="truncate">{{ auth.user?.login ?? 'Sign in' }}</span>
     </nuxt-link>
   </div>
 </template>
