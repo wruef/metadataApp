@@ -14,6 +14,12 @@ function toggle(index: number) {
   opened.value = opened.value === index ? null : index
 }
 
+/** A page at a time. A check can carry well over a thousand rows, and putting
+ *  them all in the DOM meant every click re-rendered the lot. A queue is worked
+ *  from the top by severity, so a page is how it is read anyway. */
+const PAGE_SIZE = 50
+const page = ref(1)
+
 const search = ref('')
 const chosen = ref<Severity[]>([])
 const clearedOnly = ref<'all' | 'cleared' | 'open'>('all')
@@ -29,6 +35,21 @@ const rows = computed(() => {
     )
     .filter((row) => !term || columns.some((column) => String(row[column] ?? '').toLowerCase().includes(term)))
     .sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
+})
+
+const pageCount = computed(() => Math.max(1, Math.ceil(rows.value.length / PAGE_SIZE)))
+const paged = computed(() => rows.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE))
+const firstShown = computed(() => (rows.value.length ? (page.value - 1) * PAGE_SIZE + 1 : 0))
+const lastShown = computed(() => Math.min(page.value * PAGE_SIZE, rows.value.length))
+
+/** Narrowing the filters can leave you past the end, and an open row on one page
+ *  is not the same row on another. */
+watch(rows, () => {
+  page.value = 1
+  opened.value = null
+})
+watch(page, () => {
+  opened.value = null
 })
 
 function cell(value: unknown) {
@@ -65,7 +86,10 @@ function label(column: string) {
         ]"
         class="min-w-44"
       />
-      <span class="text-gray-500 text-sm">{{ rows.length }} of {{ check.rows.length }} rows</span>
+      <span class="text-gray-500 text-sm">
+        Showing {{ firstShown }}–{{ lastShown }} of {{ rows.length }}
+        <span v-if="rows.length !== check.rows.length">filtered from {{ check.rows.length }}</span>
+      </span>
     </div>
 
     <div class="border border-gray-200 rounded-lg overflow-x-auto">
@@ -84,7 +108,7 @@ function label(column: string) {
           </tr>
         </thead>
         <tbody>
-          <template v-for="(row, index) in rows" :key="index">
+          <template v-for="(row, index) in paged" :key="index">
             <tr
               class="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
               :class="{ 'bg-gray-50': opened === index }"
@@ -106,13 +130,29 @@ function label(column: string) {
               </td>
             </tr>
           </template>
-          <tr v-if="!rows.length">
+          <tr v-if="!paged.length">
             <td :colspan="columns.length + 2" class="px-3 py-8 text-center text-gray-500">
               Nothing matches those filters.
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="pageCount > 1" class="flex gap-3 items-center justify-end">
+      <u-button size="sm" color="neutral" variant="subtle" :disabled="page === 1" @click="page--">
+        Previous
+      </u-button>
+      <span class="tabular-nums text-gray-600 text-sm">Page {{ page }} of {{ pageCount }}</span>
+      <u-button
+        size="sm"
+        color="neutral"
+        variant="subtle"
+        :disabled="page === pageCount"
+        @click="page++"
+      >
+        Next
+      </u-button>
     </div>
   </div>
 </template>
