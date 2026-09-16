@@ -1,0 +1,72 @@
+[
+ {
+  "name": "report_20260916T222547Z.json",
+  "runAt": "2026-09-16T15:25:28",
+  "parameters": {
+   "commit": "2b425b448ec3ae12b9e2665a9ad99e6034601f68",
+   "dirty": true
+  },
+  "sources": {
+   "assetManagement": {
+    "repo": "oceanobservatories/asset-management",
+    "ref": "master",
+    "local": "/private/tmp/claude-501/-Users-wruef-githubRepos-metadataApp/9217eeae-50f1-4587-be8d-0f1ed46d7b21/scratchpad/clones2/asset-management",
+    "commit": "ce3abce2452a3532c141ac41f37895cd1e177e10"
+   },
+   "calibrationFiles": {
+    "repo": "OOI-CabledArray/calibrationFiles",
+    "ref": "master",
+    "local": "/private/tmp/claude-501/-Users-wruef-githubRepos-metadataApp/9217eeae-50f1-4587-be8d-0f1ed46d7b21/scratchpad/clones2/calibrationFiles",
+    "commit": "2aa17b103ade4c3eadaa736679b6f0cc08875b7d"
+   },
+   "deployments": {
+    "repo": "OOI-CabledArray/deployments",
+    "ref": "main",
+    "local": "/private/tmp/claude-501/-Users-wruef-githubRepos-metadataApp/9217eeae-50f1-4587-be8d-0f1ed46d7b21/scratchpad/clones2/deployments",
+    "commit": "fc8873cc662457ceb8cbf0befe57bd8ad379db32"
+   }
+  },
+  "summary": {
+   "sensorBulk": {
+    "problem": 30,
+    "review": 101,
+    "unchecked": 4,
+    "ok": 307,
+    "cleared": 0,
+    "total": 442
+   },
+   "deploymentSheets": {
+    "problem": 26,
+    "review": 0,
+    "unchecked": 0,
+    "ok": 0,
+    "cleared": 0,
+    "total": 26
+   },
+   "deployments": {
+    "problem": 100,
+    "review": 756,
+    "unchecked": 473,
+    "ok": 84,
+    "cleared": 152,
+    "total": 1413
+   },
+   "positions": {
+    "problem": 105,
+    "review": 0,
+    "unchecked": 0,
+    "ok": 1558,
+    "cleared": 0,
+    "total": 1663
+   },
+   "calibrations": {
+    "problem": 77,
+    "review": 119,
+    "unchecked": 503,
+    "ok": 475,
+    "cleared": 362,
+    "total": 1174
+   }
+  }
+ }
+]

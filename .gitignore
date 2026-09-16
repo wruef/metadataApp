@@ -5,7 +5,13 @@ __pycache__/
 *.egg-info/
 .venv/
 tmp/
-reports/
+# Published runs are tracked -- they are what the dashboard serves, and keeping
+# them in git makes a run's provenance part of the history. A 2.1 MB report is
+# roughly 75 KB as a git object, so a decade of runs is under a megabyte.
+# Ad-hoc local output is not tracked.
+reports/report.json
+reports/comparison.json
+reports/baseline.json
 
 # session transcript carried over from metadataVerification
 *.jsonl

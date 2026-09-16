@@ -20,7 +20,7 @@ on:
         description: "optional: a second ref to compare against, e.g. master. Leave blank to skip."
         default: ""
       publish:
-        description: "upload the report to S3 for the dashboard"
+        description: "commit the report so the dashboard serves it"
         type: boolean
         default: false
 
@@ -29,17 +29,28 @@ env:
   REPORT: reports/report.json
   COMPARISON: reports/comparison.json
 
+# A published run commits to the default branch, which starts the Pages deploy.
+# Two runs publishing at once would race over that commit.
+concurrency:
+  group: verify-${{ inputs.publish }}
+  cancel-in-progress: false
+
 jobs:
   verify:
     name: Run all checks
     runs-on: ubuntu-latest
+    permissions:
+      # Publishing commits the report to this repository; nothing else writes.
+      contents: write
     steps:
       - name: Check out this repository
         uses: actions/checkout@v5
 
       # Cloned rather than read over the API: the calibration comparison probes
       # the filesystem for vendor files, so reading remotely would mean ~1,300
-      # downloads per run. Shallow, because only the working tree is needed.
+      # downloads per run. Shallow, because only the working tree is needed —
+      # but a clone, not a copy: without .git there is no commit to record, and
+      # a run that cannot name the state it read cannot be compared against.
       - name: Clone asset-management
         uses: actions/checkout@v5
         with:
@@ -109,41 +120,36 @@ jobs:
             --out reports/baseline.json
           compare-metadata reports/baseline.json "$REPORT" --out "$COMPARISON"
 
-      # Kept whether or not it is published, so a run can always be read back.
+      # Kept whether or not it is published, so a run that was only a look can
+      # still be read back.
       - name: Keep the report
         uses: actions/upload-artifact@v4
         with:
           name: metadata-report
           path: reports/
 
-      - name: Configure AWS credentials
-        if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-
-      # Into the same bucket the dashboard is served from, under reports/. The
-      # dashboard fetches its report with a relative url, so the two have to
-      # share an origin — served from elsewhere, the site loads and then finds
-      # nothing to show.
-      # Named for the run, with latest.json pointing at it, so the dashboard has
-      # something stable to read and older runs stay available as baselines.
-      - name: Upload the report
+      # Published runs live in git rather than in a bucket. They are what the
+      # dashboard serves, the history is the provenance record, and an earlier
+      # run stays reachable as a baseline without anything to administer.
+      - name: Commit the report
         if: ${{ inputs.publish }}
         run: |
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
-          bucket="s3://${{ secrets.SITE_BUCKET }}/reports"
-          aws s3 cp "$REPORT" "$bucket/report_$stamp.json"
-          aws s3 cp "$REPORT" "$bucket/latest.json"
-          # The index is what lets the dashboard offer an earlier run — a
-          # baseline has to be reachable, not just the newest report.
-          aws s3 cp "$bucket/index.json" existing-index.json || echo '[]' > existing-index.json
+          cp "$REPORT" "reports/report_$stamp.json"
+          cp "$REPORT" reports/latest.json
+          # The index is what lets the dashboard offer an earlier run.
           index-metadata --report "$REPORT" --name "report_$stamp.json" \
-            --index existing-index.json --out reports/index.json
-          aws s3 cp reports/index.json "$bucket/index.json"
-          if [ -f "$COMPARISON" ]; then
-            aws s3 cp "$COMPARISON" "$bucket/comparison_$stamp.json"
-            aws s3 cp "$COMPARISON" "$bucket/comparison.json"
-          fi
+            --index reports/index.json --out reports/index.json
+          if [ -f "$COMPARISON" ]; then cp "$COMPARISON" "reports/comparison_$stamp.json"; fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f reports/latest.json reports/index.json "reports/report_$stamp.json" \
+            $([ -f "$COMPARISON" ] && echo "reports/comparison_$stamp.json")
+          git commit -m "Verification run $stamp
+
+          asset-management ${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}
+          calibrationFiles @${{ inputs.calibration_files_ref }}"
+          # Another run may have published while this one was working.
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}

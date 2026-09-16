@@ -64,7 +64,7 @@ const shown = computed(() => {
 
       <span class="grow" />
 
-      <label class="flex gap-1.5 items-center" title="Uploads the report for the dashboard to read. Needs the site bucket and AWS credentials set on the repository.">
+      <label class="flex gap-1.5 items-center" title="Commits the report to this repository, which republishes the dashboard with it. Leave off for a look that changes nothing.">
         <input v-model="runs.source.publish" type="checkbox" >
         Publish
       </label>

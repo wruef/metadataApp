@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { siteOf, yearOf } from '~/display'
+import { withBase } from '~/paths'
 
 /** Worst first — the order a queue is worked in. */
 export const SEVERITIES = ['problem', 'review', 'unchecked', 'ok'] as const
@@ -176,8 +177,9 @@ export const useStore = defineStore('report', () => {
     status.value = 'loading'
     selected.value = name ?? null
     try {
-      const config = useRuntimeConfig().public
-      const latest = config.reportUrl as string
+      const config = useRuntimeConfig()
+      const base = config.app.baseURL
+      const latest = withBase(base, config.public.reportUrl as string)
       // Runs sit beside the current one, so a name replaces the last segment.
       const url = name ? latest.replace(/[^/]+$/, name) : latest
       const fetched = await $fetch<Report>(url)
@@ -197,14 +199,14 @@ export const useStore = defineStore('report', () => {
       // and must not take the rest of the dashboard down with it.
       try {
         comparison.value = await $fetch<Comparison>(
-          useRuntimeConfig().public.comparisonUrl as string,
+          withBase(base, config.public.comparisonUrl as string),
         )
       } catch {
         comparison.value = null
       }
       // Absent until a run has been published, and never fatal.
       try {
-        runs.value = await $fetch<RunEntry[]>(config.indexUrl as string)
+        runs.value = await $fetch<RunEntry[]>(withBase(base, config.public.indexUrl as string))
       } catch {
         runs.value = []
       }

@@ -1,0 +1,109 @@
+name: Dashboard
+
+# Builds the dashboard and publishes it to GitHub Pages, together with every
+# report committed to this repository. Nothing is hosted outside GitHub: the
+# site and the runs it reads are the same artifact.
+#
+# Runs on a push that changes either half — the dashboard itself, or a report
+# a verification run committed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - "reports/**"
+  pull_request:
+    paths: ["dashboard/**"]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 24
+
+# One deploy at a time. A Pages deploy replaces the whole site, so two in
+# flight would race; a queued one is still worth running, because it carries a
+# report the earlier one did not.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: dashboard
+
+      # Blocking, and deliberately so: nothing here can be typechecked on a
+      # machine with an older Node, so this is the first place a wrong component
+      # prop or a mistyped report field is caught.
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: dashboard
+
+      # Covers the code that rewrites the 2i-HITL sheets — the team's record of
+      # who checked what, where a bug corrupts years of sign-offs.
+      - name: Test
+        run: npm test
+        working-directory: dashboard
+
+      # The runs the site will serve, copied in so they are part of the same
+      # deploy. They are tracked in this repository, so a checkout has them.
+      - name: Bundle the published runs
+        run: |
+          mkdir -p dashboard/public/reports
+          if compgen -G 'reports/*.json' > /dev/null; then
+            cp reports/*.json dashboard/public/reports/
+          else
+            echo 'No runs have been published yet; the site will say so.'
+          fi
+
+      # A project site is served from /<repo>/, so every asset and fetch has to
+      # be built for that path. Taken from the repository name rather than
+      # written down, so a fork publishes to its own path unchanged.
+      - name: Build
+        run: npm run generate
+        working-directory: dashboard
+        env:
+          NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+
+      # Pages with the Actions source serves the artifact as-is and does not run
+      # Jekyll. This is insurance for the day someone switches the source back to
+      # a branch, where Jekyll would drop Nuxt's _nuxt/ directory and serve a
+      # blank page with no error.
+      - name: Keep Jekyll out of it
+        run: touch dashboard/.output/public/.nojekyll
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/.output/public
+
+  deploy:
+    name: Deploy
+    # A pull request builds to prove it still compiles; only the default branch
+    # is published.
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

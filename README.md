@@ -151,8 +151,9 @@ tray, step by step. Closing the tray stops following the run; it does not stop
 the run.
 
 Nothing on screen changes when a run finishes. The report is a file, and it is
-only replaced if the run was told to publish — which needs the bucket and the
-AWS credentials below. Reload from the tray once it has.
+only replaced if the run was told to publish. Publishing commits the report,
+which republishes the site with it a couple of minutes later. Reload from the
+tray once it has.
 
 Serial extraction is deliberately not here. It cannot complete without a person
 in the middle, so a button implying otherwise would be a lie; run it by hand
@@ -177,17 +178,43 @@ half of them into the wrong sheet.
 There is no schedule: a run is an event someone chooses, usually once a season
 after the cruise, and occasionally to check a branch before it merges. Inputs
 select the asset-management repository and ref, an optional `baseline_ref` to
-compare against, and whether to publish to S3. The report is kept as a build
-artifact either way, so a run can always be read back.
+compare against, and whether to publish. The report is kept as a build artifact
+either way, so a run that was only a look can still be read back.
 
-`.github/workflows/dashboard.yaml` builds the site, with typecheck and tests
-blocking. Deployment is opt-in through its `deploy` input.
+Publishing **commits the report to this repository** under `reports/`, rather
+than uploading it anywhere. A 2.1 MB report is roughly 75 KB as a git object, so
+a decade of annual runs is under a megabyte — and the history then *is* the
+provenance record, with every published run reachable as a baseline.
 
-Both write to one bucket, `secrets.SITE_BUCKET`: the site at the root, the runs
-under `reports/`. They share an origin because the dashboard fetches its report
-with a relative URL — served from elsewhere, the site loads and then finds
-nothing to show. `reports/index.json` lists every published run, which is what
-lets the dashboard open an earlier one.
+`.github/workflows/pages.yaml` builds the site and publishes it to **GitHub
+Pages**, with typecheck and tests blocking. It runs on a push that changes
+either half — the dashboard itself, or a report a run has committed — so a
+published run redeploys the site that serves it. A pull request builds but does
+not deploy.
+
+Everything is inside GitHub. There is no bucket, no AWS credentials and no
+secret of any kind: the site and the runs it reads are one artifact, and the
+runs are bundled into it from `reports/` at build time. `reports/index.json`
+lists every published run, which is what lets the dashboard open an earlier one.
+
+Two things about a Pages project site are worth knowing, because both fail
+silently:
+
+- It is served from `/<repo>/`, so the base path is baked in at build time from
+  the repository name. Every URL the app fetches is relative and joined to it —
+  an absolute `/reports/latest.json` would ask `github.io` for a file that is
+  not there.
+- There are no rewrite rules, so a deep link like `/checks/calibrations` is a
+  path with no file. Pages serves `404.html` for it, and because that file is
+  the application shell, the router resolves the URL and the page appears.
+
+**The published site is public.** Pages restricted to organisation members needs
+GitHub Enterprise Cloud; from a private personal repository the site is readable
+by anyone with the URL. That includes reviewer initials and HITL notes, so treat
+a sign-off comment as something you are publishing.
+
+Once, before the first deploy: **Settings → Pages → Source: GitHub Actions**.
+Nothing else is configured, and nothing needs to be configured again.
 
 ## The run report
 
