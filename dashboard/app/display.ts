@@ -45,6 +45,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> 
       NO_VENDOR_FILE: 'problem',
       CONSTANT_MISMATCH: 'review',
       PDF_NOTCOMPARED: 'unchecked',
+      FORMAT_NOTCOMPARED: 'unchecked',
       NOTCOMPARED: 'unchecked',
       NAN: 'unchecked',
     },

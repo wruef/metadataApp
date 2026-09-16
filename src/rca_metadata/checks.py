@@ -72,18 +72,56 @@ def checkSensorBulk(rcaAssets, serialByAsset):
     return rows
 
 
+## How a calibration csv points at a sheet kept in a file beside it.
+SHEET_REF = 'SheetRef:'
+
+
+def _readSheet(path):
+    """One .ext sheet: a plain grid of numbers, no header."""
+    with open(path) as handle:
+        return [[float(cell) for cell in line.split(',')] for line in handle if line.strip()]
+
+
+def _resolveSheets(cal, path):
+    """Replace each SheetRef with the sheet it names.
+
+    An OPTAA calibration is three files: the csv, and two .ext sheets it points
+    at by name. Until those are read the csv carries the string
+    ``SheetRef:CC_taarray`` where an 85 x 38 matrix belongs, and the larger part
+    of the calibration cannot be compared at all.
+
+    A sheet that is not there resolves to None rather than being left as its
+    own name, so the comparison reports it missing instead of comparing a
+    matrix against the string that should have pointed at one.
+    """
+    stem = os.path.splitext(path)[0]
+    resolved, found = [], False
+    for value in cal['value']:
+        if isinstance(value, str) and value.startswith(SHEET_REF):
+            found = True
+            sheet = f'{stem}__{value[len(SHEET_REF):]}.ext'
+            resolved.append(_readSheet(sheet) if os.path.isfile(sheet) else None)
+        else:
+            resolved.append(value)
+    if found:
+        cal['value'] = pd.Series(resolved, index=cal.index, dtype=object)
+    return cal
+
+
 def _loadGithubCal(path):
     """A github calibration csv, and which parse worked.
 
     Some files carry values the float converter rejects, so a second, looser
-    parse is tried before the file is called unreadable.
+    parse is tried before the file is called unreadable. Only that looser parse
+    can hold a sheet reference -- the float converter would have rejected one.
     """
     try:
         return pd.read_csv(path, converters={'value': np.float64},
                            float_precision='round_trip'), 'SUCCESS_TYPE1'
     except ValueError:
         try:
-            return pd.read_csv(path, float_precision='round_trip'), 'SUCCESS_TYPE2'
+            cal = pd.read_csv(path, float_precision='round_trip')
+            return _resolveSheets(cal, path), 'SUCCESS_TYPE2'
         except ValueError:
             return None, 'FAIL'
 

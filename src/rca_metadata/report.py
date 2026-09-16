@@ -38,9 +38,16 @@ SEVERITY = {
         'NO_BULK_SERIAL': 'unchecked'}},
     'calibrations': {
         'vendorMatch': {
+            ## COMPARED_XML is no longer produced -- DOFSTA is compared against
+            ## its .cal only -- but reports published before that rule can still
+            ## be opened, and an unmapped verdict would read as 'review'.
             'COMPARED': 'ok', 'COMPARED_XML': 'ok', 'MISMATCH': 'problem',
             'MISSING_COEFFICIENT': 'problem', 'NO_VENDOR_FILE': 'problem',
             'CONSTANT_MISMATCH': 'review', 'PDF_NOTCOMPARED': 'unchecked',
+            ## A vendor file is on record in a format this instrument is not
+            ## compared against -- a CTD with only a .cal. Unchecked rather than
+            ## a problem: nothing disagrees, nothing was read.
+            'FORMAT_NOTCOMPARED': 'unchecked',
             'NOTCOMPARED': 'unchecked', 'NAN': 'unchecked'},
         'calRepo_check': {'MATCH': 'ok', 'NOMATCH': 'review'},
         'fileParse': {'SUCCESS_TYPE1': 'ok', 'SUCCESS_TYPE2': 'ok', 'FAIL': 'problem'},

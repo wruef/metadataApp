@@ -9,3 +9,5 @@ FLORD,CC_depolarization_ratio,0.039
 FLORD,CC_scattering_angle,124
 NUTNR,CC_lower_wavelength_limit_for_spectra_fit,217
 NUTNR,CC_upper_wavelength_limit_for_spectra_fit,240
+PHSEN,CC_ind_off,0.0
+PHSEN,CC_ind_slp,1.0

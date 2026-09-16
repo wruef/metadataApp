@@ -247,14 +247,109 @@ A calibration comparison returns a verdict and the differences behind it:
 | `MISMATCH` | a coefficient disagrees with the vendor |
 | `MISSING_COEFFICIENT` | the vendor file does not carry a coefficient the github file claims |
 | `CONSTANT_MISMATCH` | the only disagreements are with `coefficientConstants.csv`, where no vendor value is involved |
-| `COMPARED` / `COMPARED_XML` | read and agreed |
+| `COMPARED` | read and agreed |
 | `PDF_NOTCOMPARED` | only a pdf is on file |
-| `NO_VENDOR_FILE` | the sensor has a comparison rule but no vendor file |
+| `FORMAT_NOTCOMPARED` | a vendor file is on record, but not in the format this instrument is compared against |
+| `NO_VENDOR_FILE` | the sensor has a comparison rule but nothing on record |
 | `NAN` | no comparison rule for this sensor |
 
 Comparison is exact — there is no tolerance. Where a vendor file publishes fewer
 significant figures than the github csv carries, that gap is a transcription to
 fix in the data, not noise to absorb in code.
+
+## Which vendor file each instrument is compared against
+
+One format per instrument, and **no falling back to another**. Where a vendor
+publishes the same calibration twice, the two files do not carry the same
+numbers at the same precision, and comparing against the wrong one produces
+disagreements that are an artefact of the choice rather than a fault in the data.
+
+| instrument | file | why |
+|---|---|---|
+| CTD | `.xmlcon` | more resolution than the `.cal` or the pdf |
+| DOFSTA | `.cal` | more resolution than the `.xml` or the pdf |
+| FLCDRA | `.dev` | |
+| FLNTUA | `.dev.lambda` | both `.dev` files are posted to the vendor repository; only the lambda one, which carries volume scattering, is what asset-management is generated from |
+| FLORDD | `.dev.lambda` | |
+| NUTNR | `.cal` | |
+| SPKIRA | `.cal` | |
+| OPTAA | `.dev` | the pure-water calibration. The `.cal` beside it is the **air** calibration and is not what asset-management is built from |
+| PARA | `.tdf`, else `.pdf` | the vendor shipped a `.tdf` for some; the rest were typed in from the certificate |
+| PHSEN | `.pdf` | typed in from the certificate |
+
+Where the named format is absent but some other vendor file is on record, the
+result is `FORMAT_NOTCOMPARED` rather than a comparison against whatever happens
+to be there. Enforcing that moved five files out of the queue: four apparent
+mismatches that were artefacts of reading the wrong file — including the nine
+CTD coefficients differing by about one part in 10⁷ that had stood as a finding
+for years — and one CTD that had been agreeing with a `.cal` it should never
+have been read against.
+
+### OPTAA is three files, and all three are compared
+
+One OPTAA calibration is a csv plus two `.ext` sheets, each an 85 × 38 matrix
+that the csv points at by name — `SheetRef:CC_taarray`. The vendor `.dev` carries
+all of it: the calibration temperature from its header, the temperature bins, and
+then one row per wavelength holding the two wavelengths, the two clean-water
+offsets and both temperature-correction rows. The sheets are resolved when the
+calibration is loaded, so the comparison sees matrices rather than the names of
+files it would otherwise have skipped.
+
+OPTAA coefficients are compared **in order**, unlike the other spectra. The index
+is the wavelength: the nth offset belongs to the nth wavelength, and the nth row
+of each array with it. Compared as sets — which is how the other spectra compare,
+because a vendor publishes them unordered — a reversal would read as agreement,
+and 85 values would match 86 with a repeat among them.
+
+Of 110 OPTAA calibrations, **107 now compare and all 107 agree**. The other three
+are two with no vendor file at all and one loaner instrument whose name carries
+no asset-ID field.
+
+### Certificates that were only ever published as a pdf
+
+DOSTAD, PHSEN, PCO2W and PAR have no machine-readable vendor file, so their
+coefficients are typed into asset-management by hand — about 400 RCA
+calibrations, none of which anything checked. **Three quarters of those
+certificates carry a text layer**, so the numbers can be read exactly rather
+than recognised from an image; OCR is only needed for the 95 that are scans, and
+is not implemented.
+
+PAR and PHSEN are done: **119 calibrations that nothing had ever checked now
+compare**, and the first run found a real transcription error — `CC_eb578`
+entered as `38676.5` where the certificate says `38676.0`, with the other three
+values on the same page correct.
+
+Reading them is not "extract the text". The certificates are laid out for a
+person, and every defect found while building this was in reassembling that
+layout:
+
+- Coefficient names are set with real **subscripts** — `Ea434` is `Ea` with a
+  smaller `434` below and to the right — so they are joined by font size and
+  position, which is the one thing every template agrees on.
+- One certificate sets the `I` of `Im` a point lower than the `m`, which puts it
+  at the end of its own line in draw order. Lines are therefore ordered by
+  position, left to right, not by the order the page draws them.
+- One breaks `2.5063877597725e-006` after the decimal point. Split numbers are
+  rejoined **only** where a number is already expected, because widening that
+  rule runs columns together: a PCO2W range of 202 to 1191 already reads as
+  `2021191` once the en-dash between them — a glyph with no Unicode mapping —
+  is silently dropped by a text extractor.
+
+A coefficient the certificate does not carry at all is declared per sensor in
+`notVendor` rather than reported missing on every row. PHSEN's salinity and ADC
+bit depth are configuration, not vendor measurements — they vary across the
+archive, so they are not constants either, and asset-management's own notes say
+so: *"no sal listed on cal sheet; using default 35"*.
+
+### A calibration date is not an asset ID
+
+Sensors used to be identified by searching the whole file path for an asset ID.
+A calibration dated 2017-01-10 spells `70110` inside its own date, which is
+FLNTUA's asset ID, and 2017-01-11 spells `70111`, which is FLCDRA's. A NUTNR and
+a SPKIR calibration were checked against the wrong instrument's rules for years
+and reported as having no vendor file, while their `.cal` sat in the directory
+beside them. Both compare and agree now. The asset ID is read from its own field
+in the file name.
 
 ## Parameter files
 

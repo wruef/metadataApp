@@ -1,9 +1,9 @@
 [
  {
-  "name": "report_20260916T222547Z.json",
-  "runAt": "2026-09-16T15:25:28",
+  "name": "report_20260916T232111Z.json",
+  "runAt": "2026-09-16T16:19:53",
   "parameters": {
-   "commit": "2b425b448ec3ae12b9e2665a9ad99e6034601f68",
+   "commit": "fe49abd5d4a2c1b8890977d110880c837d6fb6db",
    "dirty": true
   },
   "sources": {
@@ -60,10 +60,10 @@
     "total": 1663
    },
    "calibrations": {
-    "problem": 77,
+    "problem": 72,
     "review": 119,
-    "unchecked": 503,
-    "ok": 475,
+    "unchecked": 288,
+    "ok": 695,
     "cleared": 362,
     "total": 1174
    }

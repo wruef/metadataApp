@@ -13,6 +13,8 @@ dependencies = [
     "requests",
     "beautifulsoup4",
     "openpyxl",
+    # Four instruments publish their calibration only as a pdf certificate.
+    "pdfplumber",
 ]
 
 [project.optional-dependencies]

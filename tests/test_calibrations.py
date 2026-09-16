@@ -26,7 +26,10 @@ def vendorStem(tmp_path):
 
 
 def githubCal(**coeffs):
-    return pd.DataFrame({'name': list(coeffs), 'value': list(coeffs.values())})
+    ## object dtype, so a resolved sheet stays a list rather than being
+    ## flattened into columns.
+    return pd.DataFrame({'name': list(coeffs),
+                         'value': pd.Series(list(coeffs.values()), dtype=object)})
 
 
 def compare(cal, stem):
@@ -105,9 +108,11 @@ def test_sensorWithNoRuleReportsNan(tmp_path):
     assert compare(cal, str(tmp_path / 'ATAPL-99999-00001__20130422')) == ['NAN']
 
 
-def test_optaaHasNoComparisonRule(tmp_path):
-    cal = githubCal(CC_a=1.0)
-    assert compare(cal, str(tmp_path / 'ATAPL-69943-00001__20130422')) == ['NAN']
+def test_optaaIsComparedAgainstTheDevFile(tmp_path):
+    """The .dev is the pure-water calibration, which is what asset-management
+    is generated from."""
+    cal = githubCal(**OPTAA_COEFFS)
+    assert compare(cal, optaaStem(tmp_path)) == ['COMPARED']
 
 
 ## --- vendor files are found whatever case their extension is spelled in ---
@@ -140,3 +145,180 @@ def test_aVendorFileThatIsGenuinelyAbsentIsStillReported(tmp_path):
 def test_missingDirectoryIsNotAnError():
     from rca_metadata.calibrations import findVendorFile
     assert findVendorFile('/no/such/directory/ATAPL-1__20200101', '.cal') is None
+
+
+## --- one vendor format per instrument, and no falling back to another ---
+
+def test_flntuIsNotComparedAgainstThePlainDevFile(tmp_path):
+    """Both .dev files are posted to the vendor repository, but asset-management
+    is generated from the .dev.lambda. Comparing against the plain .dev finds
+    disagreements that are an artefact of reading the wrong file -- it did, on
+    three real calibrations, every one of them reported as a MISMATCH."""
+    stem = tmp_path / 'ATAPL-70110-00001__20130422'
+    stem.with_suffix('.dev').write_text(VENDOR_LINES)
+    cal = githubCal(CC_scale_factor_chlorophyll_a=0.0121)
+    assert compare(cal, str(stem)) == ['FORMAT_NOTCOMPARED']
+
+
+def test_ctdIsNotComparedAgainstTheLowerResolutionCalFile(tmp_path):
+    """A Seabird .cal publishes fewer significant figures than the .xmlcon, so
+    a comparison against it manufactures rounding disagreements."""
+    stem = tmp_path / 'ATAPL-67627-00001__20150423'
+    stem.with_suffix('.cal').write_text('irrelevant\n')
+    cal = githubCal(CC_C1=1022.921)
+    assert compare(cal, str(stem)) == ['FORMAT_NOTCOMPARED']
+
+
+def test_nothingOnRecordIsNotTheSameAsTheWrongFormat(tmp_path):
+    """The two silences ask different things of a person: find the vendor file,
+    or go and fetch the format this instrument is compared against."""
+    cal = githubCal(CC_scale_factor_chlorophyll_a=0.0121)
+    assert compare(cal, str(tmp_path / 'ATAPL-70110-00001__20130422')) == ['NO_VENDOR_FILE']
+
+
+def test_aPdfStillOutranksAnUnparsedFormat(tmp_path):
+    """A scan is the more useful thing to say: it names why no parser will ever
+    read it, rather than implying some other format would do."""
+    stem = tmp_path / 'ATAPL-70110-00001__20130422'
+    stem.with_suffix('.dev').write_text(VENDOR_LINES)
+    stem.with_suffix('.pdf').write_text('')
+    cal = githubCal(CC_scale_factor_chlorophyll_a=0.0121)
+    assert compare(cal, str(stem))[0] == 'PDF_NOTCOMPARED'
+
+
+
+
+## --- a calibration date is not an asset ID ---
+
+def test_aCalibrationDateIsNotMistakenForAnAssetId():
+    """Asset IDs were matched as substrings of the whole path, and a date
+    contains one: 2017-01-10 spells 70110, which is FLNTU's asset ID, and
+    2017-01-11 spells 70111, which is FLCDR's.
+
+    A NUTNR and a SPKIR calibration were checked against the wrong instrument's
+    rules for years, reporting no vendor file while their .cal sat beside them.
+    """
+    from rca_metadata.calibrations import identifySensor
+
+    assert identifySensor('/any/where/ATOSU-68020-00008__20170111') == 'NUTNR'
+    assert identifySensor('/any/where/ATAPL-58341-00006__20170110') == 'SPKIR'
+    ## and an instrument with no rule stays without one, rather than being
+    ## claimed by whichever asset ID its date happens to spell
+    assert identifySensor('/any/where/ATAPL-58336-00001__20170111') is None
+
+
+def test_theSurroundingPathCannotDecideTheSensor():
+    """The path is a property of the machine the run happened on, not of the
+    calibration. Two runs of the same file must identify it the same way."""
+    from rca_metadata.calibrations import identifySensor
+
+    assert identifySensor('/home/70110/ATOSU-68020-00008__20230209') == 'NUTNR'
+    assert identifySensor('ATOSU-68020-00008__20230209') == 'NUTNR'
+
+
+## --- OPTAA: one calibration, three files on the github side ---
+
+OPTAA_DEV = (
+    'ACS Meter\n'
+    '5300008D\t\t; Serial number\n'
+    '3\t; structure version number\n'
+    '"tcal: 21.3 C, ical: 22.7 C. The offsets were saved to this file on 9/18/13."\n'
+    '0\t0\t\t; Depth calibration\n'
+    '0.25\t\t\t; Path length (meters)\n'
+    '2\t\t\t; output wavelengths\n'
+    '3\t\t\t; number of temperature bins\n'
+    '\t\t\t1.0\t2.0\t3.0\t; temperature bins\n'
+    'C401.2\tA400.0\t8\t-2.5\t-5.6\t\t0.1\t0.2\t0.3\t\t-0.9\t-0.8\t-0.7\t\t"; offsets"\n'
+    'C404.6\tA403.9\t10\t-2.3\t-4.8\t\t0.4\t0.5\t0.6\t\t-0.6\t-0.5\t-0.4\t\t"; offsets"\n'
+)
+
+## What the cal script writes into asset-management from the .dev above: the six
+## values in the csv, and the two arrays as sheets the csv points at.
+OPTAA_COEFFS = {
+    'CC_tcal': 21.3,
+    'CC_tbins': [1.0, 2.0, 3.0],
+    'CC_cwlngth': [401.2, 404.6],
+    'CC_awlngth': [400.0, 403.9],
+    'CC_ccwo': [-2.5, -2.3],
+    'CC_acwo': [-5.6, -4.8],
+    'CC_tcarray': [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
+    'CC_taarray': [[-0.9, -0.8, -0.7], [-0.6, -0.5, -0.4]],
+}
+
+
+def optaaStem(tmp_path, suffix='.dev'):
+    stem = tmp_path / 'ATAPL-69943-00001__20130918'
+    (tmp_path / f'ATAPL-69943-00001__20130918{suffix}').write_text(OPTAA_DEV)
+    return str(stem)
+
+
+def test_optaaIsNotComparedAgainstTheAirCalibration(tmp_path):
+    """Both files are posted to the vendor repository. The .cal is the air
+    calibration and asset-management is not built from it, so a calibration with
+    only a .cal on record has nothing to compare against."""
+    cal = githubCal(**OPTAA_COEFFS)
+    assert compare(cal, optaaStem(tmp_path, '.cal')) == ['FORMAT_NOTCOMPARED']
+
+
+def test_optaaFindsACoefficientThatDisagrees(tmp_path):
+    cal = githubCal(**{**OPTAA_COEFFS, 'CC_tcal': 21.4})
+    verdict, *differences = compare(cal, optaaStem(tmp_path))
+    assert verdict == 'MISMATCH'
+    assert [d[1] for d in differences] == ['CC_tcal']
+
+
+def test_optaaComparesEveryCellOfTheTemperatureArrays(tmp_path):
+    """The arrays are the larger part of the calibration -- 85 x 38 apiece on a
+    real instrument. One wrong cell has to be found."""
+    wrong = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.99]]
+    cal = githubCal(**{**OPTAA_COEFFS, 'CC_tcarray': wrong})
+    verdict, *differences = compare(cal, optaaStem(tmp_path))
+    assert verdict == 'MISMATCH'
+    assert differences[0][1] == 'CC_tcarray'
+    assert '1 of 6 values differ' in differences[0][4]
+
+
+def test_optaaComparesInOrderBecauseTheIndexIsTheWavelength(tmp_path):
+    """The nth offset belongs to the nth wavelength. Compared as sets -- which is
+    how the other spectra compare -- a reversal would read as agreement."""
+    cal = githubCal(**{**OPTAA_COEFFS, 'CC_cwlngth': [404.6, 401.2]})
+    verdict, *differences = compare(cal, optaaStem(tmp_path))
+    assert verdict == 'MISMATCH'
+    assert differences[0][1] == 'CC_cwlngth'
+
+
+def test_aSheetMissingFromAssetManagementIsReportedNotPassed(tmp_path):
+    """The csv points at two .ext sheets. If one is not there the loader hands
+    across None, and that must read as unchecked rather than as agreement."""
+    cal = githubCal(**{**OPTAA_COEFFS, 'CC_taarray': None})
+    verdict, *differences = compare(cal, optaaStem(tmp_path))
+    assert verdict == 'MISMATCH'
+    assert 'not in asset-management' in differences[0][4]
+
+
+def test_aDevFileMissingItsTcalDoesNotTakeTheRunDown(tmp_path):
+    """float(None) ended the whole verification. A field the vendor file does
+    not spell is an unchecked coefficient, which the check already has a
+    verdict for."""
+    stem = tmp_path / 'ATAPL-69943-00001__20130918'
+    stem.with_suffix('.dev').write_text(OPTAA_DEV.replace('"tcal: 21.3 C,', '"ical: 22.7 C,'))
+    cal = githubCal(**OPTAA_COEFFS)
+    verdict, *differences = compare(cal, str(stem))
+    assert verdict == 'MISSING_COEFFICIENT'
+    assert differences[0][1] == 'CC_tcal'
+
+
+def test_theCalibrationTemperatureIsFoundHoweverTheInstrumentSpeltIt(tmp_path):
+    """Three spellings across the archive. Matching only the quoted lower-case
+    one left CC_tcal unread on 30 of 110 calibrations, every one of them
+    reported as a missing coefficient."""
+    from rca_metadata.vendor import readOPTAA
+
+    for header in ['"tcal: 21.3 C, ical: 22.7 C."',
+                   'tcal: 21.3 C, ical: 22.7 C. Saved on 4/2/2021.',
+                   'Tcal: 21.3 C, Ical: 20.7 C. Saved on 5/16/2023. ']:
+        path = tmp_path / 'ATAPL-69943-00001__20130918.dev'
+        path.write_text(OPTAA_DEV.replace(
+            '"tcal: 21.3 C, ical: 22.7 C. The offsets were saved to this file on 9/18/13."',
+            header))
+        assert readOPTAA(str(path))['CC_tcal'] == 21.3, header
