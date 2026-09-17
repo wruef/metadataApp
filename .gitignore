@@ -13,6 +13,15 @@ reports/report.json
 reports/comparison.json
 reports/baseline.json
 
+# The repositories a run reads, cloned here by --clones and by the workflow.
+# They are inputs, not output: each is recorded in the report under `sources`
+# with the commit it was read at, which is the provenance that matters. Left
+# untracked they made `git status --porcelain` report the tree as dirty, so
+# every CI run stamped itself `dirty: true` and disqualified itself as a
+# comparison baseline -- which is the one thing the pre-cruise check needs.
+repos/
+baseline/
+
 # session transcript carried over from metadataVerification
 *.jsonl
 .pytest_cache/

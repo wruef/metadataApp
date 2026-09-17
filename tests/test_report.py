@@ -2,6 +2,7 @@
 
 import json
 import os
+import subprocess
 
 import pytest
 
@@ -220,6 +221,35 @@ def test_aSourceRecordsWhatItsRefResolvedTo():
     described = describeSource(Source())
     assert described['ref'] == 'master'
     assert len(described['commit']) == 40
+
+
+def test_theClonedRepositoriesDoNotMakeARunLookDirty():
+    """A run clones the repositories it reads into repos/, and a baseline run
+    into baseline/. Untracked, they made `git status --porcelain` report the
+    tree as dirty, so every CI run stamped itself `dirty: true` and disqualified
+    itself as a comparison baseline — which is the one thing the pre-cruise
+    check needs. They are inputs, and the commit each was read at is recorded
+    under `sources` where it belongs.
+    """
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if not os.path.isdir(os.path.join(root, '.git')):
+        pytest.skip('not a git checkout')
+    for directory in ('repos', 'baseline'):
+        ignored = subprocess.run(
+            ['git', '-C', root, 'check-ignore', '-q', directory + '/asset-management'])
+        assert ignored.returncode == 0, f'{directory}/ is not ignored, so a run reads as dirty'
+
+
+def test_anUncommittedInputStillMakesARunDirty():
+    """The position spreadsheet is picked up by a glob, so an uncommitted drop
+    is read by the run and has to show. Ignoring untracked files wholesale would
+    have hidden exactly that."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if not os.path.isdir(os.path.join(root, '.git')):
+        pytest.skip('not a git checkout')
+    ignored = subprocess.run(
+        ['git', '-C', root, 'check-ignore', '-q', 'inputs/RSN_Positions_TEAM_20260918.xlsx'])
+    assert ignored.returncode != 0, 'a spreadsheet drop must not be ignored'
 
 
 def test_anUnresolvedCommitSaysUnknownRatherThanNothing():
