@@ -54,6 +54,25 @@ const notes = computed(() => String(row.HITLnotes ?? '').trim())
  *  the differences table above it. */
 const settled = computed(() => row.severity === 'ok' || row.severity === 'cleared')
 
+/**
+ * One note, where the file says the same thing about every coefficient.
+ *
+ * Collapsed only when *every* difference carries a note and they are all the
+ * same. With some coefficients noted and some not, showing it once would
+ * attribute it to coefficients the file says nothing about.
+ *
+ * It fires on no file today, so it is a guard rather than a change to what you
+ * see. Of the rows that disagree at all, 80 disagree about exactly one
+ * coefficient; one about two, whose notes differ; one about six, none of which
+ * are noted. The repeated pressure-offset note repeats across *files*, one
+ * difference each, not down a single table.
+ */
+const sharedNote = computed(() => {
+  const notes = differences.value.map((entry) => String(entry.note ?? '').trim())
+  if (notes.length < 2 || notes.some((note) => !note)) return ''
+  return notes.every((note) => note === notes[0]) ? notes[0]! : ''
+})
+
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
 /** What a sign-off keys on — the line it writes into the 2i-HITL sheet. */
@@ -95,19 +114,35 @@ const comparing = ref(false)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(entry, index) in differences" :key="index">
-                  <td>{{ entry.coefficient ?? entry.field }}</td>
-                  <!-- What each file records, exactly as it was read. -->
-                  <td class="num text-right">{{ entry.github ?? entry.current }}</td>
-                  <td class="num text-right">{{ entry.expected ?? '—' }}</td>
-                  <td v-if="check !== 'positions'" class="d num text-right">
-                    {{ readDifference(entry.difference) }}
-                  </td>
-                  <td v-if="check !== 'positions'">{{ entry.source }}</td>
-                </tr>
+                <template v-for="(entry, index) in differences" :key="index">
+                  <tr>
+                    <td>{{ entry.coefficient ?? entry.field }}</td>
+                    <!-- What each file records, exactly as it was read. -->
+                    <td class="num text-right">{{ entry.github ?? entry.current }}</td>
+                    <td class="num text-right">{{ entry.expected ?? '—' }}</td>
+                    <td v-if="check !== 'positions'" class="d num text-right">
+                      {{ readDifference(entry.difference) }}
+                    </td>
+                    <td v-if="check !== 'positions'">{{ entry.source }}</td>
+                  </tr>
+                  <!-- What the asset-management file says about this coefficient:
+                       where the value came from, which vendor file it was read
+                       out of, that it is a constant. On a coefficient that
+                       disagrees it is the context a reviewer would otherwise
+                       open the file for. Its own line, because a note runs to a
+                       sentence and a column would push the numbers off. -->
+                  <tr v-if="entry.note && !sharedNote" class="note">
+                    <td :colspan="check === 'positions' ? 3 : 5">
+                      <span class="from">asset-management note</span>{{ entry.note }}
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </table>
           </div>
+          <p v-if="sharedNote" class="coefnote">
+            <span class="from">asset-management note</span>{{ sharedNote }}
+          </p>
         </template>
 
         <template v-if="rawOutput.length">

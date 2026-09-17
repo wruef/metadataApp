@@ -192,10 +192,22 @@ def test_aSettledRowNobodySignedOffIsNotWork():
 ## --- the document ---
 
 def test_differencesAreNamedNotPositional():
-    recorded = ['ATAPL-67627-00001__20150423', 'CC_pa0', 1.73, 1.733, -3e-07, 'vendor']
+    recorded = ['ATAPL-67627-00001__20150423', 'CC_pa0', 1.73, 1.733, -3e-07, 'vendor',
+                'read from the .xmlcon']
     assert asDifference(recorded) == {
         'file': 'ATAPL-67627-00001__20150423', 'coefficient': 'CC_pa0',
-        'github': 1.73, 'expected': 1.733, 'difference': -3e-07, 'source': 'vendor'}
+        'github': 1.73, 'expected': 1.733, 'difference': -3e-07, 'source': 'vendor',
+        'note': 'read from the .xmlcon'}
+
+
+def test_aDifferenceRecordedBeforeNotesExistedStillReads():
+    """Published reports carry six-field differences. zip stops at the shorter
+    of the two, so the note simply comes back absent rather than the whole row
+    failing to name itself."""
+    recorded = ['ATAPL-67627-00001__20150423', 'CC_pa0', 1.73, 1.733, -3e-07, 'vendor']
+    named = asDifference(recorded)
+    assert named['coefficient'] == 'CC_pa0'
+    assert 'note' not in named
 
 
 RESULT = {

@@ -297,7 +297,21 @@ def identifySensor(vendorPath, assets=None):
     return None
 
 
-def recordDiff(calCompare, fileName, coeffName, githubCoeff, expectedCoeff, coeffDiff, coeffSource):
+def noteOn(row):
+    """What the asset-management file says about this coefficient, if anything.
+
+    Every calibration csv carries a notes column and 12,810 coefficients across
+    the repository have something written in it -- where a value came from,
+    which vendor file it was read out of, that it is a constant. On a
+    coefficient that disagrees that is exactly the context a reviewer would
+    otherwise go and open the file for, so it travels with the difference.
+    """
+    note = row.get('notes')
+    return '' if note is None or note != note else str(note).strip()
+
+
+def recordDiff(calCompare, fileName, coeffName, githubCoeff, expectedCoeff, coeffDiff,
+               coeffSource, note=''):
     """Append one difference and promote the verdict to match its severity.
 
     A coefficient checked against coefficientConstants.csv is not a disagreement
@@ -309,7 +323,8 @@ def recordDiff(calCompare, fileName, coeffName, githubCoeff, expectedCoeff, coef
                'missing': 'MISSING_COEFFICIENT'}[coeffSource]
     if RANK[verdict] > RANK.get(calCompare[0], 0):
         calCompare[0] = verdict
-    calCompare.append([fileName, coeffName, githubCoeff, expectedCoeff, coeffDiff, coeffSource])
+    calCompare.append([fileName, coeffName, githubCoeff, expectedCoeff, coeffDiff,
+                       coeffSource, note])
 
 
 def _githubValue(raw, how):
@@ -421,13 +436,15 @@ def compareConstants(githubCal, spec, sensor, constants, stem):
             ## A coefficient with no constant written for it was not checked
             ## against anything, and an unchecked coefficient reading as a pass
             ## is the failure mode this rewrite exists for.
-            recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
+            recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing',
+                       noteOn(row))
             continue
         expected = float(declared[name])
         compared += 1
         difference = githubCoeff - expected
         if difference:
-            recordDiff(calCompare, stem, name, githubCoeff, expected, difference, 'constant')
+            recordDiff(calCompare, stem, name, githubCoeff, expected, difference,
+                       'constant', noteOn(row))
 
     ## Four VADCP files hold nothing but configuration -- a transformation
     ## matrix and its shape -- so the loop above compares no coefficient at all
@@ -506,7 +523,8 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=No
                         ## Otherwise nothing was checked. Reported rather than
                         ## skipped -- an unchecked coefficient reading as a pass
                         ## is the failure mode this rewrite exists for.
-                        recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
+                        recordDiff(calCompare, stem, name, githubCoeff, None, None,
+                                   'missing', noteOn(row))
                         continue
                     coeffSource = 'default'
                 else:
@@ -520,7 +538,8 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=No
                 expected = float(expected)
             coeffDiff = _difference(githubCoeff, expected, source.get('ordered', False))
             if coeffDiff:
-                recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff, coeffSource)
+                recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff,
+                           coeffSource, noteOn(row))
         return calCompare
 
     ## Nothing was read. Which of three reasons it was matters, because each

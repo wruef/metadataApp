@@ -269,9 +269,39 @@ def test_anInstrumentTypeMapsToTheRulesItFallsUnder():
 
 ## --- instruments no vendor publishes a file for ---
 
-def constantsCal(pairs):
+def constantsCal(pairs, notes=None):
     import pandas as pd
-    return pd.DataFrame({'name': [n for n, _ in pairs], 'value': [v for _, v in pairs]})
+    frame = pd.DataFrame({'name': [n for n, _ in pairs], 'value': [v for _, v in pairs]})
+    if notes is not None:
+        frame['notes'] = notes
+    return frame
+
+
+def test_aDifferenceCarriesWhatTheFileSaysAboutTheCoefficient():
+    """12,810 coefficients across asset-management have something written in
+    their notes column -- where the value came from, which vendor file it was
+    read out of. On a coefficient that disagrees that is the context a reviewer
+    would otherwise open the file for."""
+    from rca_metadata.calibrations import compareCalCoefficients
+    from rca_metadata.report import asDifference
+
+    assets = {'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}}
+    cal = constantsCal([('CC_gain', 6.0)], notes=['entered from the deployment log'])
+    _, *differences = compareCalCoefficients(
+        cal, 'ATAPL-58324-00003__20140805', {}, {'HYDBB': {'CC_gain': 0.0}},
+        assets, vendorPresent=False)
+    assert asDifference(differences[0])['note'] == 'entered from the deployment log'
+
+
+def test_aCoefficientWithNoNoteCarriesNone():
+    from rca_metadata.calibrations import compareCalCoefficients
+    from rca_metadata.report import asDifference
+
+    assets = {'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}}
+    _, *differences = compareCalCoefficients(
+        constantsCal([('CC_gain', 6.0)]), 'ATAPL-58324-00003__20140805',
+        {}, {'HYDBB': {'CC_gain': 0.0}}, assets, vendorPresent=False)
+    assert asDifference(differences[0])['note'] == ''
 
 
 def test_aCalibrationOfFixedValuesIsComparedAgainstThem():

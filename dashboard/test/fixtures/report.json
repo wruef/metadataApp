@@ -1465,7 +1465,8 @@
        "github": 1022.922,
        "expected": 1022.921,
        "difference": 0.0009999999999763531,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },
@@ -1558,7 +1559,8 @@
        "github": 4.13,
        "expected": 0.0,
        "difference": 4.13,
-       "source": "constant"
+       "source": "constant",
+       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
       }
      ]
     },
@@ -1588,7 +1590,8 @@
        "github": -1.7,
        "expected": 0.0,
        "difference": -1.7,
-       "source": "constant"
+       "source": "constant",
+       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
       }
      ]
     },
@@ -1618,7 +1621,8 @@
        "github": -5.24,
        "expected": 0.0,
        "difference": -5.24,
-       "source": "constant"
+       "source": "constant",
+       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
       }
      ]
     },
@@ -1648,7 +1652,8 @@
        "github": 1.7333387,
        "expected": 1.733339,
        "difference": -2.9999999995311555e-07,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1656,7 +1661,8 @@
        "github": 0.0157143164,
        "expected": 0.01571432,
        "difference": -3.5999999994928977e-09,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1664,7 +1670,8 @@
        "github": -6.68779159e-10,
        "expected": -6.687792e-10,
        "difference": 4.1000000017205525e-17,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1672,7 +1679,8 @@
        "github": 524944.174,
        "expected": 524944.2,
        "difference": -0.025999999954365194,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1680,7 +1688,8 @@
        "github": 4.20704654,
        "expected": 4.207047,
        "difference": -4.599999998688986e-07,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1688,7 +1697,8 @@
        "github": 0.0333027516,
        "expected": 0.03330275,
        "difference": 1.6000000005456094e-09,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1696,7 +1706,8 @@
        "github": -68.1250017,
        "expected": -68.125,
        "difference": -1.6999999985500835e-06,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1704,7 +1715,8 @@
        "github": 49.854817,
        "expected": 49.85482,
        "difference": -2.9999999995311555e-06,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1712,7 +1724,8 @@
        "github": -0.0340818524,
        "expected": -0.03408185,
        "difference": -2.400000004287861e-09,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },
@@ -1764,7 +1777,8 @@
        "github": -0.5064574,
        "expected": -0.4839777,
        "difference": -0.022479699999999936,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1772,7 +1786,8 @@
        "github": 0.5022414,
        "expected": 0.4520641,
        "difference": 0.050177299999999925,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1780,7 +1795,8 @@
        "github": -0.003577813,
        "expected": -0.004208362,
        "difference": 0.0006305490000000002,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1788,7 +1804,8 @@
        "github": 0.0001487795,
        "expected": 0.000190347,
        "difference": -4.156750000000001e-05,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1796,7 +1813,8 @@
        "github": -2.488514e-06,
        "expected": -2.901039e-06,
        "difference": 4.125249999999999e-07,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1804,7 +1822,8 @@
        "github": -0.5064574,
        "expected": -0.4839777,
        "difference": -0.022479699999999936,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },
@@ -2008,7 +2027,8 @@
        "github": 48.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-70110-00001__20130422",
@@ -2016,7 +2036,8 @@
        "github": 700.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-70110-00001__20130422",
@@ -2024,7 +2045,8 @@
        "github": 1.871e-05,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },
@@ -2054,7 +2076,8 @@
        "github": 48.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-70110-00002__20131205",
@@ -2062,7 +2085,8 @@
        "github": 700.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATAPL-70110-00002__20131205",
@@ -2070,7 +2094,8 @@
        "github": 1.877e-05,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },
@@ -2122,7 +2147,8 @@
        "github": 49.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-70110-00007__20131205",
@@ -2130,7 +2156,8 @@
        "github": 700.0,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       },
       {
        "file": "ATOSU-70110-00007__20131205",
@@ -2138,7 +2165,8 @@
        "github": 1.873e-05,
        "expected": null,
        "difference": null,
-       "source": "vendor"
+       "source": "vendor",
+       "note": ""
       }
      ]
     },

@@ -49,6 +49,19 @@ disagreements that are an artefact of the choice rather than a fault in the data
 | PCO2W | `.pdf` | typed in from the certificate |
 | DOSTAD | `.pdf` | typed in from the certificate |
 
+### A difference carries what the file says about it
+
+Every calibration csv in asset-management has a `notes` column, and 12,810
+coefficients across the repository have something written in it: where a value
+came from, which vendor file it was read out of, that it is a constant, that a
+pressure offset was added deliberately. On a coefficient that disagrees, that is
+exactly the context a reviewer would otherwise go and open the file for, so it
+travels with the difference and is shown under it.
+
+Of the 86 differences the current run records, **77 carry a note**. Most are the
+same sentence the reviewer later wrote into the HITL sheet, which is the point:
+the explanation was in the file all along.
+
 ### Instruments no vendor publishes a file for
 
 Four instrument families carry fixed values rather than measurements: the same

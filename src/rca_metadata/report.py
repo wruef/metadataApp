@@ -318,7 +318,9 @@ def reasonOf(check, row):
 
 ## A recorded calibration difference, in the order compareCalCoefficients
 ## appends them.
-DIFFERENCE_FIELDS = ['file', 'coefficient', 'github', 'expected', 'difference', 'source']
+## 'note' is last, so a difference recorded before it existed still reads --
+## zip stops at the shorter of the two and the note simply comes back absent.
+DIFFERENCE_FIELDS = ['file', 'coefficient', 'github', 'expected', 'difference', 'source', 'note']
 
 
 def asDifference(recorded):
