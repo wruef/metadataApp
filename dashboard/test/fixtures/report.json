@@ -1066,10 +1066,10 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-09-TRHPHA302.2023.1",
-     "finding": "problem",
+     "finding": "review",
      "cleared": false,
-     "severity": "problem",
-     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment; the pre-deploy photograph shows a different asset"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -1089,10 +1089,10 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2023.9",
-     "finding": "problem",
+     "finding": "review",
      "cleared": false,
-     "severity": "problem",
-     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 the pre-deploy photograph shows a different asset"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -1158,10 +1158,10 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-05-CAMDSB303.2023.7",
-     "finding": "problem",
+     "finding": "review",
      "cleared": false,
-     "severity": "problem",
-     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 the pre-deploy photograph shows a different asset"
     },
     {
      "refDes": "CE02SHBP-LJ01D-10-PHSENH110",
@@ -1181,15 +1181,15 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "VERIFIED",
      "hitlKey": "CE02SHBP-LJ01D-10-PHSENH110.2025.1",
-     "finding": "problem",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
-     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
+     "reason": "Cleared in 2i-HITL review"
     }
    ],
    "summary": {
-    "problem": 6,
-    "review": 12,
+    "problem": 3,
+    "review": 15,
     "unchecked": 0,
     "cleared": 15,
     "ok": 3,

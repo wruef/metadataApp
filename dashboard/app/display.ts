@@ -101,7 +101,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       NO_SN: 'unchecked',
       NAN: 'excluded',
     },
-    image_verify: { MATCH: 'ok', MISMATCH: 'problem', NAN: 'excluded' },
+    image_verify: { MATCH: 'ok', MISMATCH: 'warning', NAN: 'excluded' },
     calFile_verify: {
       VALID_FILE: 'ok',
       NO_VALID_FILE: 'problem',

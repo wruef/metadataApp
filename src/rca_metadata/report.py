@@ -113,7 +113,11 @@ SEVERITY = {
         ## not been pulled out of it, which extraction would settle.
         'rawFile_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NO_FILE': 'review',
                            'NO_SN': 'unchecked', 'NAN': 'excluded'},
-        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NAN': 'excluded'},
+        ## A photograph does not confirm a deployment, so it does not condemn
+        ## one either: it shows an instrument, not which instrument went in the
+        ## water. A disagreement is worth noticing and worth reconciling, and it
+        ## is said on the row, but it does not rank it.
+        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'warning', 'NAN': 'excluded'},
         'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'problem',
                            ## Worth noticing, not worth holding a row for: a
                            ## deployment the raw archive or a reviewer has
@@ -221,8 +225,6 @@ def _deploymentReason(row):
         return 'No calibration exists for this instrument, so there is nothing to compare'
     if _verdict(row, 'rawFile_verify') == 'MISMATCH':
         return 'The serial number in the raw archive is not the asset on the deployment sheet'
-    if _verdict(row, 'image_verify') == 'MISMATCH':
-        return 'The asset in the pre-deploy photograph is not the one on the deployment sheet'
     calibration = _verdict(row, 'calFile_verify')
     if calibration == 'NO_VALID_FILE':
         return 'No calibration on file dated before this deployment'
@@ -234,12 +236,18 @@ def _deploymentReason(row):
     ## saying the row is fine above a badge saying it is not helps nobody.
     if _verdict(row, 'rawFile_verify') == 'NO_FILE':
         return 'No raw file was found to check the serial number against'
-    ## A calibration getting old does not unsettle a confirmed deployment, so it
-    ## rides along with whatever settled it rather than replacing the sentence.
-    ## Not on the two sign-off reasons: those describe what a person did rather
-    ## than what a check found, and they have to stay exactly what they are.
-    stale = (' — its calibration is more than fifteen months older than the deployment'
-             if calibration == 'VALID_FILE_CAL_OLDER_THAN_15MONTHS' else '')
+    ## What is worth noticing without unsettling the row. Neither an ageing
+    ## calibration nor a photograph of a different instrument changes what the
+    ## raw archive or a reviewer established, so both ride along with whatever
+    ## settled it rather than replacing the sentence. Not on the two sign-off
+    ## reasons: those describe what a person did rather than what a check found,
+    ## and they have to stay exactly what they are.
+    notes = []
+    if calibration == 'VALID_FILE_CAL_OLDER_THAN_15MONTHS':
+        notes.append('its calibration is more than fifteen months older than the deployment')
+    if _verdict(row, 'image_verify') == 'MISMATCH':
+        notes.append('the pre-deploy photograph shows a different asset')
+    stale = (' — ' + '; '.join(notes)) if notes else ''
     if row['cleared']:
         return 'Cleared in 2i-HITL review'
     if str(row.get('HITLstatus', '')).strip() == 'NotClear':

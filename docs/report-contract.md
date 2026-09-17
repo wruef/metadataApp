@@ -110,14 +110,17 @@ ranking it, and two kinds do:
   instrument class writes no serial into its data; `NAN` on the photograph means
   nobody took one. Neither is a check that was skipped, and counting them as
   unchecked held 459 confirmed deployments back from reading as confirmed.
-- **`warning`** — something worth noticing that nobody has to act on. A
-  calibration more than fifteen months older than its deployment is the only one
-  today. A deployment the raw archive or a reviewer has confirmed is confirmed
-  whether or not the calibration on file was getting old, so it colours its cell
-  amber and is said in the row's sentence rather than holding the row open.
+- **`warning`** — something worth noticing that nobody has to act on. Two
+  today: a calibration more than fifteen months older than its deployment, and a
+  pre-deploy photograph showing a different asset. Neither changes what the raw
+  archive or a reviewer established about which instrument went in the water, so
+  both colour their cell amber and are said in the row's sentence rather than
+  holding the row open. A photograph that does not confirm a deployment cannot
+  condemn one either: it shows an instrument, not which instrument went in the
+  water. The disagreement is still worth reconciling, and it is still on the
+  row.
 
-A photograph that disagrees with the sheet, or a required calibration that is
-missing, still holds a row back. Those are findings rather than absences. A
+A required calibration that is missing still holds a row back. Those are findings rather than absences. A
 calibration verdict of `none` is one of them: by the time the severity is read
 it can only mean a calibration was required and asset-management holds none at
 all, because the check rewrites it to `excluded` wherever none was expected.

@@ -92,14 +92,33 @@ def test_anAgeingCalibrationIsNotedRatherThanHeldAgainstTheRow():
 
 def test_aConfirmedDeploymentStillCarriesItsRealFindings():
     """Confirmed says which instrument was in the water. It says nothing about
-    the calibration on file, and a missing one or a disagreeing photograph is
-    still a finding."""
-    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'MISMATCH',
-           'calFile_verify': 'VALID_FILE'}
-    assert severityOf('deployments', row) == 'problem'
+    the calibration on file, and a missing one is still a finding."""
     row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'NAN',
            'calFile_verify': 'NO_VALID_FILE'}
     assert severityOf('deployments', row) == 'problem'
+
+
+def test_aDisagreeingPhotographIsNotedRatherThanHeldAgainstTheRow():
+    """A photograph does not confirm a deployment, so it does not condemn one
+    either: it shows an instrument, not which instrument went in the water. The
+    disagreement is worth reconciling and is said on the row, but the raw
+    archive already established what was deployed."""
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'MISMATCH',
+           'calFile_verify': 'VALID_FILE', 'cleared': False}
+    assert severityOf('deployments', row) == 'ok'
+    assert 'photograph shows a different asset' in reasonOf('deployments', row)
+
+
+def test_bothWarningsAreSaidOnOneRow():
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'MISMATCH',
+           'calFile_verify': 'VALID_FILE_CAL_OLDER_THAN_15MONTHS', 'cleared': False}
+    reason = reasonOf('deployments', row)
+    assert severityOf('deployments', row) == 'ok'
+    assert 'fifteen months' in reason and 'photograph shows a different asset' in reason
 
 
 def test_aRowTakesItsWorstVerdict():
