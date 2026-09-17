@@ -61,6 +61,9 @@ def test_theRealSheetsAreReadable():
     from rca_metadata.loading import loadHITL
 
     notes = hitlNotes(loadHITL())
-    assert set(notes) == {'calibrations', 'deployments'}
+    assert set(notes) == {'calibrations', 'deployments', 'sensorBulk'}
+    ## sensorBulk is new and nobody has written in it yet; an empty vocabulary
+    ## is a sheet waiting for its first sign-off, not a fault.
     for sheetNotes in notes.values():
-        assert sheetNotes and all(note.strip() for note in sheetNotes)
+        assert all(note.strip() for note in sheetNotes)
+    assert notes['calibrations'] and notes['deployments']

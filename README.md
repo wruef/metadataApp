@@ -19,7 +19,8 @@ The package is the source of truth; nothing is maintained in two places.
 | `deployments` | does each deployment have its calibration file, raw serial number and sign-off? |
 | `positions` | do the deployment sheets agree with the RCA position spreadsheet? |
 | `sensorBulk` | do serial numbers agree between the RCA instrument list and the OOI sensor bulk record? |
-| `deploymentSheets` | does a sheet entry name something no other record knows about? |
+| | and is every asset a deployment sheet names in the bulk record it belongs to? |
+| `deploymentSheets` | is one asset deployed in two places at once, or does a sheet entry name something no other record knows? |
 
 ## Running a verification
 
@@ -115,7 +116,11 @@ to roughly 74 KB over the wire.
 ## Signing in, and signing off
 
 Sign-offs are recorded in `2i_HITL/*.csv` — the team's record of who checked
-what. Writing to them needs a GitHub token, entered under **Settings**:
+what. Three checks are signed off: calibrations by file name, deployments by
+reference designator, year and deployment number, and sensor bulk by asset ID.
+The last is new: a serial number that disagrees between the RCA list and OOI's
+record is mostly a judgement about which record is right, and there was nowhere
+to write that judgement down, so 131 of them came back every run. Writing to them needs a GitHub token, entered under **Settings**:
 
 1. Create a [fine-grained token](https://github.com/settings/personal-access-tokens/new).
 2. Under **Repository access**, select only *your own forks* of `metadataApp`,

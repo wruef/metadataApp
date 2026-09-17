@@ -44,12 +44,22 @@ def loadParams(paramsDir='params'):
     }
 
 
+## The sheet each signed-off check records in, and the column that identifies a
+## row in it. Keyed by check name, which is what the dashboard signs off under.
+HITL_SHEETS = {
+    'calibrations': ('2i_HITL_calibrationVerification.csv', 'githubFile'),
+    'deployments': ('2i_HITL_deploymentVerification.csv', 'referenceDesignatorYearDeployNum'),
+    ## Serial numbers that disagree between the RCA list and OOI's record are
+    ## mostly a judgement about which record is right, and there was nowhere to
+    ## write that judgement down -- so 131 of them came back every run.
+    'sensorBulk': ('2i_HITL_sensorVerification.csv', 'assetID'),
+}
+
+
 def loadHITL(hitlDir='2i_HITL'):
-    """What a reviewer has already signed off on."""
-    return {
-        'calibrations': pd.read_csv(os.path.join(hitlDir, '2i_HITL_calibrationVerification.csv')),
-        'deployments': pd.read_csv(os.path.join(hitlDir, '2i_HITL_deploymentVerification.csv')),
-    }
+    """What a reviewer has already signed off on, indexed by what identifies a row."""
+    return {check: pd.read_csv(os.path.join(hitlDir, sheet)).set_index(key)
+            for check, (sheet, key) in HITL_SHEETS.items()}
 
 
 def hitlNotes(hitl):
@@ -67,6 +77,9 @@ def hitlNotes(hitl):
     """
     vocabulary = {}
     for sheet, frame in hitl.items():
+        if 'HITLnotes' not in frame.columns:
+            vocabulary[sheet] = []
+            continue
         ## One note in the sheet today is a single space, which is not a reason.
         written = frame['HITLnotes'].dropna().str.strip()
         counts = written[written != ''].value_counts()
@@ -76,13 +89,26 @@ def hitlNotes(hitl):
     return vocabulary
 
 
+## Every bulk asset record OOI keeps, by the name this package calls it. All of
+## them are read, not only the two a deployment sheet is checked against: an
+## asset filed in the wrong one is misfiled rather than missing, and saying
+## which record holds it is the difference between a question and an answer.
+BULK_RECORDS = {'sensors': 'sensor', 'platforms': 'platform', 'nodes': 'node',
+                'eng': 'eng', 'arrays': 'array', 'unclassified': 'unclassified'}
+
+
 def loadBulk(amSource):
     """OOI's bulk asset records and cruise list, at the chosen ref."""
-    sensors = pd.read_csv(amSource.path('bulk/sensor_bulk_load-AssetRecord.csv'))
+    records = {name: pd.read_csv(amSource.path(f'bulk/{stem}_bulk_load-AssetRecord.csv'))
+               for name, stem in BULK_RECORDS.items()}
+    sensors = records['sensors']
     return {
         'sensors': sensors,
-        'platforms': pd.read_csv(amSource.path('bulk/platform_bulk_load-AssetRecord.csv')),
+        'platforms': records['platforms'],
         'cruises': pd.read_csv(amSource.path('cruise/CruiseInformation.csv')),
+        ## Every asset ID each record knows.
+        'assetIDs': {name: set(frame['ASSET_UID'].dropna().astype(str))
+                     for name, frame in records.items()},
         ## asset ID -> the manufacturer serial number OOI has on record
         'serialByAsset': pd.Series(sensors["Manufacturer's Serial No./Other Identifier"].values,
                                    index=sensors['ASSET_UID']).to_dict(),

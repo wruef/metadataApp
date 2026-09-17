@@ -20,6 +20,14 @@ export const HITL_SHEETS = {
     of: (row: Record<string, unknown>) =>
       `${row.refDes}.${new Date(String(row.deployDate)).getFullYear()}.${row.deployNum}`,
   },
+  /** Serial numbers that disagree between the RCA list and OOI's record are
+   *  mostly a judgement about which record is right, and there was nowhere to
+   *  write that judgement down — so 131 of them came back every run. */
+  sensorBulk: {
+    path: '2i_HITL/2i_HITL_sensorVerification.csv',
+    key: 'assetID',
+    of: (row: Record<string, unknown>) => String(row.assetID),
+  },
 } as const
 
 export type SheetKey = keyof typeof HITL_SHEETS

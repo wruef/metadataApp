@@ -114,13 +114,6 @@ export const QUEUE: Queued[] = [
     where: { verdict: 'MISSING_FROM_SENSOR_BULK', cleared: 'open' },
   },
   {
-    check: 'sensorBulk',
-    title: 'Serials that agree but are written differently',
-    detail:
-      'The same number formatted two ways — leading zeros, a prefix. Harmless to read and a trap for anything matching on the string.',
-    where: { verdict: 'FORMAT_MATCH', cleared: 'open' },
-  },
-  {
     check: 'deploymentSheets',
     title: 'Sheet entries naming something no other record knows',
     detail:

@@ -33,8 +33,41 @@ EXCLUDE_SENSORS = ['CTDPFA110']
 ## A calibration older than this at deployment is worth a second look.
 CAL_AGE_LIMIT = datetime.timedelta(days=450)
 
+## Instruments that share one asset ID because they are one instrument. The RAS
+## and the D1000 beside it are the same hardware; two reference designators
+## exist because two data streams are required of it, and the deployment sheets
+## name the asset once under each. That is not the same instrument in two
+## places, which is what the duplicate check is for, so it is declared here
+## rather than found again every season.
+ONE_INSTRUMENT_TWO_STREAMS = {frozenset({'RASFLA301', 'D1000A301'})}
 
-def checkSensorBulk(rcaAssets, serialByAsset):
+## Which bulk record each asset column of a deployment sheet belongs in, and
+## what to call it when the record has never heard of the asset.
+##
+## node.uid was not checked at all: 46 node assets across every deployment in
+## the archive, against a record nothing compared them to. electrical.uid is
+## empty in every sheet today and is checked anyway -- the day it is filled in
+## is not the day to notice it was never looked at.
+ASSET_COLUMNS = [
+    ('sensor.uid', 'sensors', 'SENSOR_NOT_IN_BULK'),
+    ('mooring.uid', 'platforms', 'MOORING_NOT_IN_PLATFORM_BULK'),
+    ('node.uid', 'nodes', 'NODE_NOT_IN_NODE_BULK'),
+    ('electrical.uid', 'eng', 'ELECTRICAL_NOT_IN_ENG_BULK'),
+]
+
+
+def signOff(sheet, key):
+    """What a reviewer recorded for this row, if anything.
+
+    The sheets are indexed by whatever identifies a row in them, so every check
+    asks the same question the same way.
+    """
+    if key in sheet.index:
+        return str(sheet.loc[key, 'Status']), str(sheet.loc[key, 'HITLnotes'] or '')
+    return 'NA', ''
+
+
+def checkSensorBulk(rcaAssets, serialByAsset, hitl=None):
     """Compare serial numbers between the RCA instrument list and OOI's sensor bulk.
 
     Both records should name the same instrument for the same asset ID. Where
@@ -42,16 +75,26 @@ def checkSensorBulk(rcaAssets, serialByAsset):
     does not -- that is worth knowing but is not the same as naming a different
     instrument.
     """
+    ## The asset ID is what identifies one of these to a reviewer, so it is what
+    ## a sign-off is written against.
+    signed = hitl if hitl is not None else pd.DataFrame(
+        columns=['Status', 'HITLnotes'], index=pd.Index([], name='assetID'))
+
+    def scored(row):
+        row['hitlKey'] = str(row['assetID'])
+        row['HITLstatus'], row['HITLnotes'] = signOff(signed, row['assetID'])
+        return row
+
     rows = []
     for assetID, bulkSerial in serialByAsset.items():
         if str(assetID).startswith(RCA_ASSET_PREFIXES) and assetID not in rcaAssets:
-            rows.append({'assetID': assetID, 'rcaSerials': None, 'bulkSerial': bulkSerial,
-                         'verdict': 'MISSING_FROM_RCA_LIST'})
+            rows.append(scored({'assetID': assetID, 'rcaSerials': None, 'bulkSerial': bulkSerial,
+                                'verdict': 'MISSING_FROM_RCA_LIST'}))
 
     for assetID, values in rcaAssets.items():
         if assetID not in serialByAsset:
-            rows.append({'assetID': assetID, 'rcaSerials': values['mfgSN'], 'bulkSerial': None,
-                         'verdict': 'MISSING_FROM_SENSOR_BULK'})
+            rows.append(scored({'assetID': assetID, 'rcaSerials': values['mfgSN'],
+                                'bulkSerial': None, 'verdict': 'MISSING_FROM_SENSOR_BULK'}))
             continue
 
         bulkSerial = str(serialByAsset[assetID]).strip()
@@ -68,7 +111,7 @@ def checkSensorBulk(rcaAssets, serialByAsset):
                 row['verdict'] = 'FORMAT_MATCH'
             else:
                 row['verdict'] = 'MISMATCH'
-        rows.append(row)
+        rows.append(scored(row))
     return rows
 
 
@@ -198,7 +241,7 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
     a calibration on record for an instrument the repo does not know about.
     """
     serialByAsset = params['serialByAsset']
-    hitlCal = hitl['calibrations'].set_index('githubFile')
+    hitlCal = hitl['calibrations']
     rows, seen = [], []
 
     for instrument, fileName in calFiles:
@@ -210,11 +253,8 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
 
         ## hitlKey for the same reason the deployment check carries one: the
         ## sheet's own identifier for this row, settled by the run.
-        row = {'fileName': fileName, 'instrument': instrument, 'hitlKey': fileName,
-               'HITLstatus': 'NA', 'HITLnotes': ' '}
-        if fileName in hitlCal.index:
-            row['HITLstatus'] = hitlCal.loc[fileName, 'Status']
-            row['HITLnotes'] = hitlCal.loc[fileName, 'HITLnotes']
+        row = {'fileName': fileName, 'instrument': instrument, 'hitlKey': fileName}
+        row['HITLstatus'], row['HITLnotes'] = signOff(hitlCal, fileName)
         if stem in vendorFiles:
             row['calRepo_check'] = 'MATCH'
         elif isConstantsOnly(stem, params['assets']):
@@ -263,28 +303,57 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
     return {'files': rows, 'missingFromGithub': missing}
 
 
+def _instrumentOf(refDes):
+    """The instrument at the end of a reference designator."""
+    return str(refDes).split('-')[-1]
+
+
 def checkDeploymentSheets(deployments, bulk):
     """Integrity of the deployment sheets themselves.
 
     These checks only printed to the notebook before, so nothing they found ever
     reached a report.
     """
+    years = pd.to_datetime(deployments['startDateTime']).dt.year
     rows = []
-    for column, reference, verdict in [
-            ('sensor.uid', bulk['sensors'].ASSET_UID, 'SENSOR_NOT_IN_BULK'),
-            ('mooring.uid', bulk['platforms'].ASSET_UID, 'MOORING_NOT_IN_PLATFORM_BULK'),
-            ('CUID_Deploy', bulk['cruises'].CUID, 'CRUISE_NOT_IN_CRUISE_LIST')]:
-        missing = deployments[~deployments[column].isin(reference)]
-        rows += [{'refDes': r['Reference Designator'], 'deployNum': r['deploymentNumber'],
-                  'value': r[column], 'verdict': verdict} for _, r in missing.iterrows()]
+
+    def record(index, value, verdict):
+        row = deployments.loc[index]
+        rows.append({'refDes': row['Reference Designator'],
+                     'deployNum': row['deploymentNumber'],
+                     'deployYear': int(years.loc[index]), 'value': value, 'verdict': verdict})
+
+    known = bulk['assetIDs']
+    for column, expected, verdict in ASSET_COLUMNS:
+        values = deployments[column].dropna().astype(str).str.strip()
+        for index, value in values[values != ''].items():
+            if value in known[expected]:
+                continue
+            ## In a bulk record, just not the one this column calls for. That is
+            ## a different answer from an asset nobody has ever heard of, and
+            ## naming the record it is in is most of the fix.
+            elsewhere = [name for name in known if value in known[name]]
+            record(index, value, f'ASSET_IN_WRONG_BULK_RECORD: {", ".join(elsewhere)}'
+                   if elsewhere else verdict)
+
+    cruises = set(bulk['cruises'].CUID.dropna().astype(str))
+    sailed = deployments['CUID_Deploy'].dropna().astype(str).str.strip()
+    for index, value in sailed[sailed != ''].items():
+        if value not in cruises:
+            record(index, value, 'CRUISE_NOT_IN_CRUISE_LIST')
 
     ## The same instrument cannot be in two places in one deployment.
-    years = pd.to_datetime(deployments['startDateTime']).dt.year
     for (year, deployNum), group in deployments.groupby([years, 'deploymentNumber']):
         repeated = group[group['sensor.uid'].duplicated(keep=False)]
-        rows += [{'refDes': r['Reference Designator'], 'deployNum': deployNum,
-                  'value': r['sensor.uid'], 'verdict': 'DUPLICATE_ASSET_IN_DEPLOYMENT'}
-                 for _, r in repeated.iterrows()]
+        for asset, shared in repeated.groupby('sensor.uid'):
+            ## Unless the two names are one instrument, which the RAS and its
+            ## D1000 are: one asset, two data streams, named once under each.
+            if frozenset(_instrumentOf(r['Reference Designator'])
+                         for _, r in shared.iterrows()) in ONE_INSTRUMENT_TWO_STREAMS:
+                continue
+            rows += [{'refDes': r['Reference Designator'], 'deployNum': deployNum,
+                      'deployYear': int(year), 'value': asset,
+                      'verdict': 'DUPLICATE_ASSET_IN_DEPLOYMENT'} for _, r in shared.iterrows()]
     return rows
 
 
@@ -353,7 +422,7 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
     """
     serialByAsset = params['serialByAsset']
     images = params['imageSN'] if imageSN is None else imageSN
-    hitlDeploy = hitl['deployments'].set_index('referenceDesignatorYearDeployNum')
+    hitlDeploy = hitl['deployments']
     rows = []
 
     for refDes, deployments in byRefDes.items():
@@ -373,8 +442,7 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             row['deployYear'] = year
             key = f"{refDes}.{year}.{deployment['deployNum']}"
             row['hitlKey'] = key
-            row['HITLstatus'] = hitlDeploy.loc[key, 'Status'] if key in hitlDeploy.index else 'NA'
-            row['HITLnotes'] = hitlDeploy.loc[key, 'HITLnotes'] if key in hitlDeploy.index else ''
+            row['HITLstatus'], row['HITLnotes'] = signOff(hitlDeploy, key)
 
             row['calFile'], row['calFile_verify'] = _assignCalFile(deployment, calHistory)
             row['calibrationRequired'] = any(name in refDes for name in calibratedInstruments)

@@ -64,7 +64,10 @@ NEUTRAL = (EXCLUDED, WARNING)
 ## one surfaces in the queue rather than disappearing into a pass.
 SEVERITY = {
     'sensorBulk': {'verdict': {
-        'MATCH': 'ok', 'FORMAT_MATCH': 'review', 'MISMATCH': 'problem',
+        ## The same number written two ways -- a prefix one record carries and
+        ## the other does not. The instrument is the instrument, so the records
+        ## agree about which one it is, which is what this check asks.
+        'MATCH': 'ok', 'FORMAT_MATCH': 'ok', 'MISMATCH': 'problem',
         'MISSING_FROM_RCA_LIST': 'review', 'MISSING_FROM_SENSOR_BULK': 'problem',
         'NO_BULK_SERIAL': 'unchecked'}},
     'calibrations': {

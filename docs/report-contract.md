@@ -136,6 +136,52 @@ under *Raw check output*, and remains a filter — it is the only way to ask for
 the deployments nothing confirms, which the review status cannot isolate because
 it folds in the calibration findings too.
 
+## Asset IDs, against every record that could hold one
+
+A deployment sheet names four assets per row, and two of them were never
+checked. `sensor.uid` went to the sensor record and `mooring.uid` to the
+platform record; `node.uid` went nowhere — 46 node assets across every
+deployment in the archive, against a record nothing compared them to — and
+`electrical.uid` is empty in every sheet today and is checked anyway, because
+the day it is filled in is not the day to notice.
+
+All six bulk records are now read: sensor, platform, node, eng, array and
+unclassified. An asset that is in one of them but not the one its column calls
+for is **misfiled rather than missing**, and the verdict says which record holds
+it. That is a different answer from an asset nobody has ever heard of, and
+naming the record is most of the fix.
+
+Every column resolves today, so this is coverage rather than a correction.
+
+## A serial number is a judgement, so it can be signed off
+
+The sensor bulk check compares the RCA instrument list against OOI's record, and
+131 of its rows needed a person every single run. Most of them are not errors to
+fix but judgements about which record is right, and there was nowhere to write
+that judgement down. There is now: `2i_HITL/2i_HITL_sensorVerification.csv`, keyed on
+the asset ID, signed off from the dashboard like any other row.
+
+The same change made `FORMAT_MATCH` agree rather than needing a person. It means
+the same serial number written two ways — a prefix one record carries and the
+other does not. The records agree about which instrument it is, which is what
+this check asks, so 69 rows that were never going to be anything else left the
+queue. **Sensor bulk drops from 131 rows needing a person to 62.**
+
+## One instrument, two data streams
+
+The deployment sheets are checked for the same asset appearing twice in one
+deployment, because an instrument cannot be in two places at once. One pair is
+exempt: **RASFLA301 and D1000A301 share an asset ID because they are the same
+hardware.** Two reference designators exist because two data streams are
+required of it, and the sheets name the asset once under each.
+
+That pair accounted for 24 of the 26 rows this check reported. What is left is
+one real finding — a DOSTA deployed on a deep profiler and a shallow profiler
+in the same 2014 deployment.
+
+The exemption is on the pair, not on either name alone: a RAS sharing an asset
+with anything else is still reported.
+
 ## Comparing two runs
 
     compare-metadata reports/baseline.json reports/report.json

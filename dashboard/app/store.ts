@@ -145,13 +145,17 @@ export const CHECKS = [
     ] },
   { key: 'sensorBulk', title: 'Sensor bulk', icon: 'fa-barcode',
     blurb: 'Serial numbers between the RCA instrument list and the OOI sensor bulk record.',
-    columns: ['assetID', 'rcaSerials', 'bulkSerial', 'verdict'],
-    facets: [{ key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') }] },
-  { key: 'deploymentSheets', title: 'Sheet integrity', icon: 'fa-table',
-    blurb: 'Deployment sheet entries that name something no other record knows about.',
-    columns: ['refDes', 'deployNum', 'value', 'verdict'],
+    columns: ['assetID', 'rcaSerials', 'bulkSerial', 'verdict', 'HITLstatus'],
     facets: [
       { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
+      { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
+    ] },
+  { key: 'deploymentSheets', title: 'Duplicate asset deployments', icon: 'fa-table',
+    blurb: 'The same asset deployed twice at once, and sheet entries naming something no other record knows.',
+    columns: ['refDes', 'deployNum', 'deployYear', 'value', 'verdict'],
+    facets: [
+      { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
+      { key: 'deployYear', label: 'All years', of: (row) => String(row.deployYear ?? '') },
       { key: 'refDes', label: 'All designators', of: (row) => String(row.refDes ?? '') },
     ] },
 ] as const satisfies readonly {

@@ -38,7 +38,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
   sensorBulk: {
     verdict: {
       MATCH: 'ok',
-      FORMAT_MATCH: 'review',
+      FORMAT_MATCH: 'ok',
       MISMATCH: 'problem',
       MISSING_FROM_RCA_LIST: 'review',
       MISSING_FROM_SENSOR_BULK: 'problem',
