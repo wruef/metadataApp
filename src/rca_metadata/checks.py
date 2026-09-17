@@ -170,7 +170,9 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
             continue
         seen.append(stem)
 
-        row = {'fileName': fileName, 'instrument': instrument,
+        ## hitlKey for the same reason the deployment check carries one: the
+        ## sheet's own identifier for this row, settled by the run.
+        row = {'fileName': fileName, 'instrument': instrument, 'hitlKey': fileName,
                'HITLstatus': 'NA', 'HITLnotes': ' '}
         if fileName in hitlCal.index:
             row['HITLstatus'] = hitlCal.loc[fileName, 'Status']
@@ -307,7 +309,14 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             row = dict(deployment)
             year = deployment['deployDate'].year
 
+            ## The line this deployment occupies in the 2i-HITL sheet, carried
+            ## on the row so a sign-off writes to the line the check read. The
+            ## browser rebuilt it from the deployment date, in whatever timezone
+            ## the reader happened to be in, and a date near a year boundary
+            ## shifts -- which appends a second line for a deployment that
+            ## already has one rather than updating it.
             key = f"{refDes}.{year}.{deployment['deployNum']}"
+            row['hitlKey'] = key
             row['HITLstatus'] = hitlDeploy.loc[key, 'Status'] if key in hitlDeploy.index else 'NA'
             row['HITLnotes'] = hitlDeploy.loc[key, 'HITLnotes'] if key in hitlDeploy.index else ''
 

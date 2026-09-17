@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { identity, siteOf, splitVerdict, toneOf, VERDICTS, yearOf } from '../app/display'
+import { identity, readDifference, siteOf, splitVerdict, toneOf, VERDICTS, yearOf } from '../app/display'
 
 describe('verdict tone', () => {
   it('colours a verdict by the severity the run gives it', () => {
@@ -60,6 +60,33 @@ describe('the mirrored severity map', () => {
       // python closes a dict after a trailing comma; JSON does not.
       .replace(/,(\s*})/g, '$1')
     expect(JSON.parse(literal)).toEqual(VERDICTS)
+  })
+})
+
+describe('a difference between two recorded values', () => {
+  /** The values either side of it are what the files hold; the difference is a
+   *  subtraction, and its tail is binary noise rather than data. */
+  it('drops the noise that subtracting two floats leaves behind', () => {
+    expect(readDifference(-0.022479699999999936)).toBe('-0.0224797')
+    expect(readDifference(0.0006305490000000002)).toBe('0.000630549')
+    expect(readDifference(4.125249999999999e-7)).toBe('4.12525e-7')
+  })
+
+  it('leaves a number that needs no rounding alone', () => {
+    expect(readDifference(0.5)).toBe('0.5')
+    expect(readDifference(0)).toBe('0')
+    expect(readDifference(-3)).toBe('-3')
+  })
+
+  /** A spectrum reports how many of its values differ, in words. */
+  it('passes a sentence through untouched', () => {
+    const said = '3 of 85 values differ, the first at index 12: 1.0 against 2.0'
+    expect(readDifference(said)).toBe(said)
+  })
+
+  it('shows a dash where there is nothing to show', () => {
+    expect(readDifference(undefined)).toBe('—')
+    expect(readDifference(null)).toBe('—')
   })
 })
 

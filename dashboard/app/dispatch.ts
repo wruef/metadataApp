@@ -54,8 +54,18 @@ export function dispatchInputs(source: Source) {
     asset_management_ref: (testing && source.ref.trim()) || PRODUCTION.ref,
     calibration_files_ref: (testing && source.calRef.trim()) || PRODUCTION.calRef,
     baseline_ref: source.baseline.trim(),
-    publish: source.publish,
+    // Publishing replaces the figures everyone reads and the baseline every
+    // later run is measured against, so a branch run does not get to do it from
+    // here. The workflow refuses it as well; this is so the tick box cannot sit
+    // there looking available. Publishing a branch is deliberate enough to be
+    // worth going to the Actions tab for.
+    publish: source.publish && !testing,
   }
+}
+
+/** Whether publishing is on offer at all. */
+export function canPublish(source: Source) {
+  return source.mode === 'production'
 }
 
 /** A testing run with no ref names nothing — it would verify production twice. */

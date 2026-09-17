@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  canPublish,
   dispatchInputs,
   flattenSteps,
   newSource,
@@ -24,6 +25,19 @@ describe('what a run is dispatched with', () => {
       baseline_ref: '',
       publish: false,
     })
+  })
+
+  it('will not publish a run against a branch', () => {
+    // Publishing replaces the figures everyone reads and the baseline every
+    // later run is measured against. The workflow refuses it too; this stops
+    // the tick box from looking available.
+    expect(dispatchInputs(testing({ publish: true })).publish).toBe(false)
+    expect(canPublish(testing())).toBe(false)
+  })
+
+  it('publishes a production run when asked to', () => {
+    expect(dispatchInputs({ ...newSource(), publish: true }).publish).toBe(true)
+    expect(canPublish(newSource())).toBe(true)
   })
 
   it('takes the repository and ref from the testing fields', () => {

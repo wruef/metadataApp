@@ -1,6 +1,72 @@
 {
  "schemaVersion": 2,
- "runAt": "2026-09-15T16:26:13",
+ "runAt": "2026-09-15T16:26:13+00:00",
+ "sources": {
+  "assetManagement": {
+   "repo": "oceanobservatories/asset-management",
+   "ref": "master",
+   "commit": "ce3abce2452a3532c141ac41f37895cd1e177e10"
+  },
+  "calibrationFiles": {
+   "repo": "OOI-CabledArray/calibrationFiles",
+   "ref": "master",
+   "commit": "2aa17b103ade4c3eadaa736679b6f0cc08875b7d"
+  },
+  "deployments": {
+   "repo": "OOI-CabledArray/deployments",
+   "ref": "main",
+   "commit": "fc8873cc662457ceb8cbf0befe57bd8ad379db32"
+  },
+  "positionSpreadsheet": "inputs/RSN_Positions_TEAM_20251113.xlsx"
+ },
+ "parameters": {
+  "commit": "0e0ba58c4f6b1d2a9e7c3f5b8a1d4e6c2f9b7a30",
+  "dirty": false,
+  "python": "3.11.9",
+  "pandas": "2.2.2"
+ },
+ "referenceDesignators": [
+  "CE02SHBP-LJ01D-05-ADCPTB104",
+  "CE02SHBP-LJ01D-06-CTDBPN106",
+  "CE02SHBP-LJ01D-06-DOSTAD106",
+  "CE02SHBP-LJ01D-10-PHSENH110",
+  "CE02SHBP-MJ01C-08-CAMDSB107",
+  "RS01SBPD-DP01A-06-DOSTAD104",
+  "RS01SLBS-LJ01A-09-HYDBBA102",
+  "RS01SLBS-MJ01A-06-PRESTA101",
+  "RS01SUM2-MJ01B-05-CAMDSB103",
+  "RS03AXBS-LJ03A-09-HYDBBA302",
+  "RS03AXBS-LJ03A-12-DOSTAD301",
+  "RS03AXPD-DP03A-02-VEL3DA303",
+  "RS03AXPD-DP03A-06-DOSTAD304",
+  "RS03AXPS-PC03A-06-VADCPA301",
+  "RS03AXPS-PC03A-08-HYDBBA303",
+  "RS03AXPS-PC03A-4A-DOSTAD303",
+  "RS03AXPS-SF03A-4A-NUTNRA301",
+  "RS03CCAL-MJ03F-12-CTDPFB305",
+  "RS03ECAL-MJ03E-08-OBSSPA304",
+  "RS03ECAL-MJ03E-09-HYDLFA304",
+  "RS03ECAL-MJ03E-12-CTDPFB306",
+  "RS03INT1-MJ03C-05-CAMDSB303",
+  "RS03INT1-MJ03C-07-PPSDNA301",
+  "RS03INT1-MJ03C-07-RASFLA301",
+  "RS03INT1-MJ03C-09-THSPHA301",
+  "RS03INT1-MJ03C-09-TRHPHA302",
+  "RS03INT1-MJ03C-10-TRHPHA301",
+  "RS03INT2-MJ03D-05-OBSSPA305",
+  "RS03INT2-MJ03D-11-CTDPFB307",
+  "RS03INT2-MJ03D-12-VEL3DB304"
+ ],
+ "hitlNotes": {
+  "calibrations": [
+   "coefficients re-calculated by MIOs after erroneous vendor cals",
+   "uses 2015 volume scatter calibration"
+  ],
+  "deployments": [
+   "verified with deployment logs and images",
+   "verified with IP address ping"
+  ]
+ },
  "checks": {
   "sensorBulk": {
    "rows": [
@@ -9,27 +75,30 @@
      "rcaSerials": null,
      "bulkSerial": "5259243-0075",
      "verdict": "MISSING_FROM_RCA_LIST",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
      "assetID": "ATAPL-58326-00001",
      "rcaSerials": null,
      "bulkSerial": "196",
      "verdict": "MISSING_FROM_RCA_LIST",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
      "assetID": "ATAPL-58328-00006",
      "rcaSerials": null,
      "bulkSerial": "T1080",
      "verdict": "MISSING_FROM_RCA_LIST",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
      "assetID": "ATOSU-69825-00001",
@@ -38,9 +107,10 @@
      ],
      "bulkSerial": "21498",
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "The serial numbers agree"
     },
     {
      "assetID": "ATOSU-69825-00002",
@@ -49,9 +119,10 @@
      ],
      "bulkSerial": "18153",
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "The serial numbers agree"
     },
     {
      "assetID": "ATOSU-69825-00003",
@@ -60,9 +131,10 @@
      ],
      "bulkSerial": "18919",
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "The serial numbers agree"
     },
     {
      "assetID": "ATAPL-70248-00001",
@@ -74,9 +146,10 @@
      ],
      "bulkSerial": "P1-SUBC13115",
      "verdict": "FORMAT_MATCH",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The same serial number, written two different ways"
     },
     {
      "assetID": "ATAPL-70248-00002",
@@ -88,9 +161,10 @@
      ],
      "bulkSerial": "P2-SUBC13114",
      "verdict": "FORMAT_MATCH",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The same serial number, written two different ways"
     },
     {
      "assetID": "ATOSU-69827-00001",
@@ -99,9 +173,10 @@
      ],
      "bulkSerial": "16-7230",
      "verdict": "FORMAT_MATCH",
-     "severity": "review",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The same serial number, written two different ways"
     },
     {
      "assetID": "ATAPL-75664-00001",
@@ -110,9 +185,10 @@
      ],
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
      "assetID": "ATAPL-75664-00002",
@@ -121,9 +197,10 @@
      ],
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
      "assetID": "ATAPL-75664-00003",
@@ -132,9 +209,10 @@
      ],
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
      "assetID": "ATAPL-58693-00005",
@@ -143,9 +221,10 @@
      ],
      "bulkSerial": "299464",
      "verdict": "MISMATCH",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
      "assetID": "PIRSN-CAMPIA-00001",
@@ -154,9 +233,10 @@
      ],
      "bulkSerial": "1",
      "verdict": "MISMATCH",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
      "assetID": "PIRSN-OVRSRA-00001",
@@ -165,9 +245,10 @@
      ],
      "bulkSerial": "101409",
      "verdict": "MISMATCH",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
      "assetID": "ATAPL-58338-00001",
@@ -176,9 +257,10 @@
      ],
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
-     "severity": "unchecked",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The sensor bulk record carries no serial number for this asset"
     },
     {
      "assetID": "ATAPL-58338-00002",
@@ -187,9 +269,10 @@
      ],
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
-     "severity": "unchecked",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The sensor bulk record carries no serial number for this asset"
     },
     {
      "assetID": "ATAPL-58340-00001",
@@ -198,9 +281,10 @@
      ],
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
-     "severity": "unchecked",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The sensor bulk record carries no serial number for this asset"
     }
    ],
    "summary": {
@@ -221,27 +305,30 @@
      "deployNum": 1,
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The same asset appears twice in one deployment"
     },
     {
      "refDes": "RS03AXPS-PC03A-4A-DOSTAD303",
      "deployNum": 1,
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The same asset appears twice in one deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
      "deployNum": 1,
      "value": "ATAPL-58340-00003",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
-     "severity": "problem",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The same asset appears twice in one deployment"
     }
    ],
    "summary": {
@@ -274,9 +361,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2018.3",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
@@ -295,9 +384,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2016.2",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
@@ -316,9 +407,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2014.1",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -337,9 +430,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
-     "severity": "review",
+     "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2026.3",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -358,9 +453,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2025.2",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -379,9 +476,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2024.1",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03INT2-MJ03D-05-OBSSPA305",
@@ -400,9 +499,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03INT2-MJ03D-05-OBSSPA305.2014.1",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-THSPHA301",
@@ -421,9 +522,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03INT1-MJ03C-09-THSPHA301.2015.2",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-THSPHA301",
@@ -442,9 +545,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03INT1-MJ03C-09-THSPHA301.2014.1",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -463,9 +568,11 @@
      "imageAssetID": "ATAPL-58340-00002",
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2022.8",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -484,9 +591,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
-     "severity": "review",
+     "hitlKey": "RS03ECAL-MJ03E-12-CTDPFB306.2026.7",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS03CCAL-MJ03F-12-CTDPFB305",
@@ -505,9 +614,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
-     "severity": "review",
+     "hitlKey": "RS03CCAL-MJ03F-12-CTDPFB305.2026.7",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -526,9 +637,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2022.8",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -547,9 +660,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2021.7",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -568,9 +683,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "review",
+     "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2020.6",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03ECAL-MJ03E-09-HYDLFA304",
@@ -589,9 +706,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03ECAL-MJ03E-09-HYDLFA304.2014.1",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03ECAL-MJ03E-08-OBSSPA304",
@@ -610,9 +729,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03ECAL-MJ03E-08-OBSSPA304.2013.1",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03AXPS-SF03A-4A-NUTNRA301",
@@ -631,9 +752,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPS-SF03A-4A-NUTNRA301.2015.2",
+     "finding": "problem",
      "cleared": true,
-     "finding": "problem"
+     "severity": "cleared",
+     "reason": "The serial number in the raw archive is not the asset on the deployment sheet"
     },
     {
      "refDes": "RS03AXPS-PC03A-08-HYDBBA303",
@@ -652,9 +775,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPS-PC03A-08-HYDBBA303.2019.5",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03AXPS-PC03A-06-VADCPA301",
@@ -673,9 +798,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPS-PC03A-06-VADCPA301.2016.3",
+     "finding": "problem",
      "cleared": true,
-     "finding": "problem"
+     "severity": "cleared",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -694,9 +821,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2018.4",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -715,9 +844,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2014.1",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "The calibration on file is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -736,9 +867,11 @@
      "imageAssetID": "ATAPL-58346-00004",
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2020.6",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -757,9 +890,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2018.4",
+     "finding": "problem",
      "cleared": true,
-     "finding": "problem"
+     "severity": "cleared",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -778,9 +913,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2017.3",
+     "finding": "problem",
      "cleared": true,
-     "finding": "problem"
+     "severity": "cleared",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03AXBS-LJ03A-12-DOSTAD301",
@@ -799,9 +936,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03AXBS-LJ03A-12-DOSTAD301.2014.1",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03AXBS-LJ03A-09-HYDBBA302",
@@ -820,9 +959,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03AXBS-LJ03A-09-HYDBBA302.2016.3",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "No calibration on file dated before this deployment"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -841,9 +982,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03ECAL-MJ03E-12-CTDPFB306.2025.6",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -862,9 +1005,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2019.5",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS01SLBS-MJ01A-06-PRESTA101",
@@ -883,9 +1028,11 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "RS01SLBS-MJ01A-06-PRESTA101.2014.1",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-TRHPHA302",
@@ -904,9 +1051,11 @@
      "imageAssetID": null,
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03INT1-MJ03C-09-TRHPHA302.2023.1",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -925,9 +1074,11 @@
      "imageAssetID": null,
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2023.9",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -946,9 +1097,11 @@
      "imageAssetID": "ATAPL-58338-00001",
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2023.9",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -967,9 +1120,11 @@
      "imageAssetID": "ATAPL-58338-00003",
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
+     "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2022.8",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
     },
     {
      "refDes": "RS03INT1-MJ03C-05-CAMDSB303",
@@ -988,9 +1143,11 @@
      "imageAssetID": "ATAPL-70101-00022",
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
-     "severity": "problem",
+     "hitlKey": "RS03INT1-MJ03C-05-CAMDSB303.2023.7",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
     },
     {
      "refDes": "CE02SHBP-LJ01D-10-PHSENH110",
@@ -1009,9 +1166,11 @@
      "imageAssetID": null,
      "image_verify": "MISMATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "cleared",
+     "hitlKey": "CE02SHBP-LJ01D-10-PHSENH110.2025.1",
+     "finding": "problem",
      "cleared": true,
-     "finding": "problem"
+     "severity": "cleared",
+     "reason": "The asset in the pre-deploy photograph is not the one on the deployment sheet"
     }
    ],
    "summary": {
@@ -1034,11 +1193,12 @@
      "positionName": "LJ01D",
      "resolution": "YEAR",
      "sourceRow": 241,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
@@ -1047,11 +1207,12 @@
      "positionName": "LJ01D",
      "resolution": "YEAR",
      "sourceRow": 241,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
@@ -1060,11 +1221,12 @@
      "positionName": "LJ01D",
      "resolution": "YEAR",
      "sourceRow": 241,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "CE02SHBP-LJ01D-05-ADCPTB104",
@@ -1073,6 +1235,11 @@
      "positionName": "LJ01D",
      "resolution": "PRIOR",
      "sourceRow": 252,
+     "verdict": "MISMATCH",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
        "field": "lat",
@@ -1084,11 +1251,7 @@
        "current": -124.305724,
        "expected": -124.305648
       }
-     ],
-     "verdict": "MISMATCH",
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
@@ -1097,6 +1260,11 @@
      "positionName": "LJ01D",
      "resolution": "PRIOR",
      "sourceRow": 252,
+     "verdict": "MISMATCH",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
        "field": "lat",
@@ -1108,11 +1276,7 @@
        "current": -124.305724,
        "expected": -124.305648
       }
-     ],
-     "verdict": "MISMATCH",
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
@@ -1121,6 +1285,11 @@
      "positionName": "LJ01D",
      "resolution": "PRIOR",
      "sourceRow": 252,
+     "verdict": "MISMATCH",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
        "field": "lat",
@@ -1132,11 +1301,7 @@
        "current": -124.305724,
        "expected": -124.305648
       }
-     ],
-     "verdict": "MISMATCH",
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "refDes": "CE02SHBP-MJ01C-08-CAMDSB107",
@@ -1145,11 +1310,12 @@
      "positionName": "CAMDSB107",
      "resolution": "PRIOR",
      "sourceRow": 39,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
@@ -1158,11 +1324,12 @@
      "positionName": "LJ01A",
      "resolution": "HITL",
      "sourceRow": 219,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
@@ -1171,11 +1338,12 @@
      "positionName": "LJ01A",
      "resolution": "HITL",
      "sourceRow": 220,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     },
     {
      "refDes": "RS01SUM2-MJ01B-05-CAMDSB103",
@@ -1184,11 +1352,12 @@
      "positionName": "CAMDSB103",
      "resolution": "HITL",
      "sourceRow": 18,
-     "differences": [],
      "verdict": "MATCH",
-     "severity": "ok",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Latitude, longitude and depth match the spreadsheet",
+     "differences": []
     }
    ],
    "summary": {
@@ -1214,9 +1383,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
+     "hitlKey": "ATOSU-69825-00001__20150803.csv",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATOSU-69825-00002__20140815.csv",
@@ -1228,9 +1399,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
+     "hitlKey": "ATOSU-69825-00002__20140815.csv",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATOSU-69825-00002__20160722.csv",
@@ -1242,9 +1415,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
+     "hitlKey": "ATOSU-69825-00002__20160722.csv",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATAPL-69827-10004__20240616.csv",
@@ -1260,6 +1435,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATAPL-69827-10004__20240616.csv",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
        "file": "ATAPL-69827-10004__20240616",
@@ -1269,10 +1449,7 @@
        "difference": 0.0009999999999763531,
        "source": "vendor"
       }
-     ],
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATAPL-69827-10004__20241109.csv",
@@ -1288,10 +1465,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "COMPARED",
-     "differences": [],
-     "severity": "ok",
+     "hitlKey": "ATAPL-69827-10004__20241109.csv",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Every coefficient matches the vendor calibration",
+     "differences": []
     },
     {
      "fileName": "ATAPL-69827-10005__20240609.csv",
@@ -1307,10 +1486,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "COMPARED",
-     "differences": [],
-     "severity": "ok",
+     "hitlKey": "ATAPL-69827-10005__20240609.csv",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Every coefficient matches the vendor calibration",
+     "differences": []
     },
     {
      "fileName": "ATAPL-69827-10005__20260306.csv",
@@ -1326,10 +1507,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "COMPARED",
-     "differences": [],
-     "severity": "ok",
+     "hitlKey": "ATAPL-69827-10005__20260306.csv",
+     "finding": "ok",
      "cleared": false,
-     "finding": "ok"
+     "severity": "ok",
+     "reason": "Every coefficient matches the vendor calibration",
+     "differences": []
     },
     {
      "fileName": "ATAPL-66662-00002__20160303.csv",
@@ -1345,6 +1528,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
+     "hitlKey": "ATAPL-66662-00002__20160303.csv",
+     "finding": "review",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
        "file": "ATAPL-66662-00002__20160303",
@@ -1354,10 +1542,7 @@
        "difference": 4.13,
        "source": "constant"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "review"
+     ]
     },
     {
      "fileName": "ATAPL-66662-00008__20150412.csv",
@@ -1373,6 +1558,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
+     "hitlKey": "ATAPL-66662-00008__20150412.csv",
+     "finding": "review",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
        "file": "ATAPL-66662-00008__20150412",
@@ -1382,10 +1572,7 @@
        "difference": -1.7,
        "source": "constant"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "review"
+     ]
     },
     {
      "fileName": "ATAPL-66662-00009__20150419.csv",
@@ -1401,6 +1588,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
+     "hitlKey": "ATAPL-66662-00009__20150419.csv",
+     "finding": "review",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
        "file": "ATAPL-66662-00009__20150419",
@@ -1410,10 +1602,7 @@
        "difference": -5.24,
        "source": "constant"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "review"
+     ]
     },
     {
      "fileName": "ATAPL-67627-00001__20150423.csv",
@@ -1429,6 +1618,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATAPL-67627-00001__20150423.csv",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
        "file": "ATAPL-67627-00001__20150423",
@@ -1502,10 +1696,7 @@
        "difference": -2.400000004287861e-09,
        "source": "vendor"
       }
-     ],
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATAPL-67627-00005__20170307.csv",
@@ -1521,10 +1712,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-67627-00005__20170307.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATOSU-58694-00007__20200922.csv",
@@ -1541,6 +1734,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATOSU-58694-00007__20200922.csv",
+     "finding": "problem",
+     "cleared": false,
+     "severity": "problem",
+     "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
        "file": "ATOSU-58694-00007__20200922",
@@ -1590,10 +1788,7 @@
        "difference": -0.022479699999999936,
        "source": "vendor"
       }
-     ],
-     "severity": "problem",
-     "cleared": false,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATAPL-58320-00001__20121219.csv",
@@ -1609,10 +1804,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00001__20121219.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58320-00001__20181111.csv",
@@ -1628,10 +1825,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00001__20181111.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58320-00001__20201118.csv",
@@ -1647,10 +1846,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00001__20201118.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58320-00001__20241208.csv",
@@ -1666,10 +1867,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-58320-00001__20241208.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58320-00003__20160302.csv",
@@ -1681,9 +1884,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00003__20160302.csv",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATAPL-58320-00004__20160302.csv",
@@ -1695,9 +1900,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00004__20160302.csv",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATAPL-58320-00004__20241208.csv",
@@ -1713,10 +1920,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-58320-00004__20241208.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58320-00005__20160302.csv",
@@ -1728,9 +1937,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "cleared",
+     "hitlKey": "ATAPL-58320-00005__20160302.csv",
+     "finding": "review",
      "cleared": true,
-     "finding": "review"
+     "severity": "cleared",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATAPL-58320-00005__20260317.csv",
@@ -1746,10 +1957,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-58320-00005__20260317.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-70110-00001__20130422.csv",
@@ -1765,6 +1978,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATAPL-70110-00001__20130422.csv",
+     "finding": "problem",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
        "file": "ATAPL-70110-00001__20130422",
@@ -1790,10 +2008,7 @@
        "difference": null,
        "source": "vendor"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATAPL-70110-00002__20131205.csv",
@@ -1809,6 +2024,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATAPL-70110-00002__20131205.csv",
+     "finding": "problem",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
        "file": "ATAPL-70110-00002__20131205",
@@ -1834,10 +2054,7 @@
        "difference": null,
        "source": "vendor"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATAPL-70110-00003__20140129.csv",
@@ -1854,10 +2071,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "COMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-70110-00003__20140129.csv",
+     "finding": "ok",
      "cleared": true,
-     "finding": "ok"
+     "severity": "cleared",
+     "reason": "Every coefficient matches the vendor calibration",
+     "differences": []
     },
     {
      "fileName": "ATOSU-70110-00007__20131205.csv",
@@ -1873,6 +2092,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
+     "hitlKey": "ATOSU-70110-00007__20131205.csv",
+     "finding": "problem",
+     "cleared": true,
+     "severity": "cleared",
+     "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
        "file": "ATOSU-70110-00007__20131205",
@@ -1898,10 +2122,7 @@
        "difference": null,
        "source": "vendor"
       }
-     ],
-     "severity": "cleared",
-     "cleared": true,
-     "finding": "problem"
+     ]
     },
     {
      "fileName": "ATOSU-68020-00008__20170111.csv",
@@ -1917,10 +2138,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NO_VENDOR_FILE",
-     "differences": [],
-     "severity": "problem",
+     "hitlKey": "ATOSU-68020-00008__20170111.csv",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "No vendor calibration is on record to compare against",
+     "differences": []
     },
     {
      "fileName": "ATAPL-66645-00001__20110913.csv",
@@ -1936,10 +2159,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-66645-00001__20110913.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATAPL-66645-00002__20140128.csv",
@@ -1955,10 +2180,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "cleared",
+     "hitlKey": "ATAPL-66645-00002__20140128.csv",
+     "finding": "unchecked",
      "cleared": true,
-     "finding": "unchecked"
+     "severity": "cleared",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATAPL-78452-00003__20241008.csv",
@@ -1974,10 +2201,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-78452-00003__20241008.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATAPL-78452-00004__20241008.csv",
@@ -1993,10 +2222,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-78452-00004__20241008.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATAPL-78452-00005__20241008.csv",
@@ -2012,10 +2243,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATAPL-78452-00005__20241008.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "The vendor calibration is a scan, so it has to be read by a person",
+     "differences": []
     },
     {
      "fileName": "ATAPL-58341-00006__20170110.csv",
@@ -2031,10 +2264,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NO_VENDOR_FILE",
-     "differences": [],
-     "severity": "problem",
+     "hitlKey": "ATAPL-58341-00006__20170110.csv",
+     "finding": "problem",
      "cleared": false,
-     "finding": "problem"
+     "severity": "problem",
+     "reason": "No vendor calibration is on record to compare against",
+     "differences": []
     },
     {
      "fileName": "ATOSU-58320-00019__20150519.csv",
@@ -2050,10 +2285,12 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
-     "differences": [],
-     "severity": "unchecked",
+     "hitlKey": "ATOSU-58320-00019__20150519.csv",
+     "finding": "unchecked",
      "cleared": false,
-     "finding": "unchecked"
+     "severity": "unchecked",
+     "reason": "No comparison is written for this instrument yet",
+     "differences": []
     },
     {
      "fileName": "ATAPL-68020-00001__20170202.csv",
@@ -2065,9 +2302,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
+     "hitlKey": "ATAPL-68020-00001__20170202.csv",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No comparison is written for this instrument yet"
     },
     {
      "fileName": "ATAPL-68020-00002__20140927.csv",
@@ -2079,9 +2318,11 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
+     "hitlKey": "ATAPL-68020-00002__20140927.csv",
+     "finding": "review",
      "cleared": false,
-     "finding": "review"
+     "severity": "review",
+     "reason": "No comparison is written for this instrument yet"
     }
    ],
    "summary": {

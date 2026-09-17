@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { VERDICTS } from '~/display'
-import { HITL_SHEETS, type SheetKey } from '~/signoff'
+import { readDifference, VERDICTS } from '~/display'
+import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
 const { check, row } = defineProps<{ check: string; row: Row }>()
@@ -57,7 +57,7 @@ const settled = computed(() => row.severity === 'ok' || row.severity === 'cleare
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
 /** What a sign-off keys on — the line it writes into the 2i-HITL sheet. */
-const hitlKey = computed(() => (sheet.value ? HITL_SHEETS[sheet.value].of(row) : ''))
+const hitlKey = computed(() => (sheet.value ? hitlKeyOf(sheet.value, row) : ''))
 
 /** Reading a mismatch means reading both files. A text vendor file is compared
  *  and its differences marked; a pdf is put on screen for a person to read,
@@ -81,30 +81,33 @@ const comparing = ref(false)
             {{ check === 'positions' ? 'Fields that differ from the spreadsheet'
               : 'Coefficients that differ from the vendor file' }}
           </h4>
-          <table class="coef">
-            <thead>
-              <tr>
-                <th>{{ check === 'positions' ? 'Field' : 'Coefficient' }}</th>
-                <th class="text-right">asset-management</th>
-                <th class="text-right">{{ check === 'positions' ? 'Spreadsheet' : 'Vendor' }}</th>
-                <th v-if="check !== 'positions'" class="text-right">Difference</th>
-                <!-- A constant carries no vendor value, so it is not a
-                     disagreement with the vendor at all. -->
-                <th v-if="check !== 'positions'">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(difference, index) in differences" :key="index">
-                <td>{{ difference.coefficient ?? difference.field }}</td>
-                <td class="text-right">{{ difference.github ?? difference.current }}</td>
-                <td class="text-right">{{ difference.expected ?? '—' }}</td>
-                <td v-if="check !== 'positions'" class="d text-right">
-                  {{ difference.difference ?? '—' }}
-                </td>
-                <td v-if="check !== 'positions'">{{ difference.source }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="coefwrap">
+            <table class="coef">
+              <thead>
+                <tr>
+                  <th>{{ check === 'positions' ? 'Field' : 'Coefficient' }}</th>
+                  <th class="text-right">asset-management</th>
+                  <th class="text-right">{{ check === 'positions' ? 'Spreadsheet' : 'Vendor' }}</th>
+                  <th v-if="check !== 'positions'" class="text-right">Difference</th>
+                  <!-- A constant carries no vendor value, so it is not a
+                       disagreement with the vendor at all. -->
+                  <th v-if="check !== 'positions'">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(entry, index) in differences" :key="index">
+                  <td>{{ entry.coefficient ?? entry.field }}</td>
+                  <!-- What each file records, exactly as it was read. -->
+                  <td class="num text-right">{{ entry.github ?? entry.current }}</td>
+                  <td class="num text-right">{{ entry.expected ?? '—' }}</td>
+                  <td v-if="check !== 'positions'" class="d num text-right">
+                    {{ readDifference(entry.difference) }}
+                  </td>
+                  <td v-if="check !== 'positions'">{{ entry.source }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </template>
 
         <template v-if="rawOutput.length">

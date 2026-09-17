@@ -2,7 +2,7 @@
 import { useAuth } from '~/auth'
 import { identity, rowTone, splitVerdict, toneOf, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
-import { HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
+import { hitlKeyOf, HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
 
 const { check, checkKey, columns, facets } = defineProps<{
@@ -24,7 +24,7 @@ const signoff = useSignoff()
 const sheet = computed(() => (checkKey in HITL_SHEETS ? (checkKey as SheetKey) : null))
 
 function keyOf(row: Row) {
-  return sheet.value ? HITL_SHEETS[sheet.value].of(row) : ''
+  return sheet.value ? hitlKeyOf(sheet.value, row) : ''
 }
 
 function queuedFor(row: Row) {

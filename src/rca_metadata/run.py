@@ -36,7 +36,10 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
     byRefDes = loading.deploymentsByRefDes(deployments)
 
     return {
-        'runAt': datetime.datetime.now().isoformat(timespec='seconds'),
+        ## UTC, and said so. A naive stamp is read as local time by the browser
+        ## and sorts against the UTC file stamp in the run index, so a laptop
+        ## run and a runner run could order wrongly against each other.
+        'runAt': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
         ## Every input the run read, so any row can be traced back to it.
         'sources': {
             'assetManagement': report.describeSource(amSource),

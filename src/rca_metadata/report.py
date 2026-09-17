@@ -19,6 +19,7 @@ import datetime
 import json
 import math
 import os
+import platform
 import subprocess
 
 import numpy as np
@@ -306,7 +307,10 @@ def gitProvenance(path='.'):
     commit = os.environ.get('GITHUB_SHA') or commitOf(path)
     dirty = subprocess.run(['git', '-C', path, 'status', '--porcelain'],
                            capture_output=True, text=True).stdout.strip()
-    return {'commit': commit or 'UNKNOWN', 'dirty': bool(dirty)}
+    ## Comparison is exact to the last digit a file publishes, so which pandas
+    ## parsed the csv is part of what produced these numbers.
+    return {'commit': commit or 'UNKNOWN', 'dirty': bool(dirty),
+            'python': platform.python_version(), 'pandas': pd.__version__}
 
 
 def describeSource(source):
@@ -323,9 +327,12 @@ def describeSource(source):
     ## A directory copied rather than cloned has no .git to ask, and that read as
     ## a plain absent value -- so two runs were compared while neither recorded
     ## which asset-management they had read.
+    ## The clone's path is left out deliberately. It describes the machine the
+    ## run happened on rather than the data it read, it means nothing to whoever
+    ## opens the published report, and two runs of the same commit from
+    ## different directories compared as different sources because of it.
     commit = commitOf(source.local) if source.local else None
-    return {'repo': source.repo, 'ref': source.ref, 'local': source.local,
-            'commit': commit or 'UNKNOWN'}
+    return {'repo': source.repo, 'ref': source.ref, 'commit': commit or 'UNKNOWN'}
 
 
 def buildReport(result, paramsPath='.'):

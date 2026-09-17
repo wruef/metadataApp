@@ -1,0 +1,23 @@
+# The environment a verification run is reproduced in.
+#
+# Matches .github/workflows/tests.yaml and the python in verify.yaml, so a
+# reviewer's laptop and the runner parse the same files with the same library
+# and reach the same verdicts. Comparison is exact to the last digit a vendor
+# file publishes; a different pandas is a different answer.
+#
+#     conda env create -f environment.yml
+#     conda activate rca-metadata
+#     pip install -e '.[test]'
+name: rca-metadata
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - requests
+  - beautifulsoup4
+  - openpyxl
+  # Four instruments publish their calibration only as a pdf certificate.
+  - pdfplumber
+  - pytest

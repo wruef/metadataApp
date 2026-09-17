@@ -20,6 +20,10 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 
+# Comparison is exact to the last digit a vendor file publishes, so the library
+# that parses the csv is part of what produced the numbers. Every run records
+# the versions it ran with, under `parameters` in the report.
+
 [project.scripts]
 verify-metadata = "rca_metadata.cli:main"
 compare-metadata = "rca_metadata.cli:compareMain"

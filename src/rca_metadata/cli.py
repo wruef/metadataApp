@@ -142,14 +142,24 @@ def _propose(files, fork, token, title, body, outDir):
     if not fork:
         print('no --fork given, so nothing was proposed')
         return 0
-    url = PullRequest(fork, token=token, base=args_base(fork)).open(files, title, body)
+    url = PullRequest(fork, token=token, base=baseBranchOf(fork)).open(files, title, body)
     print(f'opened {url}' if url else f'{fork} already matches these files — nothing to propose')
     return 0
 
 
-def args_base(fork):
+## The branch each repository's pull requests target, by repository name. The
+## fork is the reviewer's own, so the owner varies and the name does not.
+## Inferred from the fork's name before, which made a fork called anything else
+## -- deployments-2026, or a rename -- propose against a branch that is not
+## there, and the failure arrives from the GitHub API rather than from here.
+BASE_BRANCH = {'deployments': 'main', 'metadataApp': 'main',
+               'asset-management': 'master', 'calibrationFiles': 'master'}
+DEFAULT_BASE = 'master'
+
+
+def baseBranchOf(fork):
     """The branch a fork's pull requests target."""
-    return 'main' if fork.endswith('deployments') else 'master'
+    return BASE_BRANCH.get(fork.split('/')[-1], DEFAULT_BASE)
 
 
 def publishMain(argv=None):

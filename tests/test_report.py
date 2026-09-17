@@ -154,7 +154,9 @@ def test_reportCarriesItsSchemaVersionAndProvenance(tmp_path):
     assert doc['schemaVersion'] == SCHEMA_VERSION
     assert doc['runAt'] == '2026-09-15T12:00:00'
     assert doc['sources']['assetManagement']['ref'] == 'master'
-    assert set(doc['parameters']) == {'commit', 'dirty'}
+    ## Comparison is exact to the last digit a vendor file publishes, so the
+    ## libraries that parsed it belong in the provenance beside the commit.
+    assert set(doc['parameters']) == {'commit', 'dirty', 'python', 'pandas'}
 
 
 def test_theReportCarriesTheReasonsASignOffPicksFrom():

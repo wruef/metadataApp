@@ -146,6 +146,25 @@ export function toneOf(check: string, column: string, value: string): Tone | nul
 }
 
 /**
+ * A difference, without the noise that subtracting two floats leaves behind.
+ *
+ * −0.5064574 less −0.4839777 is −0.0224797, which a machine writes as
+ * −0.022479699999999936: seventeen digits, the last ten an artifact of binary
+ * arithmetic rather than anything in either file. Printed in full they claim a
+ * precision the vendor never published, and they made the table wide enough to
+ * run over the panel beside it.
+ *
+ * Six significant figures, and here only — the recorded values either side of
+ * it are what the two files hold and are shown exactly as they were read. A
+ * spectrum reports its difference as a sentence rather than a number, so
+ * anything that is not a number passes through untouched.
+ */
+export function readDifference(value: unknown): string {
+  if (typeof value !== 'number') return value === null || value === undefined ? '—' : String(value)
+  return Number.isFinite(value) ? Number(value.toPrecision(6)).toString() : String(value)
+}
+
+/**
  * An identifier split into the part every row shares and the part that picks
  * this one out. Bolding only the distinguishing half is what makes a column of
  * near-identical reference designators scannable.

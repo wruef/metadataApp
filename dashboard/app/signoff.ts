@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 
-import { useAuth } from '~/auth'
+import { FORKS, useAuth } from '~/auth'
 import { openPullRequest, readFile } from '~/github'
 import { applyDecisions, hitlDate, type Decision as HitlDecision } from '~/hitl'
 
 /** The two checks a reviewer signs off, and the sheet each one is recorded in.
  *  `key` is the column that identifies a row, and matches how the check itself
- *  looks a sign-off up. */
+ *  looks a sign-off up. `of` rebuilds that identifier for a run published
+ *  before the report carried it — see `hitlKeyOf`. */
 export const HITL_SHEETS = {
   calibrations: {
     path: '2i_HITL/2i_HITL_calibrationVerification.csv',
@@ -22,6 +23,23 @@ export const HITL_SHEETS = {
 } as const
 
 export type SheetKey = keyof typeof HITL_SHEETS
+
+/**
+ * The line a sign-off writes to, as the run itself identified it.
+ *
+ * Taken from the row rather than rebuilt here. The fallback reads the year out
+ * of the deployment date in the reader's own timezone, so a deployment dated
+ * near midnight on the 31st of December belongs to one year in Seattle and the
+ * next in UTC — and a sign-off then appends a second line to the sheet for a
+ * deployment that already has one, instead of updating it. Runs published
+ * before the report carried the key still have to be signed off, which is why
+ * the fallback stays.
+ */
+export function hitlKeyOf(sheet: SheetKey, row: Record<string, unknown>) {
+  return typeof row.hitlKey === 'string' && row.hitlKey
+    ? row.hitlKey
+    : HITL_SHEETS[sheet].of(row)
+}
 
 export interface Decision extends HitlDecision {
   sheet: SheetKey
@@ -64,16 +82,20 @@ export const useSignoff = defineStore('signoff', () => {
     submitting.value = true
     result.value = null
     try {
+      // The branch the sheets live on, from the fork table rather than assumed:
+      // this repository is on main and asset-management is on master, and a
+      // sign-off written against the wrong one fails at the GitHub call.
+      const base = FORKS.find((each) => each.key === 'hitl')!.base
       const files: Record<string, string> = {}
       for (const [sheet, definition] of Object.entries(HITL_SHEETS)) {
         const decisions = queued.value.filter((decision) => decision.sheet === sheet)
         if (!decisions.length) continue
-        const current = await readFile(fork, definition.path, 'main')
+        const current = await readFile(fork, definition.path, base)
         files[definition.path] = applyDecisions(current, definition.key, decisions, auth.initials)
       }
 
       const url = await openPullRequest(
-        fork, 'main', files,
+        fork, base, files,
         `HITL sign-offs, ${hitlDate()}`,
         `${queued.value.length} row(s) signed off by ${auth.initials} (${auth.user?.login}).\n\n` +
           'Review here, then raise the pull request to the upstream repository by hand.',

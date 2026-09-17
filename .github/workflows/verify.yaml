@@ -23,6 +23,10 @@ on:
         description: "commit the report so the dashboard serves it"
         type: boolean
         default: false
+      publish_nonproduction:
+        description: "allow publish from a ref other than production — replaces the figures everyone reads"
+        type: boolean
+        default: false
 
 env:
   PYTHON_VERSION: 3.11
@@ -43,6 +47,26 @@ jobs:
       # Publishing commits the report to this repository; nothing else writes.
       contents: write
     steps:
+      # Publishing replaces latest.json, which is the figure every reader sees
+      # and the baseline every later comparison is measured against. A run
+      # against a branch is a question, not an answer, so publishing one has to
+      # be asked for in as many words rather than left one tick box away.
+      - name: Refuse to publish a run that is not production
+        if: ${{ inputs.publish && !inputs.publish_nonproduction }}
+        env:
+          REPO: ${{ inputs.asset_management_repo }}
+          REF: ${{ inputs.asset_management_ref }}
+          CAL_REF: ${{ inputs.calibration_files_ref }}
+        run: |
+          if [ "$REPO" != "oceanobservatories/asset-management" ] \
+             || [ "$REF" != "master" ] || [ "$CAL_REF" != "master" ]; then
+            echo "::error::Refusing to publish $REPO@$REF (calibrationFiles@$CAL_REF)."
+            echo "Publishing replaces reports/latest.json, which is what the dashboard shows"
+            echo "as production and what later runs are compared against."
+            echo "Run it without publish, or tick publish_nonproduction if that is what you mean."
+            exit 1
+          fi
+
       - name: Check out this repository
         uses: actions/checkout@v5
 
@@ -140,12 +164,15 @@ jobs:
           # The index is what lets the dashboard offer an earlier run.
           index-metadata --report "$REPORT" --name "report_$stamp.json" \
             --index reports/index.json --out reports/index.json
+          # Named twice for the same reason the report is: the dashboard reads
+          # one fixed url, and the stamped copy keeps the run reachable after
+          # the next one replaces it.
           if [ -f "$COMPARISON" ]; then cp "$COMPARISON" "reports/comparison_$stamp.json"; fi
 
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add -f reports/latest.json reports/index.json "reports/report_$stamp.json" \
-            $([ -f "$COMPARISON" ] && echo "reports/comparison_$stamp.json")
+            $([ -f "$COMPARISON" ] && echo "$COMPARISON reports/comparison_$stamp.json")
           git commit -m "Verification run $stamp
 
           asset-management ${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}

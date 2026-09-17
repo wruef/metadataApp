@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
+import { hitlKeyOf, useSignoff, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
 const { sheet, row } = defineProps<{ sheet: SheetKey; row: Row }>()
@@ -8,7 +8,7 @@ const auth = useAuth()
 const signoff = useSignoff()
 const store = useStore()
 
-const key = computed(() => HITL_SHEETS[sheet].of(row))
+const key = computed(() => hitlKeyOf(sheet, row))
 const queued = computed(() => signoff.decisionFor(sheet, key.value))
 const notes = ref('')
 

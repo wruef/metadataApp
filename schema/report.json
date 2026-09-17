@@ -1,0 +1,62 @@
+{
+  "_comment": [
+    "What a run report contains, named once and checked from both sides.",
+    "",
+    "The python emitter writes this document and the dashboard's TypeScript",
+    "declares its shape, and until this file existed the two could drift in",
+    "silence: a renamed field turned into blank cells in a published table,",
+    "with nothing failing anywhere. tests/test_schema.py and",
+    "dashboard/test/schema.test.ts both read this file and both check the same",
+    "committed report, so a rename has to be made in three places or it fails.",
+    "",
+    "Required fields only. A field that is genuinely absent on some rows --",
+    "vendorFiles, differences -- is not listed, because a contract that lies",
+    "about what is optional is worse than none."
+  ],
+
+  "schemaVersion": 2,
+
+  "severities": ["problem", "review", "unchecked", "cleared", "ok"],
+
+  "report": [
+    "schemaVersion",
+    "runAt",
+    "sources",
+    "parameters",
+    "referenceDesignators",
+    "hitlNotes",
+    "checks"
+  ],
+
+  "//parameters": "What produced the numbers: the commit of this repository, whether it was dirty, and the libraries that parsed the files. Comparison is exact to the last digit, so the versions are part of the answer.",
+  "parameters": ["commit", "dirty", "python", "pandas"],
+
+  "//source": "A repository at a commit. The clone's path is deliberately absent -- it describes a machine, not the data.",
+  "source": ["repo", "ref", "commit"],
+
+  "check": ["rows", "summary"],
+
+  "//summary": "Every category, plus attention (what is waiting on a person) and verified (agreed plus cleared).",
+  "summary": [
+    "problem",
+    "review",
+    "unchecked",
+    "cleared",
+    "ok",
+    "attention",
+    "verified",
+    "total"
+  ],
+
+  "//row": "On every row of every check. finding is what the checks found; severity is the category, which a sign-off changes and finding does not.",
+  "row": ["severity", "finding", "cleared", "reason"],
+
+  "//rows": "Per check, on top of the four above. hitlKey is the line a sign-off writes to, settled by the run rather than rebuilt in a browser.",
+  "rows": {
+    "calibrations": ["fileName", "instrument", "hitlKey", "calRepo_check", "fileParse"],
+    "deployments": ["refDes", "deployNum", "AssetID", "hitlKey", "verificationStatus"],
+    "positions": ["refDes", "deployNum", "deployYear", "verdict"],
+    "sensorBulk": ["assetID", "verdict"],
+    "deploymentSheets": ["refDes", "verdict"]
+  }
+}

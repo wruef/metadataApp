@@ -41,17 +41,9 @@ whether a change is safe:
 
     compare-metadata reports/baseline.json reports/report.json
 
-Every comparison says whether it can be trusted. A row can move because the data
-changed or because the *check* changed — fixing the silent-pass bug moved 114
-rows with nothing in the repositories moving at all — so two runs produced by
-different versions of the checks are refused rather than diffed.
-
-A run must also record the commit of every repository it read, and a comparison
-is refused when one does not. The ref is not enough: `master` today and `master`
-next season are different data, so a moved row could not be attributed to either.
-A directory copied rather than cloned has no `.git` to ask, which is exactly how
-two runs came to be diffed while neither recorded which asset-management it had
-seen — the commit now reads `UNKNOWN` rather than coming back empty.
+A comparison states whether it can be trusted and refuses itself when it cannot
+— when the checks changed rather than the data, or when either run cannot name
+the commit it read. [docs/report-contract.md](docs/report-contract.md) says why.
 
 ## The dashboard
 
@@ -232,261 +224,19 @@ a sign-off comment as something you are publishing.
 Once, before the first deploy: **Settings → Pages → Source: GitHub Actions**.
 Nothing else is configured, and nothing needs to be configured again.
 
-## The run report
+## Design notes
 
-A run emits one versioned JSON document — `schemaVersion`, when it ran, every
-input it read (both repository refs and the parameter-file commit), and the five
-checks. It replaces five CSV and TXT files that could not reliably be read back:
-the calibration report embedded a python list literal containing commas in its
-last column, and the season lists wrote multi-valued serial numbers unquoted, so
-27 of 154 rows in the 2022 list had more fields than the header.
+The reasoning behind the answers, kept out of this file so it stays a guide to
+running the thing:
 
-Every row carries four things the dashboard should not have to work out itself:
-
-- **`severity`** — the category the row is in: `problem`, `review`, `unchecked`,
-  `cleared` or `ok`, taken as the worst of the row's verdicts, so a queue can be
-  ranked by consequence rather than by row order. A verdict with no mapping
-  counts as `review`, so a new one reaches a person instead of quietly passing.
-- **`cleared`** — whether a reviewer signed the row off. A signed-off row takes
-  the `cleared` category whatever its checks found, so it is never a problem and
-  never work waiting on somebody.
-- **`finding`** — what the checks themselves found, kept whatever the sign-off
-  says. A sign-off is a judgement *about* a finding rather than the absence of
-  one: three signed-off calibrations turned out to hold real transcription
-  errors, so the disagreement stays on the row and on screen beside the badge.
-  A cleared row reads green where its finding agrees and amber where it does
-  not, and carries a second badge naming what was found.
-- **`reason`** — one sentence saying why the row reads as it does, in the words
-  someone would use out loud. A queue is worked by people, and
-  `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
-
-Each check's `summary` counts every category, and beside them `attention` — the
-problem and review rows, which a signed-off row is never one of — and
-`verified`, agreed plus cleared. `attention` is what *needs attention* means
-everywhere: the rail, the segmented control and the overview queue all read it,
-so they cannot disagree about how much is left. `verified` is what the headline
-tiles count, because a sign-off is how the things a check cannot settle get
-settled, and leaving them out would leave the record looking permanently
-unfinished.
-
-The reason explains the severity, so the two must never contradict each other —
-a row reading *a photograph confirms the asset* above a badge reading *not
-checked* helps nobody. A test runs every combination of verdicts each check can
-return and asserts that no reason lands on both a settled row and an open one.
-It found 442 real deployments doing exactly that: confirmed by one piece of
-evidence while another had never been looked at. The two sign-off reasons are
-exempt by design, because a sign-off describes what a person did rather than
-what a check found.
-
-The report also carries `hitlNotes` — every note already written in each 2i-HITL
-sheet, most used first. Those are the reasons offered when a row is signed off,
-so a new sign-off reuses the team's wording rather than a fresh synonym for it.
-They are read from the sheets rather than from the run's own rows, because the
-two do not hold the same set: a note written against a calibration file that
-asset-management no longer carries is still a reason worth offering.
-
-Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
-happily and neither is valid JSON, which a browser refuses to parse.
-
-## Verdicts
-
-A calibration comparison returns a verdict and the differences behind it:
-
-| verdict | meaning |
-|---|---|
-| `MISMATCH` | a coefficient disagrees with the vendor |
-| `MISSING_COEFFICIENT` | the vendor file does not carry a coefficient the github file claims |
-| `CONSTANT_MISMATCH` | the only disagreements are with `coefficientConstants.csv`, where no vendor value is involved |
-| `COMPARED` | read and agreed |
-| `PDF_NOTCOMPARED` | only a pdf is on file |
-| `FORMAT_NOTCOMPARED` | a vendor file is on record, but not in the format this instrument is compared against |
-| `NO_VENDOR_FILE` | the sensor has a comparison rule but nothing on record |
-| `NAN` | no comparison rule for this sensor |
-
-Comparison is exact — there is no tolerance. Where a vendor file publishes fewer
-significant figures than the github csv carries, that gap is a transcription to
-fix in the data, not noise to absorb in code.
-
-## Which vendor file each instrument is compared against
-
-One format per instrument, and **no falling back to another**. Where a vendor
-publishes the same calibration twice, the two files do not carry the same
-numbers at the same precision, and comparing against the wrong one produces
-disagreements that are an artefact of the choice rather than a fault in the data.
-
-| instrument | file | why |
-|---|---|---|
-| CTD | `.xmlcon` | more resolution than the `.cal` or the pdf |
-| DOFSTA | `.cal` | more resolution than the `.xml` or the pdf |
-| FLCDRA | `.dev` | |
-| FLNTUA | `.dev.lambda` | both `.dev` files are posted to the vendor repository; only the lambda one, which carries volume scattering, is what asset-management is generated from |
-| FLORDD | `.dev.lambda` | |
-| NUTNR | `.cal` | |
-| SPKIRA | `.cal` | |
-| OPTAA | `.dev` | the pure-water calibration. The `.cal` beside it is the **air** calibration and is not what asset-management is built from |
-| PARA | `.tdf`, else `.pdf` | the vendor shipped a `.tdf` for some; the rest were typed in from the certificate |
-| PHSEN | `.pdf` | typed in from the certificate |
-| PCO2W | `.pdf` | typed in from the certificate |
-| DOSTAD | `.pdf` | typed in from the certificate |
-
-Where the named format is absent but some other vendor file is on record, the
-result is `FORMAT_NOTCOMPARED` rather than a comparison against whatever happens
-to be there. Enforcing that moved five files out of the queue: four apparent
-mismatches that were artefacts of reading the wrong file — including the nine
-CTD coefficients differing by about one part in 10⁷ that had stood as a finding
-for years — and one CTD that had been agreeing with a `.cal` it should never
-have been read against.
-
-### OPTAA is three files, and all three are compared
-
-One OPTAA calibration is a csv plus two `.ext` sheets, each an 85 × 38 matrix
-that the csv points at by name — `SheetRef:CC_taarray`. The vendor `.dev` carries
-all of it: the calibration temperature from its header, the temperature bins, and
-then one row per wavelength holding the two wavelengths, the two clean-water
-offsets and both temperature-correction rows. The sheets are resolved when the
-calibration is loaded, so the comparison sees matrices rather than the names of
-files it would otherwise have skipped.
-
-OPTAA coefficients are compared **in order**, unlike the other spectra. The index
-is the wavelength: the nth offset belongs to the nth wavelength, and the nth row
-of each array with it. Compared as sets — which is how the other spectra compare,
-because a vendor publishes them unordered — a reversal would read as agreement,
-and 85 values would match 86 with a repeat among them.
-
-Of 110 OPTAA calibrations, **108 now compare and all 108 agree**. The other two
-have no vendor file at all.
-
-The 108th is a borrowed instrument. Sensor rules are keyed on the asset-ID field
-of the file name, which holds a model code for an RCA-owned asset and a word for
-a loaner: `ATSBE-LOANER-00001` spells `LOANER`, which is no model code, so
-nothing matched and the calibration reported `NOTCOMPARED` with its vendor
-`.dev` sitting beside it. Where that field settles nothing, the asset is now
-looked up in `params/RCA-InstrumentList.csv` and identified by the instrument
-type recorded there. That list is the record of what every RCA asset is, so the
-next oddly-named one needs no code change. The field still has the last word
-where it resolves, because keying on it is what fixed the calibration date being
-read as an asset ID.
-
-### Certificates that were only ever published as a pdf
-
-DOSTAD, PHSEN, PCO2W and PAR have no machine-readable vendor file, so their
-coefficients are typed into asset-management by hand — about 400 RCA
-calibrations, none of which anything checked. **Three quarters of those
-certificates carry a text layer**, so the numbers can be read exactly rather
-than recognised from an image; OCR is only needed for the 95 that are scans, and
-is not implemented.
-
-All four are done: **288 calibrations that nothing had ever checked now
-compare**, and they found three real transcription errors:
-
-| | in the record | on the certificate |
-|---|---|---|
-| PHSEN `CC_eb578` | `38676.5` | `38676.0` |
-| PCO2W `CC_cal_range` | `[100, 1190]` | `100–1199` |
-| DOSTAD `CC_conc_coef` | `-0.9765852` | `-0.9768582` |
-
-The last is a digit transposition — `8582` typed as `5852`. In every case the
-other values on the same page are correct, which is what makes them typing slips
-rather than a parse going wrong.
-
-### The 95 scans are read by a person, not by OCR
-
-The remaining certificates have no text layer. They are good scans — 600 dpi,
-clean, entirely legible — so text recognition was measured rather than assumed.
-On the first one tried, against a record whose values are known, tesseract read
-three of seven coefficients wrongly and **invented a minus sign** on a fourth:
-
-| on the certificate | recognised as |
-|---|---|
-| `1.14611E-04` | `LA4611E- 04` |
-| `-2.94251E-01` | `"2.942516. o1` |
-| `-5.33864E01` | `--S.33864E01` |
-| `2.61210E01` | `-2.61210E01` |
-
-The confusions are exactly the ones that matter here — `1`/`L`, `5`/`S`, `0`/`O`,
-and a dropped leading digit that turns `2.21e-06` into `.21e-06`, a tenth of the
-value and a perfectly plausible number. In a check whose whole premise is exact
-comparison, that manufactures findings at best and agrees wrongly at worst.
-
-So the scan is put in front of a person instead. Opening a scan-only calibration
-shows the values asset-management holds beside the certificate itself, rendered
-in the page: read across, then clear or flag. The verdict stays
-`PDF_NOTCOMPARED` — nothing claims to have checked it — but the reading takes
-seconds rather than a hunt through the vendor repository.
-
-GitHub serves a raw pdf as `application/octet-stream` with `nosniff`, which a
-browser downloads rather than renders, so the bytes are fetched and given their
-real type before being shown.
-
-Reading them is not "extract the text". The certificates are laid out for a
-person, and every defect found while building this was in reassembling that
-layout:
-
-- Coefficient names are set with real **subscripts** — `Ea434` is `Ea` with a
-  smaller `434` below and to the right — so they are joined by font size and
-  position, which is the one thing every template agrees on.
-- One certificate sets the `I` of `Im` a point lower than the `m`, which puts it
-  at the end of its own line in draw order. Lines are therefore ordered by
-  position, left to right, not by the order the page draws them.
-- One breaks `2.5063877597725e-006` after the decimal point. Split numbers are
-  rejoined **only** where a number is already expected, because widening that
-  rule runs columns together.
-- A PCO2W calibration range arrives four ways: `206–1197` with a real en-dash,
-  `200-600` with a hyphen, `202(cid:21)1191` where the dash is a glyph with no
-  Unicode mapping, and split across two cells as `200` then `-1500`. A fifth
-  way — `2021191`, the dash dropped entirely — is **not** read as a range at
-  all. There is no way to know where to split it, and a guess would invent a
-  number, so it reports as missing instead.
-- Two vendors misspell their own coefficient names — `SUVFoilCoef` for
-  `SVUFoilCoef` on ten certificates, and `Conentration Coef` on another
-  template. Both spellings are matched rather than corrected: the file on record
-  is the file on record.
-- One optode template prints the seven SVU coefficients as `C0-C3` on one line
-  and `C4-C6` on the next. The index *is* the coefficient, so the halves have to
-  go back together the right way round, and a half-read set is reported as
-  nothing at all rather than as four values disagreeing with seven.
-- The range is taken only from where the page labels it. Searched for freely, a
-  part number three lines up (`4830-58336`) reads as a perfectly good range. And
-  one certificate prints its range backwards, `1388-200`; those are the ends of
-  an interval, so both sides are sorted before they are compared.
-
-Not every coefficient on the page comes from the vendor, and the three cases are
-kept apart:
-
-- **Constant.** PCO2W's `ea434`, `eb434`, `ea620` and `eb620` are identical on
-  all 89 RCA calibrations, which is why they are not printed on the certificate.
-  They live in `params/coefficientConstants.csv`, as does the ADC bit depth —
-  12 for both instruments, and a deviation is then a finding rather than a gap.
-  It already is one: two calibrations of `ATAPL-58337-00013` run at 16, noted as
-  a Rev K circuit board.
-- **Absent on purpose.** A DOSTAD certificate with no 2-point recalibration
-  prints no concentration coefficient at all, and the record then carries the
-  identity — no correction. That is declared per sensor in `defaults`, so the
-  record is held to it: 14 calibrations pass *because* they say `[0.0, 1.0]`,
-  and one claiming a correction its certificate never made would not.
-- **Measured.** PHSEN's salinity is a real measurement on four deployments and
-  the default 35 on the rest, and nothing on the vendor's page could check it
-  either way. Declared per sensor in `notVendor`, so it reads as a stated limit
-  of the check rather than as silence. Asset-management's own note agrees:
-  *"no sal listed on cal sheet; using default 35"*.
-- **Vendor.** Everything else, including PHSEN's four E values — those vary
-  across the archive and are printed on the certificate, which is how the
-  transcription error above was found.
-
-A constant is only checked when the vendor file could be read, because a file
-whose only evidence is a scan must not report `COMPARED` on the strength of
-three constants. That leaves the second Rev K calibration unverified — it is one
-of the 36 PHSEN scans.
-
-### A calibration date is not an asset ID
-
-Sensors used to be identified by searching the whole file path for an asset ID.
-A calibration dated 2017-01-10 spells `70110` inside its own date, which is
-FLNTUA's asset ID, and 2017-01-11 spells `70111`, which is FLCDRA's. A NUTNR and
-a SPKIR calibration were checked against the wrong instrument's rules for years
-and reported as having no vendor file, while their `.cal` sat in the directory
-beside them. Both compare and agree now. The asset ID is read from its own field
-in the file name.
+- [docs/report-contract.md](docs/report-contract.md) — what a run emits, the
+  category every row carries, and when a comparison between two runs refuses
+  itself.
+- [docs/calibration-comparison.md](docs/calibration-comparison.md) — which
+  vendor file each instrument is compared against and why, the verdicts, the pdf
+  certificates, and the rules that cost real findings to get right.
+- [schema/report.json](schema/report.json) — the report's fields, named once and
+  checked from both the python and the dashboard test suites.
 
 ## Parameter files
 
@@ -525,6 +275,8 @@ row separates them. Those rows need a person, and are the ones to resolve first.
     params/             instrument list, coefficient map and constants
     2i_HITL/            reviewer sign-off sheets
     inputs/             the RCA position spreadsheet drops
+    schema/             the report's fields, read by both test suites
+    docs/               why the checks answer the way they do
     tests/
 
 ## Running the tests
@@ -534,17 +286,19 @@ row separates them. Those rows need a person, and are the ones to resolve first.
 
     cd dashboard && npm test
 
+`.github/workflows/tests.yaml` runs the python tests on every push, against the
+version a verification run uses and the oldest the package claims to support.
+The dashboard's own tests run in the Pages workflow, where they block a deploy.
+
+The environment is pinned on both sides, because comparison is exact to the last
+digit a vendor file publishes and a different pandas is a different answer.
+`environment.yml` builds the python side and `dashboard/.nvmrc` names the node
+the dashboard is built with; every run records the versions it ran with under
+`parameters` in its report.
+
+    conda env create -f environment.yml && conda activate rca-metadata
+    pip install -e ".[test]"
+
 The dashboard tests cover the code that rewrites the HITL sheets, against the
 real 380-row calibration sheet. A bug there corrupts years of sign-offs, and the
 first version of it would have rewritten every line of the file on every commit.
-
-## Reports predating the correctness fixes are not a baseline
-
-Two defects made the calibration check report success without checking: the
-verdict was set to `COMPARED` before any vendor file was opened, and in the CTD
-and DOFSTA `.cal` paths the difference was computed outside the coefficient loop
-so only the last coefficient was compared. Both are fixed here, and
-`tests/test_calibrations.py` covers exactly those failure modes.
-
-Anything in the old `reportOuts/` predating `metadataVerification@0ac8bd8` was
-produced by the buggy path. Baselines start at the first post-fix run.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { PRODUCTION, ready } from '~/dispatch'
+import { canPublish, PRODUCTION, ready } from '~/dispatch'
 import { useRuns } from '~/runs'
 import { useStore } from '~/store'
 
@@ -64,10 +64,18 @@ const shown = computed(() => {
 
       <span class="grow" />
 
-      <label class="flex gap-1.5 items-center" title="Commits the report to this repository, which republishes the dashboard with it. Leave off for a look that changes nothing.">
+      <label
+        v-if="canPublish(runs.source)"
+        class="flex gap-1.5 items-center"
+        title="Commits the report to this repository, which republishes the dashboard with it. Leave off for a look that changes nothing."
+      >
         <input v-model="runs.source.publish" type="checkbox" >
         Publish
       </label>
+      <!-- A branch run answers a question about a branch. Publishing it would
+           replace the figures everyone else reads, so it is not offered here
+           and the workflow refuses it too. -->
+      <span v-else class="lbl">Testing runs do not publish</span>
 
       <button
         v-if="auth.signedIn"

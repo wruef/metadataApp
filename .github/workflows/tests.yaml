@@ -1,0 +1,61 @@
+name: Tests
+
+# The checks themselves, on every push. The dashboard's own tests run in the
+# Pages workflow, where they block a deploy; nothing ran the python tests at all
+# until this existed, so a broken check reached a verification run before it
+# reached anybody's attention.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "params/**"
+      - "2i_HITL/**"
+      - "pyproject.toml"
+      - ".github/workflows/tests.yaml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "params/**"
+      - "2i_HITL/**"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The version a verification run uses, and the oldest the package claims
+        # to support. Comparison is exact to the last digit, so a difference
+        # between the two is worth knowing about before a season depends on it.
+        python: ["3.11", "3.10"]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install the package and its test dependencies
+        run: pip install -e '.[test]'
+
+      # Some tests read params/ and 2i_HITL/ from the working directory, which
+      # is the point: they check the team's real sheets rather than a fixture
+      # that can agree with a bug.
+      - name: Run the tests
+        run: pytest -q
+
+      - name: Record what it ran against
+        if: always()
+        run: pip list --format=freeze | grep -Ei '^(pandas|numpy|pdfplumber|openpyxl|requests|beautifulsoup4)='

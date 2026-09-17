@@ -285,6 +285,18 @@
 }
 
 /* ---- the coefficients that disagree ---- */
+
+/* The table sits in the left half of a two-column panel, and a table is as wide
+   as its widest unbreakable cell no matter what width it is given. A long
+   coefficient name or an unrounded difference therefore pushed it straight over
+   the Sources list beside it. Scrolling inside the column keeps the numbers
+   aligned -- wrapping them would not -- and keeps the overflow off its
+   neighbour. */
+.coefwrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .coef {
   width: 100%;
   font-size: 12px;
@@ -311,6 +323,8 @@
   border-top: 1px solid var(--line-soft);
 }
 .coef td.d { color: var(--crit); font-weight: 600 }
+/* Numbers are read down a column, so they may not wrap. */
+.coef td.num { white-space: nowrap }
 
 /* ---- clear and flag, at the right of the row ---- */
 .rowact { display: flex; gap: 5px; justify-content: flex-end }
