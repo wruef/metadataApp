@@ -82,6 +82,43 @@ asset-management no longer carries is still a reason worth offering.
 Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
 happily and neither is valid JSON, which a browser refuses to parse.
 
+## What confirms a deployment
+
+`verificationStatus` answers one question: is the instrument named on the
+deployment sheet the one that was actually in the water? Two things answer it,
+and **either alone is enough**:
+
+- the serial number recovered from the first raw file matches the asset's serial
+  in the sensor bulk record, or
+- a reviewer signed the deployment off.
+
+A pre-deploy photograph is **not** one of them. It is still read, still reported
+in `image_verify`, and a photograph that disagrees with the sheet is still a
+problem. But a photograph of an instrument is not evidence of which instrument
+went in the water, and 127 deployments were reading as confirmed on that alone.
+
+Where neither answer is available, the status is `RAW_SN_POSSIBLE` when the
+instrument class writes its serial into its raw data — extraction would settle
+it — and `NOT_VERIFIED` when nothing could.
+
+A confirmed deployment reads as **agreed**, the same way a calibration that
+matches its vendor file does, unless something else on the row objects. What
+counts as an objection is the point. A verdict can describe a row without
+ranking it, and two kinds do:
+
+- **`excluded`** — there was nothing to check. `NAN` on the raw file means the
+  instrument class writes no serial into its data; `NAN` on the photograph means
+  nobody took one. Neither is a check that was skipped, and counting them as
+  unchecked held 459 confirmed deployments back from reading as confirmed.
+- **`warning`** — something worth noticing that nobody has to act on. A
+  calibration more than fifteen months older than its deployment is the only one
+  today. A deployment the raw archive or a reviewer has confirmed is confirmed
+  whether or not the calibration on file was getting old, so it colours its cell
+  amber and is said in the row's sentence rather than holding the row open.
+
+A photograph that disagrees with the sheet, or a required calibration that is
+missing, still holds a row back. Those are findings rather than absences.
+
 ## Comparing two runs
 
     compare-metadata reports/baseline.json reports/report.json

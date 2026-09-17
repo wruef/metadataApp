@@ -107,11 +107,15 @@ export const CHECKS = [
     ] },
   { key: 'deployments', title: 'Deployments', icon: 'fa-anchor',
     blurb: 'Every deployment: its calibration file, its raw serial number, its sign-off.',
-    columns: ['refDes', 'deployNum', 'AssetID', 'verificationStatus', 'rawFile_verify', 'image_verify', 'calFile_verify'],
+    columns: ['refDes', 'deployNum', 'AssetID', 'verificationStatus', 'rawFile_verify', 'image_verify', 'calFile_verify', 'HITLstatus'],
     facets: [
       { key: 'site', label: 'All sites', of: (row) => siteOf(row.refDes) },
       { key: 'year', label: 'All years', of: (row) => yearOf(row.deployDate) },
       { key: 'verificationStatus', label: 'Any status', of: (row) => String(row.verificationStatus ?? '') },
+      // Deployments are signed off in 2i_HITL_deploymentVerification.csv exactly
+      // as calibrations are, and every row has carried the status all along --
+      // it was the one check that never showed it.
+      { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
       { key: 'calFile_verify', label: 'Any calibration', of: (row) => String(row.calFile_verify ?? '') },
       // The raw verdict carries the serial numbers behind it in the same string
       // — MISMATCH: raw: 379: ATAPL-… — so the verdict is what it groups on.

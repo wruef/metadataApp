@@ -104,7 +104,7 @@ empty cell is the absence of a value, not the smallest one.
 
 Beside it are dropdowns over the columns worth narrowing by: instrument and
 comparison result for calibrations, site and year for deployments and positions,
-verdict for the rest. Their options come from the rows in the report rather than
+verdict for the rest, and sign-off status for the two checks that have one. Their options come from the rows in the report rather than
 from a list in the code, so a new instrument or a new verdict appears on its own.
 Each option carries a count measured against every *other* active filter, so
 narrowing one does not leave the numbers beside the alternatives stale.

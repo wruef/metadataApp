@@ -50,6 +50,16 @@ CLEARED_SEVERITY = 'cleared'
 ## counted in neither -- 'unchecked' would claim a look that was never owed.
 EXCLUDED = 'excluded'
 
+## Something worth noticing that nobody has to act on. Like EXCLUDED it does not
+## rank the row -- a deployment confirmed by its raw serial is confirmed whether
+## or not its calibration is getting old -- but unlike EXCLUDED it is not
+## nothing, so it colours its cell amber and is said in the row's reason.
+WARNING = 'warning'
+
+## Verdict severities that describe a row without ranking it. Neither is ever a
+## row's own status: they qualify one.
+NEUTRAL = (EXCLUDED, WARNING)
+
 ## verdict -> severity, per field. A verdict absent here is 'review', so a new
 ## one surfaces in the queue rather than disappearing into a pass.
 SEVERITY = {
@@ -95,11 +105,21 @@ SEVERITY = {
     'deployments': {
         'verificationStatus': {'VERIFIED': 'ok', 'RAW_SN_POSSIBLE': 'review',
                                'NOT_VERIFIED': 'review'},
+        ## NAN on either of these means there was nothing to check, not that a
+        ## check was skipped: the instrument class writes no serial into its raw
+        ## data, or nobody photographed it. Neither is a gap, and counting them
+        ## as 'unchecked' held 459 confirmed deployments back from reading as
+        ## confirmed. NO_SN is different -- a raw file exists and the serial has
+        ## not been pulled out of it, which extraction would settle.
         'rawFile_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NO_FILE': 'review',
-                           'NO_SN': 'unchecked', 'NAN': 'unchecked'},
-        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NAN': 'unchecked'},
+                           'NO_SN': 'unchecked', 'NAN': 'excluded'},
+        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NAN': 'excluded'},
         'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'problem',
-                           'VALID_FILE_CAL_OLDER_THAN_15MONTHS': 'review',
+                           ## Worth noticing, not worth holding a row for: a
+                           ## deployment the raw archive or a reviewer has
+                           ## confirmed is confirmed whether or not the
+                           ## calibration on file was getting old.
+                           'VALID_FILE_CAL_OLDER_THAN_15MONTHS': 'warning',
                            ## No calibration directory exists for the instrument,
                            ## so nothing could be compared and nothing is owed.
                            'EXCLUDED': 'excluded',
@@ -118,9 +138,10 @@ def severityOf(check, row):
     verdict without adding it here puts rows in front of a person instead of
     quietly passing them.
 
-    An excluded verdict is skipped rather than ranked: it says this check has
-    nothing to judge on that field, so it neither passes the row nor holds it
-    back. A row whose every verdict is excluded is excluded itself.
+    An excluded or warning verdict is skipped rather than ranked. Excluded says
+    this check has nothing to judge on that field; warning says there is
+    something worth noticing that nobody has to act on. Neither passes the row
+    nor holds it back. A row whose every verdict is excluded is excluded itself.
     """
     worst = None
     excluded = False
@@ -130,8 +151,9 @@ def severityOf(check, row):
         ## A verdict can carry detail after a colon -- 'MISMATCH: raw: 1130: AT...'
         verdict = str(row[field]).split(':')[0].strip()
         severity = mapping.get(verdict, 'review')
-        if severity == EXCLUDED:
-            excluded = True
+        if severity in NEUTRAL:
+            ## Describes the row without ranking it.
+            excluded = excluded or severity == EXCLUDED
             continue
         if worst is None or SEVERITIES.index(severity) < SEVERITIES.index(worst):
             worst = severity
@@ -203,19 +225,23 @@ def _deploymentReason(row):
     ## can be confirmed by its serial number and still carry a stale
     ## calibration, and the severity takes the worse of the two. A sentence
     ## saying the row is fine above a badge saying it is not helps nobody.
-    if calibration == 'VALID_FILE_CAL_OLDER_THAN_15MONTHS':
-        return 'The calibration on file is more than fifteen months older than the deployment'
     if _verdict(row, 'rawFile_verify') == 'NO_FILE':
         return 'No raw file was found to check the serial number against'
+    ## A calibration getting old does not unsettle a confirmed deployment, so it
+    ## rides along with whatever settled it rather than replacing the sentence.
+    ## Not on the two sign-off reasons: those describe what a person did rather
+    ## than what a check found, and they have to stay exactly what they are.
+    stale = (' — its calibration is more than fifteen months older than the deployment'
+             if calibration == 'VALID_FILE_CAL_OLDER_THAN_15MONTHS' else '')
     if row['cleared']:
         return 'Cleared in 2i-HITL review'
     if str(row.get('HITLstatus', '')).strip() == 'NotClear':
         return 'Flagged in 2i-HITL review'
     status = _verdict(row, 'verificationStatus')
     if status == 'VERIFIED':
-        evidence = ('The serial number in the raw archive'
-                    if _verdict(row, 'rawFile_verify') == 'MATCH'
-                    else 'The pre-deploy photograph')
+        ## A sign-off returned above, so the raw archive is the only thing left
+        ## that could have confirmed this.
+        evidence = 'The serial number in the raw archive'
         ## Confirmed by one thing while another was never looked at. Read off
         ## the finding rather than from the fields, because the finding is the
         ## worst of every verdict on the row and this sentence has to explain
@@ -223,11 +249,18 @@ def _deploymentReason(row):
         ## claiming to be confirmed under a badge reading 'not checked'. The
         ## finding rather than the severity, which a sign-off overwrites.
         if row.get('finding') == 'unchecked':
-            return f'{evidence} confirms the asset; not every check on this row could run'
-        return f'{evidence} confirms the asset that was deployed'
+            return f'{evidence} confirms the asset; not every check on this row could run' + stale
+        return f'{evidence} confirms the asset that was deployed' + stale
     if status == 'RAW_SN_POSSIBLE':
-        return 'The serial number is recoverable from the raw archive but has not been extracted'
-    return 'Nothing independent of the deployment sheet can confirm this instrument'
+        return ('The serial number is recoverable from the raw archive but has not been '
+                'extracted' + stale)
+    ## The photograph agrees and the row is still not confirmed, which is worth
+    ## saying outright -- otherwise the sentence below claims nothing was found
+    ## when something was, and a reader goes looking for it.
+    if _verdict(row, 'image_verify') == 'MATCH':
+        return ('A pre-deploy photograph agrees, but a photograph alone does not confirm a '
+                'deployment' + stale)
+    return 'Nothing independent of the deployment sheet can confirm this instrument' + stale
 
 
 def _positionReason(row):

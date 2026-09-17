@@ -41,7 +41,7 @@ export function rowTone(severity: Severity, finding?: Severity): Tone {
  * unmapped verdict as `review` — a new verdict draws the eye rather than
  * quietly passing.
  */
-export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> = {
+export const VERDICTS: Record<string, Record<string, Record<string, Severity | 'warning'>>> = {
   sensorBulk: {
     verdict: {
       MATCH: 'ok',
@@ -99,14 +99,14 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> 
       MISMATCH: 'problem',
       NO_FILE: 'review',
       NO_SN: 'unchecked',
-      NAN: 'unchecked',
+      NAN: 'excluded',
     },
-    image_verify: { MATCH: 'ok', MISMATCH: 'problem', NAN: 'unchecked' },
+    image_verify: { MATCH: 'ok', MISMATCH: 'problem', NAN: 'excluded' },
     calFile_verify: {
       VALID_FILE: 'ok',
       NO_VALID_FILE: 'problem',
       EXCLUDED: 'excluded',
-      VALID_FILE_CAL_OLDER_THAN_15MONTHS: 'review',
+      VALID_FILE_CAL_OLDER_THAN_15MONTHS: 'warning',
       none: 'unchecked',
       NAN: 'unchecked',
     },
@@ -142,12 +142,18 @@ export function splitVerdict(value: string) {
  * The tone for a cell, or null when the column does not hold a verdict and the
  * value should be left as plain text.
  */
+/** A verdict can describe a row without ranking it. `excluded` says there was
+ *  nothing to check, and reads as grey; `warning` says there is something worth
+ *  noticing that nobody has to act on, and reads amber. Neither is ever a row's
+ *  own status, so neither belongs in SEVERITY_TONE — they colour a cell. */
+const VERDICT_TONE: Record<string, Tone> = { ...SEVERITY_TONE, warning: 'warn' }
+
 export function toneOf(check: string, column: string, value: string): Tone | null {
   if (column === 'HITLstatus') return HITL[value] ?? 'na'
   const mapped = VERDICTS[check]?.[column]
   if (!mapped) return null
   const severity = mapped[splitVerdict(value).token]
-  return severity ? SEVERITY_TONE[severity] : 'warn'
+  return severity ? VERDICT_TONE[severity] ?? 'warn' : 'warn'
 }
 
 /**

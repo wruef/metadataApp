@@ -356,9 +356,14 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             row['image_verify'] = 'NAN' if imageRow is None else (
                 'MATCH' if str(row['imageAssetID']) in str(deployment['AssetID']) else 'MISMATCH')
 
-            ## A sign-off outranks a failing mechanical check, but the check stays on the row.
-            if (row['rawFile_verify'] == 'MATCH' or row['HITLstatus'] == 'Clear'
-                    or row['image_verify'] == 'MATCH'):
+            ## Two things confirm a deployment, and either alone is enough: the
+            ## serial number recovered from the first raw file, or a reviewer's
+            ## sign-off. A photograph is not one of them. It agrees or it
+            ## disagrees -- a disagreement is still a finding, and it is still
+            ## reported in image_verify -- but a photograph of an instrument is
+            ## not evidence of which instrument went in the water, and 127
+            ## deployments were reading as confirmed on that alone.
+            if row['rawFile_verify'] == 'MATCH' or row['HITLstatus'] == 'Clear':
                 row['verificationStatus'] = 'VERIFIED'
             elif _expectsRawSerial(refDes):
                 row['verificationStatus'] = 'RAW_SN_POSSIBLE'

@@ -468,10 +468,10 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2025.2",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
+     "severity": "ok",
+     "reason": "The serial number in the raw archive confirms the asset that was deployed"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -491,10 +491,10 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2024.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
+     "severity": "ok",
+     "reason": "The serial number in the raw archive confirms the asset that was deployed"
     },
     {
      "refDes": "RS03INT2-MJ03D-05-OBSSPA305",
@@ -514,7 +514,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-05-OBSSPA305.2014.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -537,7 +537,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-09-THSPHA301.2015.2",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -560,7 +560,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-09-THSPHA301.2014.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -581,12 +581,12 @@
      "rawFile_verify": "NAN",
      "imageAssetID": "ATAPL-58340-00002",
      "image_verify": "MATCH",
-     "verificationStatus": "VERIFIED",
+     "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2022.8",
-     "finding": "unchecked",
+     "finding": "review",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
+     "severity": "review",
+     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -655,7 +655,7 @@
      "finding": "review",
      "cleared": false,
      "severity": "review",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -678,7 +678,7 @@
      "finding": "review",
      "cleared": false,
      "severity": "review",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -701,7 +701,7 @@
      "finding": "review",
      "cleared": false,
      "severity": "review",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
      "refDes": "RS03ECAL-MJ03E-09-HYDLFA304",
@@ -721,7 +721,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03ECAL-MJ03E-09-HYDLFA304.2014.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -744,7 +744,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03ECAL-MJ03E-08-OBSSPA304.2013.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -790,10 +790,10 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPS-PC03A-08-HYDBBA303.2019.5",
-     "finding": "review",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "Cleared in 2i-HITL review"
     },
     {
      "refDes": "RS03AXPS-PC03A-06-VADCPA301",
@@ -839,7 +839,7 @@
      "finding": "review",
      "cleared": true,
      "severity": "cleared",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -862,7 +862,7 @@
      "finding": "review",
      "cleared": true,
      "severity": "cleared",
-     "reason": "The calibration on file is more than fifteen months older than the deployment"
+     "reason": "No raw file was found to check the serial number against"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -997,10 +997,10 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03ECAL-MJ03E-12-CTDPFB306.2025.6",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The serial number in the raw archive confirms the asset; not every check on this row could run"
+     "severity": "ok",
+     "reason": "The serial number in the raw archive confirms the asset that was deployed"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -1043,7 +1043,7 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS01SLBS-MJ01A-06-PRESTA101.2014.1",
-     "finding": "unchecked",
+     "finding": "ok",
      "cleared": true,
      "severity": "cleared",
      "reason": "Cleared in 2i-HITL review"
@@ -1110,12 +1110,12 @@
      "rawFile_verify": "NAN",
      "imageAssetID": "ATAPL-58338-00001",
      "image_verify": "MATCH",
-     "verificationStatus": "VERIFIED",
+     "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2023.9",
-     "finding": "unchecked",
+     "finding": "review",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
+     "severity": "review",
+     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -1133,12 +1133,12 @@
      "rawFile_verify": "NAN",
      "imageAssetID": "ATAPL-58338-00003",
      "image_verify": "MATCH",
-     "verificationStatus": "VERIFIED",
+     "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2022.8",
-     "finding": "unchecked",
+     "finding": "review",
      "cleared": false,
-     "severity": "unchecked",
-     "reason": "The pre-deploy photograph confirms the asset; not every check on this row could run"
+     "severity": "review",
+     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
      "refDes": "RS03INT1-MJ03C-05-CAMDSB303",
@@ -1189,13 +1189,13 @@
    ],
    "summary": {
     "problem": 6,
-    "review": 9,
-    "unchecked": 6,
+    "review": 12,
+    "unchecked": 0,
     "cleared": 15,
-    "ok": 0,
+    "ok": 3,
     "excluded": 0,
-    "attention": 15,
-    "verified": 15,
+    "attention": 18,
+    "verified": 18,
     "considered": 36,
     "total": 36
    }

@@ -22,6 +22,64 @@ def test_nothingComparedIsNotAPass():
     assert severityOf('calibrations', {'vendorMatch': 'NOTCOMPARED'}) == 'unchecked'
 
 
+def test_aDeploymentIsConfirmedByItsRawSerialOrASignOff():
+    """Either alone is enough, and a photograph is neither. A photograph of an
+    instrument is not evidence of which instrument went in the water, and 127
+    deployments were reading as confirmed on that alone."""
+    from rca_metadata.report import reasonOf
+
+    confirmed = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
+                 'image_verify': 'NAN', 'calFile_verify': 'VALID_FILE', 'cleared': False}
+    assert severityOf('deployments', confirmed) == 'ok'
+    assert 'raw archive' in reasonOf('deployments', confirmed)
+
+
+def test_aPhotographAloneLeavesADeploymentUnconfirmed():
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'NAN',
+           'image_verify': 'MATCH', 'calFile_verify': 'VALID_FILE', 'cleared': False}
+    assert severityOf('deployments', row) == 'review'
+    assert 'photograph alone' in reasonOf('deployments', row)
+
+
+def test_nothingToCheckIsNotTheSameAsNotChecked():
+    """No photograph on record and no serial in the raw data are both 'nothing
+    to check here', not a check that was skipped. Counting them as unchecked
+    held 459 confirmed deployments back from reading as confirmed."""
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
+           'image_verify': 'NAN', 'calFile_verify': 'VALID_FILE'}
+    assert severityOf('deployments', row) == 'ok'
+    ## but a raw file whose serial nobody has pulled out is genuinely unchecked
+    row['rawFile_verify'] = 'NO_SN'
+    assert severityOf('deployments', row) == 'unchecked'
+
+
+def test_anAgeingCalibrationIsNotedRatherThanHeldAgainstTheRow():
+    """A deployment the raw archive or a reviewer has confirmed is confirmed
+    whether or not the calibration on file was getting old. It is worth
+    noticing, so it colours its cell and is said in the sentence, but it does
+    not hold a confirmed row open."""
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'NAN',
+           'calFile_verify': 'VALID_FILE_CAL_OLDER_THAN_15MONTHS', 'cleared': False}
+    assert severityOf('deployments', row) == 'ok'
+    assert 'fifteen months' in reasonOf('deployments', row)
+
+
+def test_aConfirmedDeploymentStillCarriesItsRealFindings():
+    """Confirmed says which instrument was in the water. It says nothing about
+    the calibration on file, and a missing one or a disagreeing photograph is
+    still a finding."""
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'MISMATCH',
+           'calFile_verify': 'VALID_FILE'}
+    assert severityOf('deployments', row) == 'problem'
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'NAN',
+           'calFile_verify': 'NO_VALID_FILE'}
+    assert severityOf('deployments', row) == 'problem'
+
+
 def test_aRowTakesItsWorstVerdict():
     """A deployment whose raw serial matches but whose calibration file is
     missing is not a pass."""
