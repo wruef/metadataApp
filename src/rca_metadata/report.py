@@ -96,6 +96,134 @@ def severityOf(check, row):
     return worst
 
 
+def _verdict(row, field):
+    """A verdict without the detail some of them carry after a colon."""
+    return str(row.get(field, '')).split(':')[0].strip()
+
+
+def _calibrationReason(row):
+    if row.get('fileParse') == 'FAIL':
+        return 'The calibration file could not be read'
+    vendor = _verdict(row, 'vendorMatch')
+    if vendor == 'MISMATCH':
+        return ('Coefficients differ from the vendor file, reviewed and cleared'
+                if row['cleared'] else
+                'Coefficients differ from the vendor file and nobody has reviewed it')
+    if vendor == 'MISSING_COEFFICIENT':
+        return 'The vendor file does not carry a coefficient this file claims'
+    if _verdict(row, 'duplicateCoeff') == 'DUPLICATES_NOTIDENTICAL':
+        return 'The same coefficient is named twice with conflicting values'
+    serial = _verdict(row, 'serialNumber')
+    if serial in ('MISMATCH_SENSORBULK', 'MULTIPLE', 'PARSING_ERROR'):
+        return 'The serial number in the file disagrees with the sensor bulk record'
+    if vendor == 'CONSTANT_MISMATCH':
+        return 'The only differences are with the fixed values in coefficientConstants.csv'
+    if vendor == 'NO_VENDOR_FILE':
+        return 'No vendor calibration is on record to compare against'
+    if vendor == 'FORMAT_NOTCOMPARED':
+        return 'A vendor file is on record, but not in the format this instrument is compared against'
+    if vendor == 'PDF_NOTCOMPARED':
+        return 'The vendor calibration is a scan, so it has to be read by a person'
+    if vendor in ('NOTCOMPARED', 'NAN'):
+        return 'No comparison is written for this instrument yet'
+    if _verdict(row, 'calRepo_check') == 'NOMATCH':
+        return 'No vendor file in calibrationFiles for this calibration'
+    if serial in ('NOTFOUND_FILE', 'NOTFOUND_SENSORBULK'):
+        return 'No serial number could be found to check against the sensor bulk record'
+    return 'Every coefficient matches the vendor calibration'
+
+
+def _deploymentReason(row):
+    if _verdict(row, 'rawFile_verify') == 'MISMATCH':
+        return 'The serial number in the raw archive is not the asset on the deployment sheet'
+    if _verdict(row, 'image_verify') == 'MISMATCH':
+        return 'The asset in the pre-deploy photograph is not the one on the deployment sheet'
+    calibration = _verdict(row, 'calFile_verify')
+    if calibration == 'NO_VALID_FILE':
+        return 'No calibration on file dated before this deployment'
+    ## Ahead of the two below, which both describe a settled row: a deployment
+    ## can be confirmed by its serial number and still carry a stale
+    ## calibration, and the severity takes the worse of the two. A sentence
+    ## saying the row is fine above a badge saying it is not helps nobody.
+    if calibration == 'VALID_FILE_CAL_OLDER_THAN_15MONTHS':
+        return 'The calibration on file is more than fifteen months older than the deployment'
+    if _verdict(row, 'rawFile_verify') == 'NO_FILE':
+        return 'No raw file was found to check the serial number against'
+    if row['cleared']:
+        return 'Cleared in 2i-HITL review'
+    if str(row.get('HITLstatus', '')).strip() == 'NotClear':
+        return 'Flagged in 2i-HITL review'
+    status = _verdict(row, 'verificationStatus')
+    if status == 'VERIFIED':
+        evidence = ('The serial number in the raw archive'
+                    if _verdict(row, 'rawFile_verify') == 'MATCH'
+                    else 'The pre-deploy photograph')
+        ## Confirmed by one thing while another was never looked at. Read off
+        ## the severity rather than from the fields, because the severity is the
+        ## worst of every verdict on the row and this sentence has to explain
+        ## it -- naming two of the four fields by hand left 442 deployments
+        ## claiming to be confirmed under a badge reading 'not checked'.
+        if row.get('severity') == 'unchecked':
+            return f'{evidence} confirms the asset; not every check on this row could run'
+        return f'{evidence} confirms the asset that was deployed'
+    if status == 'RAW_SN_POSSIBLE':
+        return 'The serial number is recoverable from the raw archive but has not been extracted'
+    return 'Nothing independent of the deployment sheet can confirm this instrument'
+
+
+def _positionReason(row):
+    return {
+        'MISMATCH': 'The position on the deployment sheet differs from the RCA spreadsheet',
+        'NEEDS_HITL': 'More than one spreadsheet row could be this deployment',
+        'NO_POSITION': 'The spreadsheet holds no position for this deployment',
+        'NO_POSITION_NAME': 'No position name maps to this reference designator',
+        'BAD_POSITION_RECORD': 'The spreadsheet row could not be read as a position',
+    }.get(_verdict(row, 'verdict'), 'Latitude, longitude and depth match the spreadsheet')
+
+
+def _sensorBulkReason(row):
+    return {
+        'MISMATCH': 'The RCA list and the sensor bulk record hold different serial numbers',
+        'MISSING_FROM_SENSOR_BULK': 'The asset is in the RCA list but not in the sensor bulk record',
+        'MISSING_FROM_RCA_LIST': 'The asset is in the sensor bulk record but not in the RCA list',
+        'FORMAT_MATCH': 'The same serial number, written two different ways',
+        'NO_BULK_SERIAL': 'The sensor bulk record carries no serial number for this asset',
+    }.get(_verdict(row, 'verdict'), 'The serial numbers agree')
+
+
+def _sheetReason(row):
+    return {
+        'SENSOR_NOT_IN_BULK': 'The sheet names an asset the sensor bulk record does not have',
+        'MOORING_NOT_IN_PLATFORM_BULK': 'The sheet names a mooring the platform record does not have',
+        'CRUISE_NOT_IN_CRUISE_LIST': 'The sheet names a cruise the cruise list does not have',
+        'DUPLICATE_ASSET_IN_DEPLOYMENT': 'The same asset appears twice in one deployment',
+    }.get(_verdict(row, 'verdict'), 'Every entry names something another record knows')
+
+
+## What a reviewer did, rather than what a check found. These sit beside a
+## severity instead of explaining it: a sign-off does not erase the failing
+## check, so 'Cleared in 2i-HITL review' belongs on a failing row as readily as
+## on a settled one.
+REVIEWER_REASONS = ('Cleared in 2i-HITL review', 'Flagged in 2i-HITL review')
+
+
+## Why a row reads the way it does, in the words someone would use out loud.
+## Carried in the report for the same reason the severity is: a queue is worked
+## by people, and "MISMATCH: raw: 379: ATAPL-68020-00002" is not a reason.
+REASONS = {
+    'calibrations': _calibrationReason,
+    'deployments': _deploymentReason,
+    'positions': _positionReason,
+    'sensorBulk': _sensorBulkReason,
+    'deploymentSheets': _sheetReason,
+}
+
+
+def reasonOf(check, row):
+    """One sentence saying why this row reads the way it does."""
+    return REASONS[check](row) if check in REASONS else ''
+
+
 ## A recorded calibration difference, in the order compareCalCoefficients
 ## appends them.
 DIFFERENCE_FIELDS = ['file', 'coefficient', 'github', 'expected', 'difference', 'source']
@@ -112,6 +240,8 @@ def scoreRows(check, rows):
     for row in rows:
         scored.append({**row, 'severity': severityOf(check, row),
                        'cleared': str(row.get('HITLstatus', '')).strip() == CLEARED})
+        ## After cleared, because a sign-off changes what the row means.
+        scored[-1]['reason'] = reasonOf(check, scored[-1])
         if 'differences' in row and check == 'calibrations':
             scored[-1]['differences'] = [asDifference(d) for d in row['differences']]
     return scored

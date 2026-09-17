@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isText } from '~/files'
+import { VERDICTS } from '~/display'
 import { HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
@@ -10,19 +10,32 @@ const store = useStore()
  *  the queue, and what the old reports made you open a CSV to find. */
 const differences = computed(() => (Array.isArray(row.differences) ? row.differences : []))
 
+/**
+ * What the check returned, verbatim.
+ *
+ * These are the fields the severity is taken from, so the list is the run's own
+ * working shown beneath the sentence it produced — the raw verdicts a person
+ * needs on the occasions the sentence is not enough.
+ */
+const rawOutput = computed(() =>
+  [...Object.keys(VERDICTS[check] ?? {}), 'HITLstatus']
+    .filter((field) => row[field] !== undefined && row[field] !== null && row[field] !== '')
+    .map((field) => ({ field, value: String(row[field]) })),
+)
+
 const links = computed(() => {
   const found: { label: string; href: string }[] = []
   const add = (label: string, href: string | null) => href && found.push({ label, href })
 
   if (check === 'calibrations') {
     add(
-      'Repository file',
+      'asset-management',
       store.fileUrl('assetManagement', `calibration/${row.instrument}/${row.fileName}`),
     )
     // The two repos do not always name a sensor directory the same way, so the
     // vendor path is carried in the report rather than derived.
     for (const name of (row.vendorFiles as string[] | undefined) ?? []) {
-      add(`Vendor original · ${name.split('.').slice(1).join('.')}`,
+      add(`Vendor file · ${name.split('.').slice(1).join('.')}`,
           store.fileUrl('calibrationFiles', `${row.vendorDirectory}/${name}`))
     }
   }
@@ -38,81 +51,107 @@ const notes = computed(() => String(row.HITLnotes ?? '').trim())
 
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
+/** What a sign-off keys on — the line it writes into the 2i-HITL sheet. */
+const hitlKey = computed(() => (sheet.value ? HITL_SHEETS[sheet.value].of(row) : ''))
 
-/** Reading a mismatch means reading both files. Offered only when there is a
- *  vendor original that can be put on screen — a PDF is on file but cannot. */
+/** Reading a mismatch means reading both files. A text vendor file is compared
+ *  and its differences marked; a pdf is put on screen for a person to read,
+ *  which for a scan is the only honest way to check it. */
 const comparable = computed(
-  () =>
-    check === 'calibrations' &&
-    ((row.vendorFiles as string[] | undefined) ?? []).some(isText),
+  () => check === 'calibrations' && ((row.vendorFiles as string[] | undefined) ?? []).length > 0,
 )
 const comparing = ref(false)
 </script>
 
 <template>
-  <div class="space-y-4 text-sm">
-    <div v-if="links.length" class="flex flex-wrap gap-2">
-      <a
-        v-for="link in links"
-        :key="link.href"
-        :href="link.href"
-        target="_blank"
-        rel="noopener"
-        class="bg-white border border-gray-200 gap-1.5 inline-flex items-center px-2.5 py-1 rounded-md hover:border-primary-400"
-      >
-        <i class="fa-arrow-up-right-from-square fas text-[10px] text-gray-400" />
-        {{ link.label }}
-      </a>
-    </div>
+  <div>
+    <div class="det">
+      <div>
+        <!-- The sentence the run produced, ahead of any of its working. -->
+        <h4>Why this row is {{ row.severity === 'ok' ? 'settled' : 'open' }}</h4>
+        <p class="max-w-prose text-[13px] leading-relaxed">{{ row.reason }}.</p>
 
-    <div v-if="differences.length">
-      <div class="font-semibold mb-1 text-[11px] text-gray-500 tracking-wider uppercase">
-        {{ differences.length }} {{ differences.length === 1 ? 'difference' : 'differences' }}
+        <template v-if="differences.length">
+          <h4>
+            {{ check === 'positions' ? 'Fields that differ from the spreadsheet'
+              : 'Coefficients that differ from the vendor file' }}
+          </h4>
+          <table class="coef">
+            <thead>
+              <tr>
+                <th>{{ check === 'positions' ? 'Field' : 'Coefficient' }}</th>
+                <th class="text-right">asset-management</th>
+                <th class="text-right">{{ check === 'positions' ? 'Spreadsheet' : 'Vendor' }}</th>
+                <th v-if="check !== 'positions'" class="text-right">Difference</th>
+                <!-- A constant carries no vendor value, so it is not a
+                     disagreement with the vendor at all. -->
+                <th v-if="check !== 'positions'">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(difference, index) in differences" :key="index">
+                <td>{{ difference.coefficient ?? difference.field }}</td>
+                <td class="text-right">{{ difference.github ?? difference.current }}</td>
+                <td class="text-right">{{ difference.expected ?? '—' }}</td>
+                <td v-if="check !== 'positions'" class="d text-right">
+                  {{ difference.difference ?? '—' }}
+                </td>
+                <td v-if="check !== 'positions'">{{ difference.source }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+
+        <template v-if="rawOutput.length">
+          <h4>Raw check output</h4>
+          <dl class="kv">
+            <template v-for="entry in rawOutput" :key="entry.field">
+              <dt>{{ entry.field }}</dt>
+              <dd>{{ entry.value }}</dd>
+            </template>
+          </dl>
+        </template>
+
+        <template v-if="notes">
+          <h4>Reviewer notes</h4>
+          <p class="max-w-prose text-[12.5px] text-gray-700 leading-relaxed">{{ notes }}</p>
+        </template>
       </div>
-      <table class="bg-white border border-gray-200 rounded-md">
-        <thead class="text-[11px] text-gray-500 uppercase">
-          <tr>
-            <th class="font-semibold px-3 py-1.5 text-left">{{ check === 'positions' ? 'Field' : 'Coefficient' }}</th>
-            <th class="font-semibold px-3 py-1.5 text-right">In the repository</th>
-            <th class="font-semibold px-3 py-1.5 text-right">Expected</th>
-            <th v-if="check !== 'positions'" class="font-semibold px-3 py-1.5 text-right">Difference</th>
-            <th v-if="check !== 'positions'" class="font-semibold px-3 py-1.5 text-left">Source</th>
-          </tr>
-        </thead>
-        <tbody class="font-mono tabular-nums">
-          <tr v-for="(difference, index) in differences" :key="index" class="border-t border-gray-100">
-            <td class="px-3 py-1.5">{{ difference.coefficient ?? difference.field }}</td>
-            <td class="px-3 py-1.5 text-right">{{ difference.github ?? difference.current }}</td>
-            <td class="px-3 py-1.5 text-right">{{ difference.expected }}</td>
-            <td v-if="check !== 'positions'" class="px-3 py-1.5 text-right">{{ difference.difference }}</td>
-            <!-- A constant carries no vendor value, so it is not a disagreement
-                 with the vendor at all. -->
-            <td v-if="check !== 'positions'" class="px-3 py-1.5">{{ difference.source }}</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div>
+        <h4>Sources</h4>
+        <dl v-if="links.length || hitlKey || row.sourceRow" class="kv">
+          <template v-for="link in links" :key="link.href">
+            <dt>{{ link.label }}</dt>
+            <dd>
+              <a
+                :href="link.href"
+                target="_blank"
+                rel="noopener"
+                class="text-primary-700 hover:underline"
+              >{{ link.href.split('/').pop() }}</a>
+            </dd>
+          </template>
+          <template v-if="row.sourceRow">
+            <dt>Spreadsheet row</dt>
+            <dd>{{ row.sourceRow }}</dd>
+          </template>
+          <template v-if="hitlKey">
+            <dt>2i-HITL key</dt>
+            <dd>{{ hitlKey }}</dd>
+          </template>
+        </dl>
+        <p v-else class="text-[12.5px] text-gray-500">Nothing further recorded for this row.</p>
+
+        <div v-if="comparable" class="mt-3.5">
+          <u-button size="sm" icon="i-lucide-columns-2" @click="comparing = true">
+            View files side by side
+          </u-button>
+        </div>
+      </div>
     </div>
 
-    <div v-if="comparable">
-      <u-button size="xs" icon="i-lucide-columns-2" @click="comparing = true">
-        View files side by side
-      </u-button>
-    </div>
     <side-by-side v-if="comparing" :row="row" @close="comparing = false" />
-
-    <div v-if="row.sourceRow" class="text-gray-600">
-      Position taken from row {{ row.sourceRow }} of the RCA position spreadsheet.
-    </div>
-
-    <div v-if="notes">
-      <div class="font-semibold mb-1 text-[11px] text-gray-500 tracking-wider uppercase">Reviewer notes</div>
-      <p class="text-gray-700">{{ notes }}</p>
-    </div>
-
-    <div v-if="!links.length && !differences.length && !notes && !row.sourceRow && !comparable" class="text-gray-500">
-      Nothing further recorded for this row.
-    </div>
-
-    <sign-off v-if="sheet" :sheet="sheet" :row="row" />
+    <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
   </div>
 </template>

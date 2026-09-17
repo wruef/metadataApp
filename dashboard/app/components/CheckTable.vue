@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useAuth } from '~/auth'
 import { identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
+import { HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
 
 const { check, checkKey, columns, facets } = defineProps<{
@@ -9,6 +11,36 @@ const { check, checkKey, columns, facets } = defineProps<{
   columns: readonly string[]
   facets: readonly Facet[]
 }>()
+
+/**
+ * Clearing and flagging from the row itself.
+ *
+ * A reviewer works down a queue, and most rows need no more than a verdict, so
+ * the decision lives where the eye already is. It opens the row as well, because
+ * a sign-off with no note is a worse record than none.
+ */
+const auth = useAuth()
+const signoff = useSignoff()
+const sheet = computed(() => (checkKey in HITL_SHEETS ? (checkKey as SheetKey) : null))
+
+function keyOf(row: Row) {
+  return sheet.value ? HITL_SHEETS[sheet.value].of(row) : ''
+}
+
+function queuedFor(row: Row) {
+  return sheet.value ? signoff.decisionFor(sheet.value, keyOf(row)) : undefined
+}
+
+function decide(index: number, row: Row, status: 'Clear' | 'NotClear') {
+  if (!sheet.value) return
+  signoff.queue({
+    sheet: sheet.value,
+    key: keyOf(row),
+    status,
+    notes: String(row.HITLnotes ?? '').trim(),
+  })
+  opened.value = index
+}
 
 /** One row open at a time — the detail is for reading a finding in context,
  *  not for comparing several at once. */
@@ -260,6 +292,7 @@ function label(column: string) {
             >
               {{ label(column) }}
             </th>
+            <th v-if="sheet && auth.canSignOff" class="w-px" />
           </tr>
         </thead>
         <tbody>
@@ -294,15 +327,30 @@ function label(column: string) {
                 </template>
                 <template v-else>{{ cell.text }}</template>
               </td>
+              <td v-if="sheet && auth.canSignOff" class="px-3 py-2" @click.stop>
+                <div class="rowact">
+                  <span
+                    v-if="queuedFor(entry.row)"
+                    class="b"
+                    :class="queuedFor(entry.row)!.status === 'Clear' ? 'ok' : 'crit'"
+                  >
+                    QUEUED {{ queuedFor(entry.row)!.status }}
+                  </span>
+                  <template v-else>
+                    <button class="clr" @click="decide(index, entry.row, 'Clear')">Clear</button>
+                    <button class="flg" @click="decide(index, entry.row, 'NotClear')">Flag</button>
+                  </template>
+                </div>
+              </td>
             </tr>
             <tr v-if="opened === index" class="bg-primary-50 border-t border-gray-100">
-              <td :colspan="columns.length + 3" class="px-6 py-4">
+              <td :colspan="columns.length + (sheet && auth.canSignOff ? 4 : 3)" class="px-6 py-4">
                 <row-detail :check="checkKey" :row="entry.row" />
               </td>
             </tr>
           </template>
           <tr v-if="!paged.length">
-            <td :colspan="columns.length + 3" class="px-3 py-8 text-center text-gray-500">
+            <td :colspan="columns.length + (sheet && auth.canSignOff ? 4 : 3)" class="px-3 py-8 text-center text-gray-500">
               Nothing matches those filters.
             </td>
           </tr>

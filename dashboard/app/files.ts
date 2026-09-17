@@ -22,6 +22,11 @@ export function isText(name: string) {
   return !BINARY.some((extension) => lower.endsWith(extension))
 }
 
+/** A scan, or any certificate the vendor only published as a pdf. */
+export function isPdf(name: string) {
+  return name.toLowerCase().endsWith('.pdf')
+}
+
 /** The file as the run read it — at that ref, not wherever the branch is now. */
 export function rawUrl(repo: string, ref: string, path: string) {
   return `https://raw.githubusercontent.com/${repo}/${ref}/${path}`

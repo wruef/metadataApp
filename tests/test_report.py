@@ -194,3 +194,77 @@ def test_nonFiniteValuesNestedInAListAreCaughtToo(tmp_path):
     assert 'NaN' not in open(path).read()
     difference = json.load(open(path))['checks']['calibrations']['rows'][0]['differences'][0]
     assert difference['expected'] is None
+
+
+## --- why a row reads the way it does ---
+
+def test_everyRowCarriesAReasonAPersonCanRead():
+    """A queue is worked by people, and 'MISMATCH: raw: 379: ATAPL-68020-00002'
+    is a verdict, not a reason."""
+    from rca_metadata.report import reasonOf
+
+    assert reasonOf('deployments', {'rawFile_verify': 'MISMATCH: raw: 379: ATAPL-68020-00002',
+                                    'cleared': False}) == \
+        'The serial number in the raw archive is not the asset on the deployment sheet'
+
+
+def test_aSignOffChangesWhatTheRowMeans():
+    """The same verdict reads differently once a reviewer has looked at it, so
+    the reason is taken after cleared is known."""
+    from rca_metadata.report import reasonOf
+
+    mismatch = {'vendorMatch': 'MISMATCH', 'cleared': False}
+    assert 'nobody has reviewed it' in reasonOf('calibrations', mismatch)
+    assert 'reviewed and cleared' in reasonOf('calibrations', {**mismatch, 'cleared': True})
+
+
+def test_aRowWithNothingWrongSaysSo():
+    from rca_metadata.report import reasonOf
+
+    assert reasonOf('positions', {'verdict': 'MATCH', 'cleared': False}) == \
+        'Latitude, longitude and depth match the spreadsheet'
+
+
+def test_theWorstFindingIsTheOneReported():
+    """A row can fail several checks at once; the reason names the one that
+    decides its severity, in the same order the severity is taken."""
+    from rca_metadata.report import reasonOf
+
+    row = {'rawFile_verify': 'MISMATCH', 'image_verify': 'MISMATCH',
+           'calFile_verify': 'NO_VALID_FILE', 'cleared': False}
+    assert 'raw archive' in reasonOf('deployments', row)
+
+
+def test_everyCheckCanExplainItself():
+    from rca_metadata.report import REASONS, SEVERITY
+
+    assert set(REASONS) == set(SEVERITY)
+    for check, reason in REASONS.items():
+        assert reason({'cleared': False}), check
+
+
+def test_noReasonIsGivenToBothASettledRowAndAnOpenOne():
+    """The sentence explains the badge, so the two must never contradict: a row
+    reading 'a photograph confirms the asset' above a badge saying 'not checked'
+    helps nobody. Run over every combination of verdicts each check can return.
+
+    This caught 442 real deployments confirmed by one piece of evidence while
+    the other had never been looked at.
+    """
+    import itertools
+
+    from rca_metadata.report import REVIEWER_REASONS, SEVERITY, scoreRows
+
+    for check, fields in SEVERITY.items():
+        names = list(fields)
+        rows = [dict(zip(names, values), HITLstatus=hitl)
+                for values in itertools.product(*(list(fields[name]) for name in names))
+                for hitl in ('NA', 'Clear', 'NotClear')]
+        settled, open_ = set(), set()
+        for row in scoreRows(check, rows):
+            ## A sign-off describes what a person did, not what the check
+            ## found, so it sits beside any severity.
+            if row['reason'] in REVIEWER_REASONS:
+                continue
+            (settled if row['severity'] == 'ok' else open_).add(row['reason'])
+        assert not settled & open_, f'{check}: {settled & open_}'

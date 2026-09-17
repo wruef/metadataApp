@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {
   constantDifferences,
+  isPdf,
   isPinned,
-  isText,
   rawUrl,
   readAt,
   repoLines,
@@ -28,11 +28,13 @@ const differences = computed(() => (row.differences ?? []) as Difference[])
 const coefficients = computed(() => new Set(differences.value.map((each) => each.coefficient)))
 const constants = computed(() => constantDifferences(differences.value))
 
-/** Vendor originals that can be shown. A PDF is on file but not readable here. */
-const readable = computed(() =>
-  ((row.vendorFiles as string[] | undefined) ?? []).filter(isText),
-)
+/** Every vendor original on record. A text file is read and compared; a pdf is
+ *  put on screen for a person to read, which is the only honest way to check a
+ *  scan -- OCR misread three of seven coefficients on the first one tried, and
+ *  invented a minus sign on a fourth. */
+const readable = computed(() => (row.vendorFiles as string[] | undefined) ?? [])
 const chosen = ref(readable.value[0] ?? '')
+const scanned = computed(() => isPdf(chosen.value))
 
 const repoPath = computed(() => `calibration/${row.instrument}/${row.fileName}`)
 const vendorPath = computed(() => `${row.vendorDirectory}/${chosen.value}`)
@@ -44,8 +46,17 @@ function source(name: string) {
 
 const repoText = ref('')
 const vendorText = ref('')
+/** A blob url for a pdf: raw.githubusercontent serves one as
+ *  application/octet-stream with nosniff, which a browser downloads rather than
+ *  renders, so the bytes are fetched and given their real type here. */
+const vendorPdf = ref('')
 const status = ref<'loading' | 'ready' | 'error'>('loading')
 const error = ref('')
+
+function releasePdf() {
+  if (vendorPdf.value) URL.revokeObjectURL(vendorPdf.value)
+  vendorPdf.value = ''
+}
 
 /** Fetched from raw.githubusercontent at the ref the run read, so what is on
  *  screen is the file the finding came from rather than today's version. */
@@ -59,13 +70,18 @@ async function load() {
     error.value = 'This run does not record which repositories it read.'
     return
   }
+  releasePdf()
   try {
-    const [left, right] = await Promise.all([
-      $fetch<string>(rawUrl(assets.repo, readAt(assets), repoPath.value), { responseType: 'text' }),
-      $fetch<string>(rawUrl(vendor.repo, readAt(vendor), vendorPath.value), { responseType: 'text' }),
-    ])
-    repoText.value = left
-    vendorText.value = right
+    const vendorFile = rawUrl(vendor.repo, readAt(vendor), vendorPath.value)
+    repoText.value = await $fetch<string>(
+      rawUrl(assets.repo, readAt(assets), repoPath.value), { responseType: 'text' })
+    if (scanned.value) {
+      const bytes = await $fetch<Blob>(vendorFile, { responseType: 'blob' })
+      vendorPdf.value = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
+      vendorText.value = ''
+    } else {
+      vendorText.value = await $fetch<string>(vendorFile, { responseType: 'text' })
+    }
     status.value = 'ready'
   } catch (caught) {
     status.value = 'error'
@@ -100,6 +116,7 @@ function reveal() {
 }
 
 watch(chosen, load)
+onUnmounted(releasePdf)
 watch(status, async (value) => {
   if (value !== 'ready') return
   await nextTick()
@@ -193,6 +210,17 @@ function blobUrl(name: string, path: string) {
           a different version of the file than this.
         </div>
 
+        <div
+          v-if="scanned && status === 'ready'"
+          class="bg-amber-50 border border-amber-200 mb-3 px-3 py-2.5 rounded-md text-[12px] text-amber-900 leading-normal"
+        >
+          This calibration is only on record as a scan, so nothing has compared it. The values
+          asset-management holds are on the left and the certificate is on the right — read them
+          across, then clear or flag the row. Text recognition is deliberately not used: on the
+          first scan tried it misread three of seven coefficients and invented a minus sign on a
+          fourth, and a wrong digit here reads as a perfectly plausible number.
+        </div>
+
         <div v-if="status === 'loading'" class="py-10 text-center text-gray-500 text-sm">
           Reading both files…
         </div>
@@ -225,11 +253,20 @@ function blobUrl(name: string, path: string) {
                 {{ pane.path }}
               </a>
             </header>
+            <!-- A scan is put on screen rather than read by machine: the only
+                 person who can verify it is a person. -->
+            <iframe
+              v-if="pane.key === 'vendor' && scanned"
+              :src="vendorPdf"
+              class="bg-gray-100 h-[34rem] w-full"
+              title="The vendor certificate"
+            />
             <!-- `relative`, because the scroll position is worked out from each
                  marked line's offset within this box. -->
             <div
+              v-else
               data-pane
-              class="font-mono max-h-[26rem] overflow-auto relative text-[11px] leading-[18px]"
+              class="font-mono max-h-[34rem] overflow-auto relative text-[11px] leading-[18px]"
             >
               <div
                 v-for="line in pane.lines"

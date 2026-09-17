@@ -234,6 +234,18 @@ Every row carries two things the dashboard should not have to work out itself:
 - **`cleared`** — whether a reviewer signed the row off, kept separate from its
   severity. A sign-off outranks a failing check, but the failing check stays
   visible on the row: *cleared, calibration noted*, never a plain pass.
+- **`reason`** — one sentence saying why the row reads as it does, in the words
+  someone would use out loud. A queue is worked by people, and
+  `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
+
+The reason explains the severity, so the two must never contradict each other —
+a row reading *a photograph confirms the asset* above a badge reading *not
+checked* helps nobody. A test runs every combination of verdicts each check can
+return and asserts that no reason lands on both a settled row and an open one.
+It found 442 real deployments doing exactly that: confirmed by one piece of
+evidence while another had never been looked at. The two sign-off reasons are
+exempt by design, because a sign-off describes what a person did rather than
+what a check found.
 
 Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
 happily and neither is valid JSON, which a browser refuses to parse.
@@ -327,7 +339,36 @@ compare**, and they found three real transcription errors:
 
 The last is a digit transposition — `8582` typed as `5852`. In every case the
 other values on the same page are correct, which is what makes them typing slips
-rather than a parse going wrong. Only the 95 scans are left.
+rather than a parse going wrong.
+
+### The 95 scans are read by a person, not by OCR
+
+The remaining certificates have no text layer. They are good scans — 600 dpi,
+clean, entirely legible — so text recognition was measured rather than assumed.
+On the first one tried, against a record whose values are known, tesseract read
+three of seven coefficients wrongly and **invented a minus sign** on a fourth:
+
+| on the certificate | recognised as |
+|---|---|
+| `1.14611E-04` | `LA4611E- 04` |
+| `-2.94251E-01` | `"2.942516. o1` |
+| `-5.33864E01` | `--S.33864E01` |
+| `2.61210E01` | `-2.61210E01` |
+
+The confusions are exactly the ones that matter here — `1`/`L`, `5`/`S`, `0`/`O`,
+and a dropped leading digit that turns `2.21e-06` into `.21e-06`, a tenth of the
+value and a perfectly plausible number. In a check whose whole premise is exact
+comparison, that manufactures findings at best and agrees wrongly at worst.
+
+So the scan is put in front of a person instead. Opening a scan-only calibration
+shows the values asset-management holds beside the certificate itself, rendered
+in the page: read across, then clear or flag. The verdict stays
+`PDF_NOTCOMPARED` — nothing claims to have checked it — but the reading takes
+seconds rather than a hunt through the vendor repository.
+
+GitHub serves a raw pdf as `application/octet-stream` with `nosniff`, which a
+browser downloads rather than renders, so the bytes are fetched and given their
+real type before being shown.
 
 Reading them is not "extract the text". The certificates are laid out for a
 person, and every defect found while building this was in reassembling that

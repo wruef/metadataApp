@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   constantDifferences,
+  isPdf,
   isPinned,
   isText,
   readAt,
@@ -141,5 +142,17 @@ describe('which version of the file is shown', () => {
       expect(isPinned(source), String(commit)).toBe(false)
       expect(readAt(source)).toBe('master')
     }
+  })
+})
+
+describe('a certificate that is only a scan', () => {
+  it('is recognised as a pdf, and as something no parser reads', () => {
+    expect(isPdf('ATAPL-58320-00001__20121219.pdf')).toBe(true)
+    expect(isPdf('ATAPL-58320-00001__20121219.PDF')).toBe(true)
+    expect(isText('ATAPL-58320-00001__20121219.pdf')).toBe(false)
+  })
+
+  it('does not mistake a readable vendor file for one', () => {
+    expect(isPdf('ATAPL-69943-00001__20130918.dev')).toBe(false)
   })
 })
