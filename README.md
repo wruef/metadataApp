@@ -16,11 +16,13 @@ The package is the source of truth; nothing is maintained in two places.
 | check | question it answers |
 |---|---|
 | `calibrations` | does each repository calibration file match the vendor original? |
-| `deployments` | does each deployment have its calibration file, raw serial number and sign-off? |
+| `deployments` | is the instrument on the sheet the one that was in the water, and did it have a calibration? |
 | `positions` | do the deployment sheets agree with the RCA position spreadsheet? |
 | `sensorBulk` | do serial numbers agree between the RCA instrument list and the OOI sensor bulk record? |
-| | and is every asset a deployment sheet names in the bulk record it belongs to? |
-| `deploymentSheets` | is one asset deployed in two places at once, or does a sheet entry name something no other record knows? |
+| `deploymentSheets` | is one asset deployed in two places at once, and is every asset a sheet names in the bulk record it belongs to? |
+
+Every verdict each of them can return, and whether it counts as passing, is in
+[docs/what-each-check-decides.md](docs/what-each-check-decides.md).
 
 ## Running a verification
 
@@ -47,6 +49,11 @@ A comparison states whether it can be trusted and refuses itself when it cannot
 the commit it read. [docs/report-contract.md](docs/report-contract.md) says why.
 
 ## The dashboard
+
+**If you are here to review metadata rather than to work on the code, read
+[docs/using-the-dashboard.md](docs/using-the-dashboard.md).** It covers creating
+a token, finding your way around, recording a decision and starting a run, step
+by step. The site is at **https://wruef.github.io/metadataApp/**.
 
 A Nuxt 4 single-page app that reads a published report. No backend: the report
 is a file it fetches, and everything else happens in the browser.
@@ -122,12 +129,12 @@ The last is new: a serial number that disagrees between the RCA list and OOI's
 record is mostly a judgement about which record is right, and there was nowhere
 to write that judgement down, so 131 of them came back every run. Writing to them needs a GitHub token, entered under **Settings**:
 
-1. Create a [fine-grained token](https://github.com/settings/personal-access-tokens/new).
-2. Under **Repository access**, select only *your own forks* of `metadataApp`,
-   `asset-management` and `deployments`.
-3. Under **Permissions**, set **Contents** and **Pull requests** to read and write.
-4. On your `metadataApp` fork only, also set **Actions** to read and write. That is
-   what lets you start a run from the dashboard; nothing else needs it.
+A [fine-grained token](https://github.com/settings/personal-access-tokens/new)
+scoped to your own forks, with **Contents** and **Pull requests** set to read and
+write, and **Actions** as well on your `metadataApp` fork so a run can be started
+from the dashboard.
+[docs/using-the-dashboard.md](docs/using-the-dashboard.md#signing-in) walks
+through it field by field.
 
 Nothing else is needed — no organisation access, and no permission on any
 upstream repository. The token is kept in the browser's local storage, is sent to
@@ -138,10 +145,10 @@ Set your initials too: the HITL sheets identify reviewers by initials (`KB,WR`),
 not by GitHub login.
 
 Clearing or flagging a row queues a decision. The reason comes from a dropdown
-of every note the sheet already holds — 23 on the calibration sheet, 16 on the
-deployments sheet — ranked by how often each has been used, so the wording the
-team works with is at the top. Anything not in the list is still typed straight
-into the field beneath it.
+of every note the sheet already holds, ranked by how often each has been used, so
+the wording the team works with is at the top. Where the calibration file itself
+says something about the coefficients that disagree, that is offered first.
+Anything not in either list is typed straight into the field beneath them.
 
 Submitting the queue opens **one** pull request carrying the whole batch,
 against **your own fork**. You raise the onward pull request to the shared
@@ -169,9 +176,9 @@ tray, step by step. Closing the tray stops following the run; it does not stop
 the run.
 
 Nothing on screen changes when a run finishes. The report is a file, and it is
-only replaced if the run was told to publish. Publishing commits the report,
-which republishes the site with it a couple of minutes later. Reload from the
-tray once it has.
+only written if the run was told to publish. Publishing commits it, which
+rebuilds the site a couple of minutes later; the run then appears in the picker
+in the run stamp, which is where you open it.
 
 Serial extraction is deliberately not here. It cannot complete without a person
 in the middle, so a button implying otherwise would be a lie; run it by hand
@@ -255,6 +262,11 @@ Nothing else is configured, and nothing needs to be configured again.
 The reasoning behind the answers, kept out of this file so it stays a guide to
 running the thing:
 
+- [docs/using-the-dashboard.md](docs/using-the-dashboard.md) — the reviewer's
+  walkthrough: token, navigation, sign-offs, runs, and what to do when GitHub
+  refuses something.
+- [docs/what-each-check-decides.md](docs/what-each-check-decides.md) — every
+  verdict each check can return, and whether it counts as passing.
 - [docs/report-contract.md](docs/report-contract.md) — what a run emits, the
   category every row carries, and when a comparison between two runs refuses
   itself.

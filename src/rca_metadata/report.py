@@ -114,6 +114,9 @@ SEVERITY = {
                            'DUPLICATES_NOTIDENTICAL': 'problem'}},
     'deploymentSheets': {'verdict': {
         'SENSOR_NOT_IN_BULK': 'problem', 'MOORING_NOT_IN_PLATFORM_BULK': 'problem',
+        'NODE_NOT_IN_NODE_BULK': 'problem', 'ELECTRICAL_NOT_IN_ENG_BULK': 'problem',
+        ## In a bulk record, just not the one this column calls for.
+        'ASSET_IN_WRONG_BULK_RECORD': 'problem',
         'CRUISE_NOT_IN_CRUISE_LIST': 'problem', 'DUPLICATE_ASSET_IN_DEPLOYMENT': 'problem'}},
     'deployments': {
         'verificationStatus': {'VERIFIED': 'ok', 'RAW_SN_POSSIBLE': 'review',
@@ -124,7 +127,12 @@ SEVERITY = {
         ## as 'unchecked' held 459 confirmed deployments back from reading as
         ## confirmed. NO_SN is different -- a raw file exists and the serial has
         ## not been pulled out of it, which extraction would settle.
+        ## AMBIGUOUS_SN: the serial was read and is too short to tell this
+        ## instrument from another of the same model. Nothing disagrees, so it
+        ## is not a mismatch; nothing was established either, so it is not a
+        ## match. Unchecked, like a serial nobody has extracted yet.
         'rawFile_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NO_FILE': 'review',
+                           'AMBIGUOUS_SN': 'unchecked',
                            'NO_SN': 'unchecked', 'NAN': 'excluded'},
         ## A photograph does not confirm a deployment, so it does not condemn
         ## one either: it shows an instrument, not which instrument went in the
@@ -257,6 +265,9 @@ def _deploymentReason(row):
     ## saying the row is fine above a badge saying it is not helps nobody.
     if _verdict(row, 'rawFile_verify') == 'NO_FILE':
         return 'No raw file was found to check the serial number against'
+    if _verdict(row, 'rawFile_verify') == 'AMBIGUOUS_SN':
+        return ('The serial in the raw archive is too short to tell this instrument from '
+                'another of the same model')
     ## What is worth noticing without unsettling the row. Neither an ageing
     ## calibration nor a photograph of a different instrument changes what the
     ## raw archive or a reviewer established, so both ride along with whatever
@@ -320,12 +331,18 @@ def _sensorBulkReason(row):
 
 
 def _sheetReason(row):
+    verdict = _verdict(row, 'verdict')
+    if verdict == 'ASSET_IN_WRONG_BULK_RECORD':
+        where = str(row.get('verdict', '')).partition(':')[2].strip()
+        return f'The asset is in the bulk records, but under {where} rather than its own'
     return {
         'SENSOR_NOT_IN_BULK': 'The sheet names an asset the sensor bulk record does not have',
         'MOORING_NOT_IN_PLATFORM_BULK': 'The sheet names a mooring the platform record does not have',
+        'NODE_NOT_IN_NODE_BULK': 'The sheet names a node the node record does not have',
+        'ELECTRICAL_NOT_IN_ENG_BULK': 'The sheet names an electrical asset the eng record does not have',
         'CRUISE_NOT_IN_CRUISE_LIST': 'The sheet names a cruise the cruise list does not have',
         'DUPLICATE_ASSET_IN_DEPLOYMENT': 'The same asset appears twice in one deployment',
-    }.get(_verdict(row, 'verdict'), 'Every entry names something another record knows')
+    }.get(verdict, 'Every entry names something another record knows')
 
 
 ## What a reviewer did, rather than what a check found. These sit beside a

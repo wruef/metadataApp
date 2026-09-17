@@ -141,3 +141,51 @@ def test_theDateColumnIsNamedForWhatTheListIsAbout(tmp_path):
     path = tmp_path / 'recovered.csv'
     writeSeasonList(recoveredIn(SEASON, 2023, ASSETS), str(path), 'recoverDate')
     assert list(csv.reader(open(path)))[0][3] == 'recoverDate'
+
+
+## --- which of several vendor files a deployment is pointed at ---
+
+def vendorUrls(stem, *extensions):
+    return [f'https://github.com/o/calibrationFiles/blob/master/X/{stem}{e}' for e in extensions]
+
+
+def linked(stem, *extensions):
+    from rca_metadata.history import comparedFile
+
+    return comparedFile(vendorUrls(stem, *extensions)).rsplit('/', 1)[-1]
+
+
+def test_anOptaaIsPointedAtThePureWaterCalibration():
+    """OPTAA ships a .cal and a .dev for the same date. The .cal is the air
+    calibration; the .dev is what asset-management is built from and what the
+    check compares against. Alphabetically the .cal wins, so the published
+    history pointed a reader at the file the check never opens."""
+    assert linked('ATAPL-69943-00001__20190212', '.cal', '.dev').endswith('.dev')
+
+
+def test_aCtdIsPointedAtItsXmlcon():
+    """The same defect, and not only for OPTAA: a CTD linked whichever of .cal,
+    .con and .xmlcon sorted first."""
+    assert linked('ATAPL-66662-00008__20221019', '.con', '.xmlcon').endswith('.xmlcon')
+    assert linked('ATOSU-69828-00002__20221028', '.cal', '.xmlcon').endswith('.xmlcon')
+
+
+def test_aFluorometerIsPointedAtTheLambdaFile():
+    """Both .dev files are posted; only the lambda one carries volume
+    scattering, and it is the one compared against."""
+    assert linked('ATAPL-70110-00001__20140527', '.dev', '.dev.lambda').endswith('.dev.lambda')
+
+
+def test_theExtensionIsMatchedWhateverItsCase():
+    """27 vendor files are spelled .CAL or .DEV."""
+    assert linked('ATAPL-69943-00001__20190212', '.cal', '.DEV').endswith('.DEV')
+
+
+def test_oneFileIsTheFileLinked():
+    assert linked('ATAPL-58324-00003__20140805', '.dev').endswith('.dev')
+
+
+def test_aFormatWithNoRuleFallsBackRatherThanLinkingNothing():
+    """An instrument the comparison has no rule for still deserves a link; one
+    link is better than none."""
+    assert linked('ATAPL-12345-00001__20140805', '.aaa', '.zzz').endswith('.aaa')

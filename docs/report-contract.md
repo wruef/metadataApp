@@ -99,6 +99,19 @@ in `image_verify`, and a photograph that disagrees with the sheet is still a
 problem. But a photograph of an instrument is not evidence of which instrument
 went in the water, and 127 deployments were reading as confirmed on that alone.
 
+The serial comparison is a containment rather than an equality, and
+deliberately so: the two records spell a serial differently — an instrument
+reporting `05400030` against a record carrying `5471540-0030` — so the extractor
+keeps only a tail of it. 265 deployments are confirmed that way and are sound,
+because nothing else of the same model could answer to the number.
+
+Four were not. Their raw serial is a **single digit**, because the PREST
+extractor keeps two characters, and the same digit fits the instrument beside
+them. Those now report `AMBIGUOUS_SN` and name the rival asset. Nothing
+disagrees, so it is not a mismatch; nothing was established either, so it is not
+a match. A serial is only evidence while no other instrument of the same model
+could answer to it.
+
 Where neither answer is available, the status is `RAW_SN_POSSIBLE` when the
 instrument class writes its serial into its raw data — extraction would settle
 it — and `NOT_VERIFIED` when nothing could.

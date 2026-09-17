@@ -225,3 +225,76 @@ def test_aVendorFileWithNoRepositoryFileCarriesItsInstrument():
                          index=pd.Index(['ATAPL-1__20140101.csv'], name='githubFile'))
     assert signOff(sheet, 'ATAPL-1__20140101.csv') == ('Clear', 'ingested by hand in 2019')
     assert signOff(sheet, 'ATAPL-2__20140101.csv') == ('NA', '')
+
+
+## --- a raw serial that identifies nothing ---
+
+def rawRow(rawSN, assetID, refDes='RS01SLBS-MJ01A-06-PRESTA101'):
+    return {'firstRawFile': 'x.dat', 'rawSN': rawSN, 'AssetID': assetID, 'refDes': refDes}
+
+
+def test_anExactSerialConfirmsTheAsset():
+    from rca_metadata.checks import _rawVerdict
+
+    assert _rawVerdict(rawRow('507', 'ATAPL-1'), {'ATAPL-1': '507'}) == 'MATCH'
+
+
+def test_aTailThatFitsOnlyThisInstrumentConfirmsIt():
+    """The extractor keeps a tail, because the two records spell a serial
+    differently -- 05400030 against 5471540-0030 -- so agreement is containment
+    rather than equality. 265 deployments are confirmed that way and are sound,
+    because nothing else of the same model could answer to the number."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATAPL-66662-00001': '16-50325', 'ATAPL-66662-00002': '16-50601'}
+    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == 'MATCH'
+
+
+def test_aTailThatFitsTheInstrumentBesideItConfirmsNothing():
+    """Four PREST deployments matched on a single digit, and the same digit fits
+    the instrument beside them. That is not evidence, and it was reading as a
+    confirmed deployment."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATAPL-67639-00004': '5471540-0030', 'ATAPL-67639-00001': '5463757-0012'}
+    verdict = _rawVerdict(rawRow('0', 'ATAPL-67639-00004'), bulk)
+    assert verdict.startswith('AMBIGUOUS_SN')
+    assert 'ATAPL-67639-00001' in verdict
+
+
+def test_anotherModelEntirelyDoesNotMakeASerialAmbiguous():
+    """A three-digit serial will appear inside something somewhere. Only an
+    instrument of the same model could be confused with this one, because the
+    deployment sheet already names the model."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATAPL-66662-00001': '16-50325', 'ATOSU-99999-00001': '325-XYZ'}
+    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == 'MATCH'
+
+
+def test_anAmbiguousSerialIsNotAMismatch():
+    """Nothing disagrees, so it is not a mismatch; nothing was established
+    either, so it is not a match."""
+    from rca_metadata.report import severityOf, reasonOf
+
+    row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'AMBIGUOUS_SN: raw: 0: also X',
+           'image_verify': 'NAN', 'calFile_verify': 'VALID_FILE', 'cleared': False}
+    assert severityOf('deployments', row) == 'review'
+    assert 'too short' in reasonOf('deployments', row)
+
+
+def test_everyVerdictThisCheckEmitsIsRanked():
+    """A verdict with no entry falls through to 'review' and gets the sentence
+    for a row where nothing is wrong. Four of these were added without one."""
+    from rca_metadata.report import SEVERITY, reasonOf, severityOf
+
+    ranked = SEVERITY['deploymentSheets']['verdict']
+    for verdict in ('SENSOR_NOT_IN_BULK', 'MOORING_NOT_IN_PLATFORM_BULK',
+                    'NODE_NOT_IN_NODE_BULK', 'ELECTRICAL_NOT_IN_ENG_BULK',
+                    'ASSET_IN_WRONG_BULK_RECORD', 'CRUISE_NOT_IN_CRUISE_LIST',
+                    'DUPLICATE_ASSET_IN_DEPLOYMENT'):
+        assert ranked.get(verdict) == 'problem', verdict
+
+    row = {'verdict': 'ASSET_IN_WRONG_BULK_RECORD: unclassified', 'cleared': False}
+    assert severityOf('deploymentSheets', row) == 'problem'
+    assert 'unclassified' in reasonOf('deploymentSheets', row)

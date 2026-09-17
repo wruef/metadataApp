@@ -113,9 +113,12 @@ export const useSignoff = defineStore('signoff', () => {
         : { url: null, message: 'Your fork already matches these sign-offs — nothing to propose.' }
       if (url) queued.value = []
     } catch (caught) {
+      // Reading the sheets and opening the request are both in the try above,
+      // and a read that failed never reached the request — so the message says
+      // the submission failed rather than naming a step that never ran.
       result.value = {
         url: null,
-        message: `Could not open the pull request: ${caught instanceof Error ? caught.message : String(caught)}`,
+        message: `Could not submit the sign-offs: ${caught instanceof Error ? caught.message : String(caught)}`,
       }
     } finally {
       submitting.value = false

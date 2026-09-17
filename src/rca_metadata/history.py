@@ -12,6 +12,7 @@ import os
 
 import pandas as pd
 
+from .calibrations import comparisonRule
 from .loading import calFileBits, readDeploymentSheet
 
 HISTORY_COLUMNS = ['sensorType', 'referenceDesignator', 'startTime', 'endTime', 'assetID',
@@ -50,7 +51,29 @@ def calibrationLinks(source, files):
     return links
 
 
-def _inForceAt(links, assetID, deployDate):
+def comparedFile(urls, assets=None):
+    """Of several files for one calibration, the one the comparison reads.
+
+    A vendor calibration can be more than one file. OPTAA ships a ``.cal`` and a
+    ``.dev`` for the same date: the ``.cal`` is the **air** calibration and the
+    ``.dev`` is the pure-water one that asset-management is built from and that
+    the check compares against. Ordered alphabetically the ``.cal`` wins, so the
+    published history pointed a reader at the file the check never opens.
+
+    The order comes from the same table the comparison uses, so the history and
+    the check name the same file by construction rather than by agreement.
+    Where nothing matches -- a format the sensor has no rule for -- the
+    alphabetical pick stands, because one link is better than none.
+    """
+    spec = comparisonRule(os.path.basename(urls[0]), assets)
+    for source in (spec['sources'] if spec else []):
+        for url in sorted(urls):
+            if url.lower().endswith(source['suffix']):
+                return url
+    return min(urls)
+
+
+def _inForceAt(links, assetID, deployDate, assets=None):
     """The calibration in force at deployment: the most recent one before it."""
     history = links.get(assetID)
     if history is None:
@@ -58,10 +81,8 @@ def _inForceAt(links, assetID, deployDate):
     earlier = [entry for entry in history if entry[0] < deployDate]
     if not earlier:
         return 'noValidCalFile'
-    ## TODO: a vendor calibration can be more than one file -- OPTAAC ships a
-    ## .cal and a .dev -- and only one is linked here.
     latest = max(date for date, _ in earlier)
-    return min(url for date, url in earlier if date == latest)
+    return comparedFile([url for date, url in earlier if date == latest], assets)
 
 
 def deploymentHistory(deployments, assets, githubCals, vendorCals):
@@ -82,8 +103,8 @@ def deploymentHistory(deployments, assets, githubCals, vendorCals):
             'instrumentSN': asset['mfgSN'] if asset is not None else ['noValidSN'],
             'lat': row['lat'],
             'lon': row['lon'],
-            'githubCalibrationFile': _inForceAt(githubCals, assetID, deployDate),
-            'vendorCalibrationFile': _inForceAt(vendorCals, assetID, deployDate),
+            'githubCalibrationFile': _inForceAt(githubCals, assetID, deployDate, assets),
+            'vendorCalibrationFile': _inForceAt(vendorCals, assetID, deployDate, assets),
         })
     return sorted(rows, key=lambda r: (r['referenceDesignator'], r['startTime']))
 

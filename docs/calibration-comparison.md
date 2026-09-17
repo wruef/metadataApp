@@ -85,6 +85,28 @@ An instrument that nothing compares says nothing. A hydrophone has no vendor
 calibration and never will, so reporting a missing file for it would be
 inventing a finding.
 
+### The published history points at the file the check reads
+
+The deployment history in the `deployments` repository names, for each
+deployment, the calibration that was in force and the vendor original behind it.
+A vendor calibration can be more than one file, and it chose between them
+alphabetically — so it named the wrong one 97 times.
+
+| instrument | linked | should have linked |
+|---|---|---|
+| OPTAA, FLCDR | `.cal` | `.dev` |
+| FLNTU, FLORD | `.dev` | `.dev.lambda` |
+| CTD | `.cal` or `.con` | `.xmlcon` |
+
+An OPTAA's `.cal` is the **air** calibration. Anyone following that link to check
+a coefficient was reading a file the comparison never opens, against numbers
+asset-management was never built from.
+
+The choice now comes from the same table the comparison uses, so the history and
+the check name the same file by construction rather than by agreement. Where a
+sensor has no rule the alphabetical pick stands, because one link is better than
+none.
+
 ### A difference carries what the file says about it
 
 Every calibration csv in asset-management has a `notes` column, and 12,810

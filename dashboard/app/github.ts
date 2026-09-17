@@ -11,8 +11,24 @@ export function authHeaders(token: string) {
 
 const headers = authHeaders
 
-/** A file as the fork currently holds it. Returns null when the fork does not
- *  have it — a fresh fork of a repository that never had the file. */
+/**
+ * Whether a failed read means the file is not there.
+ *
+ * Only a 404 does. A revoked token, a rate limit, a network blip and a
+ * repository the reviewer cannot see all fail too, and none of them is an empty
+ * file — which matters because the caller reads a sheet in order to add a line
+ * to it. Treating any failure as *the fork has no sheet yet* would build the
+ * sheet from the one decision in hand and propose a pull request deleting every
+ * other sign-off in it.
+ */
+export function isMissing(error: unknown) {
+  return Boolean(error) && typeof error === 'object' && 'status' in error!
+    && (error as { status: unknown }).status === 404
+}
+
+/** A file as the fork currently holds it. Returns null only when the fork does
+ *  not have it — a fresh fork of a repository that never had the file. Any
+ *  other failure is thrown, because it is not an empty file. */
 export async function readFile(repo: string, path: string, ref: string) {
   const auth = useAuth()
   try {
@@ -23,8 +39,9 @@ export async function readFile(repo: string, path: string, ref: string) {
     return response.encoding === 'base64'
       ? new TextDecoder().decode(Uint8Array.from(atob(response.content.replace(/\n/g, '')), (c) => c.charCodeAt(0)))
       : response.content
-  } catch {
-    return null
+  } catch (caught) {
+    if (isMissing(caught)) return null
+    throw caught
   }
 }
 

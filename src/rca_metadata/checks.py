@@ -423,7 +423,25 @@ def _rawVerdict(deployment, serialByAsset):
     rawSN = str(deployment['rawSN'])
     if '-99999' in rawSN:
         return 'NO_SN'
-    if rawSN in str(serialByAsset.get(deployment['AssetID'], '')):
+
+    assetID = deployment['AssetID']
+    bulkSerial = str(serialByAsset.get(assetID, ''))
+    if rawSN == bulkSerial:
+        return 'MATCH'
+    if rawSN in bulkSerial:
+        ## The extractor keeps only a tail of the serial, because the two
+        ## records spell one differently -- an instrument reporting 05400030
+        ## against a record carrying 5471540-0030 -- so agreement is containment
+        ## rather than equality. 265 deployments are confirmed that way and are
+        ## sound, because nothing else of the same model could answer to the
+        ## number. Four PREST deployments match on a single digit, which
+        ## identifies nothing: the same digit fits the instrument beside it.
+        family = str(assetID)[:11]
+        rival = next((other for other, serial in serialByAsset.items()
+                      if other != assetID and str(other).startswith(family)
+                      and rawSN in str(serial)), None)
+        if rival:
+            return f'AMBIGUOUS_SN: raw: {rawSN}: also {rival}'
         return 'MATCH'
     ## Name the asset the raw serial actually belongs to, where one can be found --
     ## a swapped pair is the common cause and the answer is more useful than the finding.

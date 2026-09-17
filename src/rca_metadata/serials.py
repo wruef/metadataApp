@@ -30,13 +30,23 @@ FIRST_RAW_PATTERNS = {
     'SPKIR': ([r"S\/N:\s+(\d{2,4})"], 3),
     'NUTNR': ([r"SUNA\sSN:(\d{1,4}).*"], 3),
     'FLOR': ([r"Ser\s.*-(\d{1,4}).*"], None),
+    ## TODO: two characters is barely a comparison at all, and this needs the
+    ## records to agree how a PREST serial is written before it can be more.
+    ## The instrument reports SerialNumber='05400030' where both the RCA list
+    ## and the sensor bulk record carry 5471540-0030 -- the same number in
+    ## vendor part-number dress, the prefix and the dash gone and a zero in
+    ## front. Nothing lines the two spellings up, so only a tail can be
+    ## compared, and two characters of one matches 5471540-0130 and a great many
+    ## serials belonging to other instruments. What it yields in practice is in
+    ## params/rawFileSN.csv: '0', '1', '7'.
     'PREST': ([r"SerialNumber=.*(\d{1,9}).*"], 2),
     'TMPSFA': ([r"RBR\s+XR-420\s+\d.\d{2,4}\s+(\d{1,9}).*"], 5),
 }
 
-## Serial number carried in the data lines themselves.
-## TODO: the PARAD regex needs refining once the sensor bulk records are cleaned
-## up -- raw reports SerialNumber='05400030' where bulk has 5471540-0030.
+## Serial number carried in the data lines themselves, for files that print no
+## power-on banner. PARAD serials agree between the two records -- clean three
+## and four digit numbers, spelled the same in both -- so keeping a tail here
+## costs little.
 DATA_LINE_PATTERNS = {
     'SPKIR': ([r".*SATDI70(\d{3}).*"], 3),
     'NUTNR': ([r"SATSDF(\d{1,4}).*"], 3),

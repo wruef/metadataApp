@@ -83,6 +83,9 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
     verdict: {
       SENSOR_NOT_IN_BULK: 'problem',
       MOORING_NOT_IN_PLATFORM_BULK: 'problem',
+      NODE_NOT_IN_NODE_BULK: 'problem',
+      ELECTRICAL_NOT_IN_ENG_BULK: 'problem',
+      ASSET_IN_WRONG_BULK_RECORD: 'problem',
       CRUISE_NOT_IN_CRUISE_LIST: 'problem',
       DUPLICATE_ASSET_IN_DEPLOYMENT: 'problem',
     },
@@ -93,6 +96,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       MATCH: 'ok',
       MISMATCH: 'problem',
       NO_FILE: 'review',
+      AMBIGUOUS_SN: 'unchecked',
       NO_SN: 'unchecked',
       NAN: 'excluded',
     },
