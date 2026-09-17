@@ -123,7 +123,12 @@ SEVERITY = {
                            ## No calibration directory exists for the instrument,
                            ## so nothing could be compared and nothing is owed.
                            'EXCLUDED': 'excluded',
-                           'none': 'unchecked', 'NAN': 'unchecked'}},
+                           ## By the time this is read, 'none' can only mean a
+                           ## calibration was required and asset-management
+                           ## holds none at all. That is worse than one dated
+                           ## after the deployment, which is already a problem,
+                           ## so reading it as merely 'unchecked' undersold it.
+                           'none': 'problem', 'NAN': 'unchecked'}},
     'positions': {'verdict': {
         'MATCH': 'ok', 'MISMATCH': 'problem', 'NEEDS_HITL': 'review',
         'NO_POSITION': 'review', 'NO_POSITION_NAME': 'review',
@@ -221,6 +226,8 @@ def _deploymentReason(row):
     calibration = _verdict(row, 'calFile_verify')
     if calibration == 'NO_VALID_FILE':
         return 'No calibration on file dated before this deployment'
+    if calibration == 'none':
+        return 'This instrument needs a calibration and asset-management holds none for it'
     ## Ahead of the two below, which both describe a settled row: a deployment
     ## can be confirmed by its serial number and still carry a stale
     ## calibration, and the severity takes the worse of the two. A sentence

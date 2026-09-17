@@ -107,11 +107,19 @@ export const CHECKS = [
     ] },
   { key: 'deployments', title: 'Deployments', icon: 'fa-anchor',
     blurb: 'Every deployment: its calibration file, its raw serial number, its sign-off.',
-    columns: ['refDes', 'deployNum', 'AssetID', 'verificationStatus', 'rawFile_verify', 'image_verify', 'calFile_verify', 'HITLstatus'],
+    // No verificationStatus column: it is the raw serial and the sign-off read
+    // together, and both are columns of their own. The review status badge on
+    // the left already says what it concluded, so a column repeating it was
+    // one more thing to read that told you nothing new. The value is still on
+    // the row and still under Raw check output.
+    columns: ['refDes', 'deployNum', 'AssetID', 'rawFile_verify', 'image_verify', 'calFile_verify', 'HITLstatus'],
     facets: [
       { key: 'site', label: 'All sites', of: (row) => siteOf(row.refDes) },
       { key: 'year', label: 'All years', of: (row) => yearOf(row.deployDate) },
-      { key: 'verificationStatus', label: 'Any status', of: (row) => String(row.verificationStatus ?? '') },
+      // Kept as a filter though it is no longer a column: it is the only way to
+      // ask for the deployments nothing confirms, which the review status
+      // cannot isolate because it folds in the calibration findings too.
+      { key: 'verificationStatus', label: 'Any confirmation', of: (row) => String(row.verificationStatus ?? '') },
       // Deployments are signed off in 2i_HITL_deploymentVerification.csv exactly
       // as calibrations are, and every row has carried the status all along --
       // it was the one check that never showed it.

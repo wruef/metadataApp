@@ -55,6 +55,28 @@ def test_nothingToCheckIsNotTheSameAsNotChecked():
     assert severityOf('deployments', row) == 'unchecked'
 
 
+def test_noCalibrationAtAllIsAFindingRatherThanAnAbsence():
+    """By the time the severity is read, 'none' can only mean a calibration was
+    required and asset-management holds none — the check rewrites it to
+    EXCLUDED where none was expected. That is worse than one dated after the
+    deployment, which is already a problem, so reading it as merely unchecked
+    undersold it. 32 deployments are in exactly that state."""
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
+           'image_verify': 'NAN', 'calFile_verify': 'none', 'cleared': False}
+    assert severityOf('deployments', row) == 'problem'
+    assert 'holds none' in reasonOf('deployments', row)
+
+
+def test_noCalibrationExpectedIsNotAFinding():
+    """The same verdict where none was ever expected is excluded, and the check
+    rewrites it before the severity is taken."""
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
+           'image_verify': 'NAN', 'calFile_verify': 'EXCLUDED'}
+    assert severityOf('deployments', row) == 'ok'
+
+
 def test_anAgeingCalibrationIsNotedRatherThanHeldAgainstTheRow():
     """A deployment the raw archive or a reviewer has confirmed is confirmed
     whether or not the calibration on file was getting old. It is worth

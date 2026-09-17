@@ -66,6 +66,13 @@ export const QUEUE: Queued[] = [
   },
   {
     check: 'deployments',
+    title: 'Deployments whose instrument has no calibration at all',
+    detail:
+      'The instrument needs a calibration and asset-management holds none for this asset — not one dated after the deployment, none.',
+    where: { calFile_verify: 'none', cleared: 'open' },
+  },
+  {
+    check: 'deployments',
     title: 'Deployments with no valid calibration on file',
     detail:
       'The instrument needs a calibration and asset-management has none covering the deployment.',

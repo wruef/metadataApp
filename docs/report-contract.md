@@ -117,7 +117,19 @@ ranking it, and two kinds do:
   amber and is said in the row's sentence rather than holding the row open.
 
 A photograph that disagrees with the sheet, or a required calibration that is
-missing, still holds a row back. Those are findings rather than absences.
+missing, still holds a row back. Those are findings rather than absences. A
+calibration verdict of `none` is one of them: by the time the severity is read
+it can only mean a calibration was required and asset-management holds none at
+all, because the check rewrites it to `excluded` wherever none was expected.
+That is worse than a calibration dated after the deployment, which is already a
+problem, so 32 deployments that read as merely unchecked now read as findings.
+
+There is no `verificationStatus` column in the dashboard. It is the raw serial
+and the sign-off read together, both of which are columns of their own, and the
+review status badge already says what it concluded. The value stays on the row,
+under *Raw check output*, and remains a filter — it is the only way to ask for
+the deployments nothing confirms, which the review status cannot isolate because
+it folds in the calibration findings too.
 
 ## Comparing two runs
 

@@ -107,7 +107,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       NO_VALID_FILE: 'problem',
       EXCLUDED: 'excluded',
       VALID_FILE_CAL_OLDER_THAN_15MONTHS: 'warning',
-      none: 'unchecked',
+      none: 'problem',
       NAN: 'unchecked',
     },
   },
