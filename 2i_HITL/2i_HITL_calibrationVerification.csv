@@ -357,7 +357,7 @@ ATOSU-58320-00008__20231129.csv,"JD,WR",7/1/24,Clear,
 ATOSU-58320-00020__20231129.csv,"JD,WR",7/1/24,Clear,
 ATOSU-58320-00021__20231126.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00002__20231205.csv,"JD,WR",7/1/24,Clear,
-ATAPL-58337-00004__20231102.csv,"JD,WR",7/1/24,Clear, 
+ATAPL-58337-00004__20231102.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00006__20231120.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00013__20231122.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00014__20240130.csv,"JD,WR",7/1/24,Clear,
@@ -376,5 +376,73 @@ ATAPL-58336-00001__20231204.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00004__20230816.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00001__20240213.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00002__20240213.csv,"JD,WR",7/1/24,Clear,
-ATAPL-70110-00004__20221028.csv,"JD,WR",7/1/24,Clear, values manually added from seabird correction matrix
-ATAPL-70110-00002__20221028.csv,"JD,WR",7/1/24,Clear, values manually added from seabird correction matrix
+ATAPL-70110-00004__20221028.csv,"JD,WR",7/1/24,Clear,values manually added from seabird correction matrix
+ATAPL-70110-00002__20221028.csv,"JD,WR",7/1/24,Clear,values manually added from seabird correction matrix
+ATAPL-58322-00001__20121213.csv,WR,9/17/26,Clear,Original scale factor (0.0909) corrected by Sea-Bird with the new value of 0.15179 = 0.0909 * 5.62 * 0.29713
+ATAPL-58322-00001__20170217.csv,WR,9/17/26,Clear,Original scale factor (0.0637) corrected by Sea-Bird with the new value of 0.10253 = 0.0637 * 5.62 * 0.28639
+ATAPL-58322-00001__20171127.csv,WR,9/17/26,Clear,Original scale factor (0.0645) corrected by Sea-Bird with the new value of 0.10381 = 0.0645 * 5.62 * 0.28639
+ATAPL-58322-00001__20190906.csv,WR,9/17/26,Clear,Original scale factor (0.0607) corrected by Sea-Bird with the new value of 0.15206 = 0.0607 * 5.62 * 0.44575
+ATAPL-58322-00001__20201007.csv,WR,9/17/26,Clear,Original scale factor (0.0613) corrected by Sea-Bird with the new value of 0.26121 = 0.0613 * 5.62 * 0.75821
+ATAPL-58322-00001__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.08689) corrected by Sea-Bird with the new value of 0.37025 = 0.08689 * 5.62 * 0.75821
+ATAPL-58322-00002__20131022.csv,WR,9/17/26,Clear,Original scale factor (0.0904) corrected by Sea-Bird with the new value of 0.15096 = 0.0904 * 5.62 * 0.29713
+ATAPL-58322-00002__20160116.csv,WR,9/17/26,Clear,Original scale factor (0.0786) corrected by Sea-Bird with the new value of 0.12651 = 0.0786 * 5.62 * 0.28639
+ATAPL-58322-00002__20171107.csv,WR,9/17/26,Clear,Original scale factor (0.0649) corrected by Sea-Bird with the new value of 0.10446 = 0.0649 * 5.62 * 0.28639
+ATAPL-58322-00002__20201007.csv,WR,9/17/26,Clear,Original scale factor (0.0891) corrected by Sea-Bird with the new value of 0.37967 = 0.0891 * 5.62 * 0.75821
+ATAPL-58322-00002__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.09624) corrected by Sea-Bird with the new value of 0.41009 = 0.09624 * 5.62 * 0.75821
+ATAPL-58322-00003__20131022.csv,WR,9/17/26,Clear,Original scale factor (0.0913) corrected by Sea-Bird with the new value of 0.15246 = 0.0913 * 5.62 * 0.29713
+ATAPL-58322-00003__20160112.csv,WR,9/17/26,Clear,Original scale factor (0.0724) corrected by Sea-Bird with the new value of 0.11653 = 0.0724 * 5.62 * 0.28639
+ATAPL-58322-00003__20171103.csv,WR,9/17/26,Clear,Original scale factor (0.0626) corrected by Sea-Bird with the new value of 0.10076 = 0.0626 * 5.62 * 0.28639
+ATAPL-58322-00003__20190906.csv,WR,9/17/26,Clear,Original scale factor (0.0722) corrected by Sea-Bird with the new value of 0.18087 = 0.0722 * 5.62 * 0.44575
+ATAPL-58322-00003__20211013.csv,WR,9/17/26,Clear,Original scale factor (0.0929) corrected by Sea-Bird with the new value of 0.39586 = 0.0929 * 5.62 * 0.75821
+ATAPL-58322-00004__20131025.csv,WR,9/17/26,Clear,Original scale factor (0.0903) corrected by Sea-Bird with the new value of 0.15079 = 0.0903 * 5.62 * 0.29713
+ATAPL-58322-00004__20160114.csv,WR,9/17/26,Clear,Original scale factor (0.0711) corrected by Sea-Bird with the new value of 0.11444 = 0.0711 * 5.62 * 0.28639
+ATAPL-58322-00004__20171108.csv,WR,9/17/26,Clear,Original scale factor (0.0653) corrected by Sea-Bird with the new value of 0.1051 = 0.0653 * 5.62 * 0.28639
+ATAPL-58322-00004__20190911.csv,WR,9/17/26,Clear,Original scale factor (0.0648) corrected by Sea-Bird with the new value of 0.16233 = 0.0648 * 5.62 * 0.44575
+ATAPL-58322-00004__20211027.csv,WR,9/17/26,Clear,Original scale factor (0.0906) corrected by Sea-Bird with the new value of 0.38606 = 0.0906 * 5.62 * 0.75821
+ATAPL-58322-00005__20131023.csv,WR,9/17/26,Clear,Original scale factor (0.0908) corrected by Sea-Bird with the new value of 0.15162 = 0.0908 * 5.62 * 0.29713
+ATAPL-58322-00005__20160113.csv,WR,9/17/26,Clear,Original scale factor (0.0677) corrected by Sea-Bird with the new value of 0.10896 = 0.0677 * 5.62 * 0.28639
+ATAPL-58322-00005__20171130.csv,WR,9/17/26,Clear,Original scale factor (0.067) corrected by Sea-Bird with the new value of 0.10784 = 0.067 * 5.62 * 0.28639
+ATAPL-58322-00005__20190906.csv,WR,9/17/26,Clear,Original scale factor (0.0723) corrected by Sea-Bird with the new value of 0.18112 = 0.0723 * 5.62 * 0.44575
+ATAPL-58322-00005__20211012.csv,WR,9/17/26,Clear,Original scale factor (0.0911) corrected by Sea-Bird with the new value of 0.38819 = 0.0911 * 5.62 * 0.75821
+ATAPL-58322-00006__20140423.csv,WR,9/17/26,Clear,Original scale factor (0.0905) corrected by Sea-Bird with the new value of 0.11276 = 0.0905 * 5.62 * 0.22169
+ATAPL-58322-00006__20160422.csv,WR,9/17/26,Clear,Original scale factor (0.0817) corrected by Sea-Bird with the new value of 0.1315 = 0.0817 * 5.62 * 0.28639
+ATAPL-58322-00006__20170126.csv,WR,9/17/26,Clear,Original scale factor (0.0889) corrected by Sea-Bird with the new value of 0.14309 = 0.0889 * 5.62 * 0.28639
+ATAPL-58322-00006__20171128.csv,WR,9/17/26,Clear,Original scale factor (0.0885) corrected by Sea-Bird with the new value of 0.14244 = 0.0885 * 5.62 * 0.28639
+ATAPL-58322-00006__20190918.csv,WR,9/17/26,Clear,Original scale factor (0.0779) corrected by Sea-Bird with the new value of 0.19515 = 0.0779 * 5.62 * 0.44575
+ATAPL-58322-00006__20201013.csv,WR,9/17/26,Clear,Original scale factor (0.0949) corrected by Sea-Bird with the new value of 0.40438 = 0.0949 * 5.62 * 0.75821
+ATAPL-58322-00007__20140423.csv,WR,9/17/26,Clear,Original scale factor (0.0905) corrected by Sea-Bird with the new value of 0.11276 = 0.0905 * 5.62 * 0.22169
+ATAPL-58322-00007__20160422.csv,WR,9/17/26,Clear,Original scale factor (0.084) corrected by Sea-Bird with the new value of 0.1352 = 0.084 * 5.62 * 0.28639
+ATAPL-58322-00007__20170116.csv,WR,9/17/26,Clear,Original scale factor (0.0856) corrected by Sea-Bird with the new value of 0.13778 = 0.0856 * 5.62 * 0.28639
+ATAPL-58322-00007__20171129.csv,WR,9/17/26,Clear,Original scale factor (0.0867) corrected by Sea-Bird with the new value of 0.13955 = 0.0867 * 5.62 * 0.28639
+ATAPL-58322-00007__20190906.csv,WR,9/17/26,Clear,Original scale factor (0.0661) corrected by Sea-Bird with the new value of 0.16559 = 0.0661 * 5.62 * 0.44575
+ATAPL-58322-00007__20201008.csv,WR,9/17/26,Clear,Original scale factor (0.0921) corrected by Sea-Bird with the new value of 0.39245 = 0.0921 * 5.62 * 0.75821
+ATAPL-58322-00007__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.09015) corrected by Sea-Bird with the new value of 0.38414 = 0.09015 * 5.62 * 0.75821
+ATAPL-58322-00009__20150416.csv,WR,9/17/26,Clear,Original scale factor (0.0906) corrected by Sea-Bird with the new value of 0.11288 = 0.0906 * 5.62 * 0.22169
+ATAPL-58322-00009__20170224.csv,WR,9/17/26,Clear,Original scale factor (0.0843) corrected by Sea-Bird with the new value of 0.13568 = 0.0843 * 5.62 * 0.28639
+ATAPL-58322-00009__20180924.csv,WR,9/17/26,Clear,Original scale factor (0.0728) corrected by Sea-Bird with the new value of 0.11717 = 0.0728 * 5.62 * 0.28639
+ATAPL-58322-00009__20201005.csv,WR,9/17/26,Clear,Original scale factor (0.0896) corrected by Sea-Bird with the new value of 0.3818 = 0.0896 * 5.62 * 0.75821
+ATAPL-58322-00010__20150409.csv,WR,9/17/26,Clear,Original scale factor (0.0906) corrected by Sea-Bird with the new value of 0.11288 = 0.0906 * 5.62 * 0.22169
+ATAPL-58322-00010__20170217.csv,WR,9/17/26,Clear,Original scale factor (0.0808) corrected by Sea-Bird with the new value of 0.13005 = 0.0808 * 5.62 * 0.28639
+ATAPL-58322-00010__20180924.csv,WR,9/17/26,Clear,Original scale factor (0.068) corrected by Sea-Bird with the new value of 0.10945 = 0.068 * 5.62 * 0.28639
+ATAPL-58322-00010__20201012.csv,WR,9/17/26,Clear,Original scale factor (0.0921) corrected by Sea-Bird with the new value of 0.39245 = 0.0921 * 5.62 * 0.75821
+ATAPL-58322-00010__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.1075) corrected by Sea-Bird with the new value of 0.45807 = 0.1075 * 5.62 * 0.75821
+ATAPL-58322-00011__20150416.csv,WR,9/17/26,Clear,Original scale factor (0.0909) corrected by Sea-Bird with the new value of 0.11325 = 0.0909 * 5.62 * 0.22169
+ATAPL-58322-00011__20170224.csv,WR,9/17/26,Clear,Original scale factor (0.0788) corrected by Sea-Bird with the new value of 0.12683 = 0.0788 * 5.62 * 0.28639
+ATAPL-58322-00011__20180926.csv,WR,9/17/26,Clear,Original scale factor (0.0655) corrected by Sea-Bird with the new value of 0.10542 = 0.0655 * 5.62 * 0.28639
+ATAPL-58322-00012__20150429.csv,WR,9/17/26,Clear,Original scale factor (0.0904) corrected by Sea-Bird with the new value of 0.11263 = 0.0904 * 5.62 * 0.22169
+ATAPL-58322-00012__20170224.csv,WR,9/17/26,Clear,Original scale factor (0.0759) corrected by Sea-Bird with the new value of 0.12216 = 0.0759 * 5.62 * 0.28639
+ATAPL-58322-00012__20180924.csv,WR,9/17/26,Clear,Original scale factor (0.0669) corrected by Sea-Bird with the new value of 0.10768 = 0.0669 * 5.62 * 0.28639
+ATAPL-58322-00012__20201007.csv,WR,9/17/26,Clear,Original scale factor (0.0894) corrected by Sea-Bird with the new value of 0.38095 = 0.0894 * 5.62 * 0.75821
+ATAPL-58322-00012__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.09048) corrected by Sea-Bird with the new value of 0.38555 = 0.09048 * 5.62 * 0.75821
+ATAPL-58322-00014__20191118.csv,WR,9/17/26,Clear,Original scale factor (0.0906) corrected by Sea-Bird with the new value of 0.22697 = 0.0906 * 5.62 * 0.44575
+ATAPL-58322-00014__20211115.csv,WR,9/17/26,Clear,Original scale factor (0.0908) corrected by Sea-Bird with the new value of 0.38691 = 0.0908 * 5.62 * 0.75821
+ATOSU-58322-00008__20140130.csv,WR,9/17/26,Clear,Original scale factor (0.0902) corrected by Sea-Bird with the new value of 0.15062 = 0.0902 * 5.62 * 0.29713
+ATOSU-58322-00008__20160114.csv,WR,9/17/26,Clear,Original scale factor (0.0791) corrected by Sea-Bird with the new value of 0.12731 = 0.0791 * 5.62 * 0.28639
+ATOSU-58322-00008__20171201.csv,WR,9/17/26,Clear,Original scale factor (0.0732) corrected by Sea-Bird with the new value of 0.11782 = 0.0732 * 5.62 * 0.28639
+ATOSU-58322-00008__20190905.csv,WR,9/17/26,Clear,Original scale factor (0.0906) corrected by Sea-Bird with the new value of 0.22697 = 0.0906 * 5.62 * 0.44575
+ATOSU-58322-00008__20211001.csv,WR,9/17/26,Clear,Original scale factor (0.0722) corrected by Sea-Bird with the new value of 0.30766 = 0.0722 * 5.62 * 0.75821
+ATOSU-58322-00008__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.09065) corrected by Sea-Bird with the new value of 0.38627 = 0.09065 * 5.62 * 0.75821
+ATOSU-58322-00013__20150528.csv,WR,9/17/26,Clear,Original scale factor (0.0905) corrected by Sea-Bird with the new value of 0.11276 = 0.0905 * 5.62 * 0.22169
+ATOSU-58322-00013__20181008.csv,WR,9/17/26,Clear,Original scale factor (0.0746) corrected by Sea-Bird with the new value of 0.12007 = 0.0746 * 5.62 * 0.28639
+ATOSU-58322-00013__20201012.csv,WR,9/17/26,Clear,Original scale factor (0.0964) corrected by Sea-Bird with the new value of 0.41078 = 0.0964 * 5.62 * 0.75821
+ATOSU-58322-00013__20221028.csv,WR,9/17/26,Clear,Original scale factor (0.09395) corrected by Sea-Bird with the new value of 0.40034 = 0.09395 * 5.62 * 0.75821
