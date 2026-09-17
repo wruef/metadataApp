@@ -42,12 +42,13 @@ describe('applying decisions to the real sheet', () => {
       { key: 'a-file-that-is-not-there.csv', status: 'Clear', notes: 'new' },
     ], 'WR', WHEN))
     expect(after.length).toBe(before.length + 1)
-    // Three legacy rows carry notes with surrounding whitespace. They normalise
-    // once, on the first sign-off, and are stable afterwards — the alternative
-    // is papaparse quoting them, which churns the same rows and reads worse.
+    // Nothing above the appended row moves. Three legacy rows carried notes
+    // with surrounding whitespace and this used to normalise them on the way
+    // past; they normalised for real on the team's first sign-off from the
+    // dashboard, so there is nothing left to migrate and the invariant is now
+    // the plain one: a new decision touches no line but its own.
     const changed = before.filter((line, index) => line !== after[index])
-    expect(changed).toHaveLength(3)
-    expect(changed.every((line) => line.includes('Clear, '))).toBe(true)
+    expect(changed).toHaveLength(0)
   })
 
   it('normalises notes with surrounding whitespace rather than quoting them', () => {
