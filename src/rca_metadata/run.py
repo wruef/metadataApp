@@ -55,6 +55,9 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
         ## Not a check -- the inventory of what the run covered, which the
         ## dashboard offers as a view of its own.
         'referenceDesignators': sorted(set(deployments['Reference Designator'].dropna())),
+        ## Not a check either -- the reasons a reviewer picks from when signing
+        ## a row off, which are whatever the team has already written.
+        'hitlNotes': loading.hitlNotes(hitl),
     }
 
 

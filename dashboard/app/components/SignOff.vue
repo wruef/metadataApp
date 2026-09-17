@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
 import { HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
-import type { Row } from '~/store'
+import { useStore, type Row } from '~/store'
 
 const { sheet, row } = defineProps<{ sheet: SheetKey; row: Row }>()
 const auth = useAuth()
 const signoff = useSignoff()
+const store = useStore()
 
 const key = computed(() => HITL_SHEETS[sheet].of(row))
 const queued = computed(() => signoff.decisionFor(sheet, key.value))
@@ -13,6 +14,22 @@ const notes = ref('')
 
 watchEffect(() => {
   notes.value = queued.value?.notes ?? String(row.HITLnotes ?? '').trim()
+})
+
+/** Every reason already written in this sheet, carried in the report because
+ *  the sheet holds notes for rows this run does not — a sign-off on a
+ *  calibration file since removed still carries wording worth reusing. */
+const reasons = computed(() => store.report?.hitlNotes?.[sheet] ?? [])
+
+/** The dropdown follows the text rather than driving it, so editing a reason
+ *  after picking it falls back to 'Something else' instead of leaving the two
+ *  controls disagreeing about what the note says. */
+const picked = computed({
+  get: () => (reasons.value.includes(notes.value) ? notes.value : ''),
+  set: (value: string) => {
+    notes.value = value
+    if (queued.value) decide(queued.value.status)
+  },
 })
 
 function decide(status: 'Clear' | 'NotClear') {
@@ -60,13 +77,26 @@ function decide(status: 'Clear' | 'NotClear') {
           queued as <b>{{ queued.status }}</b> — the check stays on the row
         </span>
       </div>
-      <u-input
-        v-model="notes"
-        placeholder="Why — what you checked, and what convinced you"
-        class="max-w-xl"
-        size="sm"
-        @blur="queued && decide(queued.status)"
-      />
+      <div class="flex flex-col gap-2 max-w-xl">
+        <!-- What the team already writes, so a queue reads as one vocabulary
+             rather than fifty spellings of the same judgement. -->
+        <select
+          v-if="reasons.length"
+          v-model="picked"
+          class="sel"
+          style="max-width: 100%"
+          aria-label="Reason this row was reviewed"
+        >
+          <option value="">Something else — write it below</option>
+          <option v-for="reason in reasons" :key="reason" :value="reason">{{ reason }}</option>
+        </select>
+        <u-input
+          v-model="notes"
+          placeholder="Why — what you checked, and what convinced you"
+          size="sm"
+          @blur="queued && decide(queued.status)"
+        />
+      </div>
     </div>
   </div>
 </template>

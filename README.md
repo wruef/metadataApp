@@ -132,10 +132,16 @@ session is restored.
 Set your initials too: the HITL sheets identify reviewers by initials (`KB,WR`),
 not by GitHub login.
 
-Clearing or flagging a row queues a decision. Submitting the queue opens **one**
-pull request carrying the whole batch, against **your own fork**. You raise the
-onward pull request to the shared repository by hand — a person decides when a
-batch is worth proposing to everyone else.
+Clearing or flagging a row queues a decision. The reason comes from a dropdown
+of every note the sheet already holds — 23 on the calibration sheet, 16 on the
+deployments sheet — ranked by how often each has been used, so the wording the
+team works with is at the top. Anything not in the list is still typed straight
+into the field beneath it.
+
+Submitting the queue opens **one** pull request carrying the whole batch,
+against **your own fork**. You raise the onward pull request to the shared
+repository by hand — a person decides when a batch is worth proposing to
+everyone else.
 
 ## Starting a run from the dashboard
 
@@ -238,6 +244,15 @@ Every row carries two things the dashboard should not have to work out itself:
   someone would use out loud. A queue is worked by people, and
   `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
 
+Each check's `summary` counts every severity, and beside them `open` — the same
+breakdown over rows nobody has signed off — and `attention`, the problem and
+review rows among those. That last number is what *needs attention* means
+everywhere: the rail, the segmented control and the overview queue all read it,
+so they cannot disagree about how much is left. **A cleared row is not in it.**
+A sign-off is a person having dealt with the row, so it leaves the queue while
+keeping its severity badge and its finding — visible under *Cleared only*, and
+under its own severity, but never as outstanding work.
+
 The reason explains the severity, so the two must never contradict each other —
 a row reading *a photograph confirms the asset* above a badge reading *not
 checked* helps nobody. A test runs every combination of verdicts each check can
@@ -246,6 +261,13 @@ It found 442 real deployments doing exactly that: confirmed by one piece of
 evidence while another had never been looked at. The two sign-off reasons are
 exempt by design, because a sign-off describes what a person did rather than
 what a check found.
+
+The report also carries `hitlNotes` — every note already written in each 2i-HITL
+sheet, most used first. Those are the reasons offered when a row is signed off,
+so a new sign-off reuses the team's wording rather than a fresh synonym for it.
+They are read from the sheets rather than from the run's own rows, because the
+two do not hold the same set: a note written against a calibration file that
+asset-management no longer carries is still a reason worth offering.
 
 Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
 happily and neither is valid JSON, which a browser refuses to parse.

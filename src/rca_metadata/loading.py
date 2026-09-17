@@ -52,6 +52,30 @@ def loadHITL(hitlDir='2i_HITL'):
     }
 
 
+def hitlNotes(hitl):
+    """Every note already written in each sheet, most used first.
+
+    These are the reasons the dashboard offers when a row is signed off, so a
+    new sign-off reuses the wording the team already has rather than inventing
+    a synonym for it. Frequency order puts the shared vocabulary at the top --
+    'verified with deployment logs and images' and its neighbours -- and leaves
+    the remarks about one particular file below it.
+
+    Read from the sheets rather than from the rows of a run, because the two do
+    not hold the same set: a note written against a calibration file that
+    asset-management no longer carries is still a reason worth offering.
+    """
+    vocabulary = {}
+    for sheet, frame in hitl.items():
+        ## One note in the sheet today is a single space, which is not a reason.
+        written = frame['HITLnotes'].dropna().str.strip()
+        counts = written[written != ''].value_counts()
+        ## Ties resolve on the wording, so the list is the same every run and a
+        ## report does not churn between two orderings of the same notes.
+        vocabulary[sheet] = sorted(counts.index, key=lambda note: (-counts[note], note))
+    return vocabulary
+
+
 def loadBulk(amSource):
     """OOI's bulk asset records and cruise list, at the chosen ref."""
     sensors = pd.read_csv(amSource.path('bulk/sensor_bulk_load-AssetRecord.csv'))

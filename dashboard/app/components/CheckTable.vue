@@ -63,7 +63,9 @@ const asked = (key: string) => (typeof route.query[key] === 'string' ? route.que
 /** Otherwise the check opens on its queue, not on the 1,558 rows that already
  *  agree. A check with nothing outstanding opens on everything instead, so it
  *  never greets you with an empty table. */
-const fallback = check.summary.problem + check.summary.review > 0 ? ATTENTION : ALL
+const fallback = (check.summary.attention ?? check.summary.problem + check.summary.review) > 0
+  ? ATTENTION
+  : ALL
 
 const severity = ref<string>(asked('severity') || fallback)
 /** Empty means the facet is not narrowing anything. */
@@ -106,7 +108,11 @@ const severityCounts = computed(() => {
   const counts: Record<string, number> = { [ALL]: base.length, [ATTENTION]: 0 }
   for (const row of base) {
     counts[row.severity] = (counts[row.severity] ?? 0) + 1
-    if (row.severity === 'problem' || row.severity === 'review') counts[ATTENTION]!++
+    // Cleared rows keep their severity — and their place under it — but a
+    // sign-off takes them out of what is waiting on a person.
+    if (!row.cleared && (row.severity === 'problem' || row.severity === 'review')) {
+      counts[ATTENTION]!++
+    }
   }
   return counts
 })

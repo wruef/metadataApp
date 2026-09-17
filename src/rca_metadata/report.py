@@ -247,11 +247,25 @@ def scoreRows(check, rows):
     return scored
 
 
+## The severities that put a row in front of a person, as opposed to those that
+## record something already settled or never checked.
+OPEN = ('problem', 'review')
+
+
 def summarise(rows):
     counts = {severity: 0 for severity in SEVERITIES}
     for row in rows:
         counts[row['severity']] += 1
     counts['cleared'] = sum(1 for row in rows if row['cleared'])
+    ## What is still waiting on somebody, by severity. A sign-off is a person
+    ## having dealt with the row, so a cleared row leaves the queue even though
+    ## the failing check stays visible on it -- 'cleared, calibration noted'.
+    ## Counted here rather than in the dashboard so the rail, the segment and
+    ## the queue cannot drift into disagreeing about how much is left.
+    counts['open'] = {severity: sum(1 for row in rows
+                                    if row['severity'] == severity and not row['cleared'])
+                      for severity in SEVERITIES}
+    counts['attention'] = sum(counts['open'][severity] for severity in OPEN)
     counts['total'] = len(rows)
     return counts
 
@@ -322,6 +336,9 @@ def buildReport(result, paramsPath='.'):
         'parameters': gitProvenance(paramsPath),
         ## What the run covered, as opposed to what it found.
         'referenceDesignators': result.get('referenceDesignators', []),
+        ## The reasons a sign-off picks from -- every note already in the
+        ## 2i-HITL sheets, so a reviewer reuses the team's wording.
+        'hitlNotes': result.get('hitlNotes', {}),
         'checks': checks,
     }
 

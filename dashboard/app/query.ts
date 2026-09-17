@@ -29,6 +29,10 @@ export function matchesWhere(
 ) {
   const severity = where.severity || ALL
   if (severity === ATTENTION) {
+    // A sign-off is a person having dealt with the row, so a cleared row is not
+    // waiting on anyone — even though the failing check stays on it, and the
+    // 'Cleared only' filter and the badge both still show it.
+    if (row.cleared) return false
     if (row.severity !== 'problem' && row.severity !== 'review') return false
   } else if (severity !== ALL && row.severity !== severity) return false
 

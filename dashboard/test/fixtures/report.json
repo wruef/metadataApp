@@ -191,6 +191,13 @@
     "unchecked": 3,
     "ok": 3,
     "cleared": 0,
+    "open": {
+     "problem": 6,
+     "review": 6,
+     "unchecked": 3,
+     "ok": 3
+    },
+    "attention": 12,
     "total": 18
    }
   },
@@ -227,6 +234,13 @@
     "unchecked": 0,
     "ok": 0,
     "cleared": 0,
+    "open": {
+     "problem": 3,
+     "review": 0,
+     "unchecked": 0,
+     "ok": 0
+    },
+    "attention": 3,
     "total": 3
    }
   },
@@ -959,6 +973,13 @@
     "unchecked": 12,
     "ok": 0,
     "cleared": 15,
+    "open": {
+     "problem": 6,
+     "review": 9,
+     "unchecked": 6,
+     "ok": 0
+    },
+    "attention": 15,
     "total": 36
    }
   },
@@ -1124,6 +1145,13 @@
     "unchecked": 0,
     "ok": 7,
     "cleared": 0,
+    "open": {
+     "problem": 3,
+     "review": 0,
+     "unchecked": 0,
+     "ok": 7
+    },
+    "attention": 3,
     "total": 10
    }
   },
@@ -1979,6 +2007,13 @@
     "unchecked": 13,
     "ok": 4,
     "cleared": 16,
+    "open": {
+     "problem": 5,
+     "review": 5,
+     "unchecked": 7,
+     "ok": 3
+    },
+    "attention": 10,
     "total": 36
    }
   }

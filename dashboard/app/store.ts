@@ -33,7 +33,14 @@ export interface Row {
 
 export interface Check {
   rows: Row[]
-  summary: Record<Severity | 'cleared' | 'total', number>
+  /** `open` is the severity breakdown of rows nobody has signed off, and
+   *  `attention` the problem and review rows among them — what is actually
+   *  waiting on a person. Optional because runs published before they were
+   *  carried have neither, and the rail falls back to the severities. */
+  summary: Record<Severity | 'cleared' | 'total', number> & {
+    attention?: number
+    open?: Record<Severity, number>
+  }
   missingFromGithub?: string[]
 }
 
@@ -49,6 +56,10 @@ export interface Report {
   sources: Record<string, Source | string | null>
   parameters: { commit: string; dirty: boolean }
   referenceDesignators: string[]
+  /** Every note already written in each 2i-HITL sheet, most used first — the
+   *  reasons a sign-off picks from. Absent on runs published before it was
+   *  carried, which is why signing off falls back to free text alone. */
+  hitlNotes?: Record<string, string[]>
   checks: Record<string, Check>
 }
 
@@ -161,7 +172,8 @@ export interface RunEntry {
   runAt: string
   parameters: { commit: string; dirty: boolean }
   sources: Record<string, Source>
-  summary: Record<string, Record<string, number>>
+  /** The same per-check summaries the run's own report carries. */
+  summary: Record<string, Check['summary']>
 }
 
 export const useStore = defineStore('report', () => {

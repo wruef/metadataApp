@@ -11,10 +11,18 @@ const signoff = useSignoff()
  *  check opens on, so the rail and the table agree about how much is left. */
 function attention(key: string) {
   const summary = store.report?.checks?.[key]?.summary
-  return summary ? summary.problem + summary.review : 0
+  if (!summary) return 0
+  // Cleared rows are not waiting on anyone. Runs published before the report
+  // carried that count fall back to the severities, which over-counts by
+  // whatever has been signed off rather than showing nothing.
+  return summary.attention ?? summary.problem + summary.review
 }
+/** Red only while a problem is still open. A check whose problems have all been
+ *  signed off is not the same as one that still has them. */
 function hot(key: string) {
-  return (store.report?.checks?.[key]?.summary.problem ?? 0) > 0
+  const summary = store.report?.checks?.[key]?.summary
+  if (!summary) return false
+  return (summary.open?.problem ?? summary.problem) > 0
 }
 
 const runAt = computed(() =>

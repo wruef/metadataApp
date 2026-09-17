@@ -64,8 +64,42 @@ def test_summaryCountsEverySeverityAndTheClearedRows():
     rows = scoreRows('sensorBulk', [
         {'verdict': 'MATCH'}, {'verdict': 'MISMATCH'},
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'NO_BULK_SERIAL'}])
-    assert summarise(rows) == {'problem': 2, 'review': 0, 'unchecked': 1, 'ok': 1,
-                               'cleared': 1, 'total': 4}
+    assert summarise(rows) == {
+        'problem': 2, 'review': 0, 'unchecked': 1, 'ok': 1, 'cleared': 1,
+        'open': {'problem': 1, 'review': 0, 'unchecked': 1, 'ok': 1},
+        'attention': 1, 'total': 4}
+
+
+def test_aClearedRowIsNotWaitingOnAnyone():
+    """Both rows disagree with the sensor bulk record and both stay 'problem';
+    only the one nobody has signed off is still work."""
+    rows = scoreRows('sensorBulk', [
+        {'verdict': 'MISMATCH'}, {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}])
+    counts = summarise(rows)
+    assert counts['problem'] == 2
+    assert counts['attention'] == 1
+
+
+def test_aFlaggedRowIsStillWaitingOnSomeone():
+    """NotClear is a reviewer asking for someone else, not a decision closing
+    the row."""
+    rows = scoreRows('sensorBulk', [{'verdict': 'MISMATCH', 'HITLstatus': 'NotClear'}])
+    assert summarise(rows)['attention'] == 1
+
+
+def test_theOpenBreakdownLeavesOutWhatWasSignedOff():
+    """The rail colours itself red on an open problem, so a problem everyone
+    has already dealt with must not count towards one."""
+    rows = scoreRows('sensorBulk', [
+        {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'MATCH'}])
+    counts = summarise(rows)
+    assert counts['problem'] == 1
+    assert counts['open'] == {'problem': 0, 'review': 0, 'unchecked': 0, 'ok': 1}
+
+
+def test_aSettledRowNobodySignedOffIsNotWork():
+    rows = scoreRows('sensorBulk', [{'verdict': 'MATCH'}, {'verdict': 'NO_BULK_SERIAL'}])
+    assert summarise(rows)['attention'] == 0
 
 
 ## --- the document ---
@@ -94,6 +128,17 @@ def test_reportCarriesItsSchemaVersionAndProvenance(tmp_path):
     assert doc['runAt'] == '2026-09-15T12:00:00'
     assert doc['sources']['assetManagement']['ref'] == 'master'
     assert set(doc['parameters']) == {'commit', 'dirty'}
+
+
+def test_theReportCarriesTheReasonsASignOffPicksFrom():
+    """The dashboard offers the team's own wording, so the run has to hand it
+    over -- the sheets hold notes for rows a run does not have."""
+    result = {**RESULT, 'hitlNotes': {'deployments': ['verified with IP address ping']}}
+    assert buildReport(result)['hitlNotes']['deployments'] == ['verified with IP address ping']
+
+
+def test_aRunWithNoSheetsCarriesNoReasons():
+    assert buildReport(RESULT)['hitlNotes'] == {}
 
 
 def test_aCheckThatDidNotRunIsAbsentRatherThanEmpty():
