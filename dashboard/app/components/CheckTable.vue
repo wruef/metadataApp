@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { identity, rowTone, splitVerdict, toneOf, type Tone } from '~/display'
+import { compareValues, identity, rowTone, splitVerdict, toneOf, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
 import { hitlKeyOf, HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
@@ -76,6 +76,36 @@ const clearedOnly = ref<string>(asked('cleared') || 'all')
 const search = ref(asked('q'))
 
 /**
+ * Sorting, which is off until a header is clicked.
+ *
+ * Off means the queue order the report exists for: worst first, so the rows
+ * that need a person are the ones on the first page. A column sort is for
+ * answering a different question — every calibration for one instrument in date
+ * order, say — so it is something you turn on, and a third click turns it off
+ * again rather than leaving the table in a state with no way back.
+ */
+const REVIEW_STATUS = 'severity'
+const sortColumn = ref(asked('sort'))
+const sortAsc = ref(asked('dir') !== 'desc')
+
+function sortBy(column: string) {
+  if (sortColumn.value !== column) {
+    sortColumn.value = column
+    sortAsc.value = true
+  } else if (sortAsc.value) {
+    sortAsc.value = false
+  } else {
+    sortColumn.value = ''
+  }
+}
+
+/** What a screen reader announces, and what the arrow in the header shows. */
+function sortState(column: string) {
+  if (sortColumn.value !== column) return 'none'
+  return sortAsc.value ? 'ascending' : 'descending'
+}
+
+/**
  * The filters as one clause, optionally leaving one out.
  *
  * Leaving one out is what lets a control show honest counts: the choices in the
@@ -96,12 +126,23 @@ function matches(row: Row, skip?: string) {
 }
 
 /** Ranked by consequence rather than row order — which is the whole reason the
- *  report carries a severity. */
-const rows = computed(() =>
-  check.rows
-    .filter((row) => matches(row))
-    .sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)),
-)
+ *  report carries a review status — until a column is sorted on instead. */
+const rows = computed(() => {
+  const found = check.rows.filter((row) => matches(row))
+  const direction: 1 | -1 = sortAsc.value ? 1 : -1
+  if (!sortColumn.value) {
+    return found.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
+  }
+  // Review status sorts by its rank, not by the word: 'problem' before 'review'
+  // is the order that means something, and alphabetically it is the reverse.
+  if (sortColumn.value === REVIEW_STATUS) {
+    return found.sort(
+      (a, b) => direction * (SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)),
+    )
+  }
+  const column = sortColumn.value
+  return found.sort((a, b) => compareValues(a[column], b[column], direction))
+})
 
 const severityCounts = computed(() => {
   const base = check.rows.filter((row) => matches(row, 'severity'))
@@ -148,6 +189,7 @@ const filtered = computed(
     severity.value !== fallback ||
     clearedOnly.value !== 'all' ||
     search.value.trim() !== '' ||
+    sortColumn.value !== '' ||
     facets.some((facet) => picked[facet.key]),
 )
 
@@ -156,6 +198,7 @@ function reset() {
   for (const facet of facets) picked[facet.key] = ''
   clearedOnly.value = 'all'
   search.value = ''
+  sortColumn.value = ''
 }
 
 const pageCount = computed(() => Math.max(1, Math.ceil(rows.value.length / PAGE_SIZE)))
@@ -280,15 +323,22 @@ function label(column: string) {
           <tr>
             <th class="w-1" />
             <th class="w-8" />
-            <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">
-              Severity
+            <!-- Every header sorts. A third click returns the table to the queue
+                 order it opens in, so there is always a way back. -->
+            <th class="sortable" :aria-sort="sortState(REVIEW_STATUS)">
+              <button type="button" @click="sortBy(REVIEW_STATUS)">
+                Review status<i class="ind" :class="sortState(REVIEW_STATUS)" />
+              </button>
             </th>
             <th
               v-for="column in columns"
               :key="column"
-              class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase whitespace-nowrap"
+              class="sortable whitespace-nowrap"
+              :aria-sort="sortState(column)"
             >
-              {{ label(column) }}
+              <button type="button" @click="sortBy(column)">
+                {{ label(column) }}<i class="ind" :class="sortState(column)" />
+              </button>
             </th>
             <th v-if="sheet && auth.canSignOff" class="w-px" />
           </tr>

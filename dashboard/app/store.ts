@@ -7,7 +7,7 @@ import { withBase } from '~/paths'
  *  own rather than a flag beside a severity: a row a reviewer signed off is not
  *  a problem and not work waiting on anybody. What the checks found is kept on
  *  the row as `finding`, and shown beside the badge. */
-export const SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok'] as const
+export const SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok', 'excluded'] as const
 export type Severity = (typeof SEVERITIES)[number]
 
 export const SEVERITY_LABEL: Record<Severity, string> = {
@@ -16,6 +16,7 @@ export const SEVERITY_LABEL: Record<Severity, string> = {
   unchecked: 'Not checked',
   cleared: 'Cleared in review',
   ok: 'Agreed',
+  excluded: 'Excluded',
 }
 
 /** Nuxt UI badge colours. `as const` keeps the literal types, which is what the
@@ -28,6 +29,7 @@ export const SEVERITY_COLOR = {
   unchecked: 'neutral',
   cleared: 'warning',
   ok: 'success',
+  excluded: 'neutral',
 } as const satisfies Record<Severity, string>
 
 export interface Row {
@@ -50,6 +52,8 @@ export interface Check {
   summary: Record<Severity | 'cleared' | 'total', number> & {
     attention?: number
     verified?: number
+    /** The rows this check could judge at all: total less excluded. */
+    considered?: number
   }
   missingFromGithub?: string[]
 }
@@ -66,6 +70,9 @@ export interface Report {
   sources: Record<string, Source | string | null>
   parameters: { commit: string; dirty: boolean }
   referenceDesignators: string[]
+  /** The instruments asset-management holds no calibration for, so nothing
+   *  could be compared and nothing was missed. */
+  excludedInstruments?: string[]
   /** Every note already written in each 2i-HITL sheet, most used first — the
    *  reasons a sign-off picks from. Absent on runs published before it was
    *  carried, which is why signing off falls back to free text alone. */

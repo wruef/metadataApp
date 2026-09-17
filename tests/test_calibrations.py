@@ -257,8 +257,126 @@ def test_anInstrumentTypeMapsToTheRulesItFallsUnder():
     assert sensorForType('DOFST-A') == 'DOFSTA'
     assert sensorForType('FLOR-D') == 'FLORD'
     assert sensorForType('PARAD-A') == 'PARA'
+    ## the instruments held to fixed values rather than a vendor file
+    assert sensorForType('HYDBB-A') == 'HYDBB'
+    assert sensorForType('ADCPS-I') == 'ADCP'
+    assert sensorForType('ADCPT-B') == 'ADCP'
+    assert sensorForType('VADCP-A') == 'VADCP'
+    assert sensorForType('ZPLSC-B') == 'ZPLSC'
     ## an instrument nothing compares stays without rules
-    assert sensorForType('HYDBB-A') is None
+    assert sensorForType('CAMDS-B') is None
+
+
+## --- instruments no vendor publishes a file for ---
+
+def constantsCal(pairs):
+    import pandas as pd
+    return pd.DataFrame({'name': [n for n, _ in pairs], 'value': [v for _, v in pairs]})
+
+
+def test_aCalibrationOfFixedValuesIsComparedAgainstThem():
+    """An ADCP's scale factors are the same on every unit, so no vendor measures
+    them and nothing is ever published to compare against. They are still
+    checkable: the numbers are written down."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    constants = {'ADCP': {f'CC_scale_factor{n}': 0.45 for n in range(1, 5)}}
+    assets = {'ATOSU-69825-00001': {'instrumentType': ['ADCPS-I']}}
+    cal = constantsCal([(f'CC_scale_factor{n}', 0.45) for n in range(1, 5)])
+    verdict, *differences = compareCalCoefficients(
+        cal, 'ATOSU-69825-00001__20150803', {}, constants, assets, vendorPresent=False)
+    assert verdict == 'COMPARED_CONSTANTS'
+    assert differences == []
+
+
+def test_aFixedValueThatDisagreesIsAFinding():
+    """As much a transcription error as one that disagrees with a vendor."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    constants = {'HYDBB': {'CC_gain': 0.0}}
+    assets = {'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}}
+    verdict, *differences = compareCalCoefficients(
+        constantsCal([('CC_gain', 6.0)]), 'ATAPL-58324-00003__20140805',
+        {}, constants, assets, vendorPresent=False)
+    assert verdict == 'CONSTANT_MISMATCH'
+    assert len(differences) == 1
+
+
+def test_configurationIsNotComparedAgainstAnything():
+    """Bin size and depth change from one deployment to the next, so there is no
+    fixed value to hold them to."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    constants = {'ADCP': {'CC_scale_factor1': 0.45}}
+    assets = {'ATOSU-69825-00001': {'instrumentType': ['ADCPS-I']}}
+    cal = constantsCal([('CC_scale_factor1', 0.45), ('CC_bin_size', 2.0), ('CC_depth', 80.0)])
+    verdict, *differences = compareCalCoefficients(
+        cal, 'ATOSU-69825-00001__20150803', {}, constants, assets, vendorPresent=False)
+    assert verdict == 'COMPARED_CONSTANTS'
+    assert differences == []
+
+
+def test_aFileOfNothingButConfigurationIsNotAPass():
+    """Four VADCP files hold only a transformation matrix and its shape. A
+    verdict of COMPARED set before anything was read is the defect this rewrite
+    exists for, so it must not happen here either."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    assets = {'ATAPL-58345-00002': {'instrumentType': ['VADCP-B']}}
+    cal = constantsCal([('CC_rows', 4.0), ('CC_columns', 4.0), ('CC_vadcpb_orientation', 1.0)])
+    verdict, *_ = compareCalCoefficients(
+        cal, 'ATAPL-58345-00002__20120120', {}, {'VADCP': {'CC_scale_factor1': 0.45}},
+        assets, vendorPresent=False)
+    assert verdict == 'CONFIGURATION_ONLY'
+
+
+def test_aCoefficientWithNoFixedValueWrittenIsNotAPass():
+    """A coefficient nobody has written a constant for was checked against
+    nothing, and an unchecked coefficient reading as a pass is the failure mode
+    this rewrite exists for."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    assets = {'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}}
+    cal = constantsCal([('CC_gain', 0.0), ('CC_something_new', 1.0)])
+    verdict, *differences = compareCalCoefficients(
+        cal, 'ATAPL-58324-00003__20140805', {}, {'HYDBB': {'CC_gain': 0.0}},
+        assets, vendorPresent=False)
+    assert verdict == 'MISSING_COEFFICIENT'
+    assert differences[0][1] == 'CC_something_new'
+
+
+def test_aSensorMarkedForFixedValuesWithNoneWrittenSaysSo():
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    assets = {'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}}
+    verdict, *_ = compareCalCoefficients(
+        constantsCal([('CC_gain', 0.0)]), 'ATAPL-58324-00003__20140805',
+        {}, {}, assets, vendorPresent=False)
+    assert verdict == 'NO_CONSTANTS'
+
+
+def test_anInstrumentThatNeedsAVendorFileIsNotComparedWithout():
+    """Only a fixed-value sensor can be compared with no vendor original. A CTD
+    with nothing on record stays uncompared rather than being held to constants
+    that were never meant to stand alone."""
+    from rca_metadata.calibrations import compareCalCoefficients
+
+    verdict, *_ = compareCalCoefficients(
+        constantsCal([('CC_a0', 1.0)]), 'ATAPL-66662-00002__20160303',
+        {}, {'CTD': {'CC_offset': 0.0}}, None, vendorPresent=False)
+    assert verdict == 'NAN'
+
+
+def test_theRealFixedValuesCoverTheRealFiles():
+    """Against params/coefficientConstants.csv itself: every instrument declared
+    as fixed-value has values written for it."""
+    from rca_metadata.calibrations import SENSORS
+    from rca_metadata.loading import loadParams
+
+    constants = loadParams('params')['constants']
+    for sensor, spec in SENSORS.items():
+        if spec.get('constantsOnly'):
+            assert constants.get(sensor), f'{sensor} is compared against constants and has none'
 
 
 ## --- OPTAA: one calibration, three files on the github side ---

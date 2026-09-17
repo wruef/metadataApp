@@ -49,6 +49,43 @@ disagreements that are an artefact of the choice rather than a fault in the data
 | PCO2W | `.pdf` | typed in from the certificate |
 | DOSTAD | `.pdf` | typed in from the certificate |
 
+### Instruments no vendor publishes a file for
+
+Four instrument families carry fixed values rather than measurements: the same
+numbers on every unit of the type, entered into asset-management by hand. No
+vendor measures them, so nothing is ever published to compare against, and every
+one of these files read as `NAN` — not checked, and taken to be uncheckable.
+
+They are checkable. The numbers are written down in
+`params/coefficientConstants.csv`, and a file that disagrees with them is as
+much a transcription error as one that disagrees with a vendor.
+
+| instrument | held to |
+|---|---|
+| ADCP | `CC_scale_factor1` to `CC_scale_factor4`, all 0.45 |
+| VADCP | the same four scale factors |
+| HYDBB | `CC_gain`, 0 |
+| ZPLSC | frequency, sound speed, seawater density, absorption and theoretical target strength |
+
+**46 RCA calibrations now compare, and all 46 agree.**
+
+These files also carry things that are not calibrations at all — an ADCP's bin
+size, first-bin distance, orientation and depth, and a VADCP's beam
+transformation matrix and its shape. Those change from one deployment to the
+next or belong to the individual instrument, so there is no fixed value to hold
+them to. They are declared per sensor as configuration, which reads as a stated
+limit of the check rather than a silence.
+
+Four VADCP files hold nothing else. Skipping their configuration leaves no
+coefficient compared at all, so they report `CONFIGURATION_ONLY` rather than a
+pass — a verdict of *compared* set before anything was read is the defect this
+whole rewrite exists for, and it was not going to be reintroduced here. A
+coefficient with no fixed value written for it reports `MISSING_COEFFICIENT` for
+the same reason.
+
+These instruments are identified through the RCA instrument list rather than by
+an asset-ID code, which is the same path a borrowed instrument takes.
+
 Where the named format is absent but some other vendor file is on record, the
 result is `FORMAT_NOTCOMPARED` rather than a comparison against whatever happens
 to be there. Enforcing that moved five files out of the queue: four apparent

@@ -20,10 +20,26 @@ last column, and the season lists wrote multi-valued serial numbers unquoted, so
 
 Every row carries four things the dashboard should not have to work out itself:
 
-- **`severity`** — the category the row is in: `problem`, `review`, `unchecked`,
-  `cleared` or `ok`, taken as the worst of the row's verdicts, so a queue can be
-  ranked by consequence rather than by row order. A verdict with no mapping
-  counts as `review`, so a new one reaches a person instead of quietly passing.
+- **`severity`** — the review status: the category the row is in. Shown in the
+  dashboard as **Review status**, because that is what it now says — a sign-off
+  is a category, not a degree of badness. The field keeps its name so published
+  reports stay readable. One of `problem`, `review`, `unchecked`,
+  `cleared`, `ok` or `excluded`, taken as the worst of the row's verdicts, so a
+  queue can be ranked by consequence rather than by row order. A verdict with no
+  mapping counts as `review`, so a new one reaches a person instead of quietly
+  passing.
+
+  **`excluded`** is outside what the check can judge: asset-management holds no
+  calibration for the instrument at all, so there was nothing to compare and
+  nothing was missed. An excluded verdict is skipped when a row's severity is
+  taken rather than ranked among the others, so it neither passes the row nor
+  holds it back, and a row whose every verdict is excluded is excluded itself.
+  It is counted in no other number. `unchecked` would claim a look that was
+  never owed, and a proportion measured against the row count would make the
+  record look worse every time one of these instruments was deployed. The
+  instruments themselves are named in `excludedInstruments`, because a check
+  that quietly covers less than you think is worse than one that says what it
+  skipped.
 - **`cleared`** — whether a reviewer signed the row off. A signed-off row takes
   the `cleared` category whatever its checks found, so it is never a problem and
   never work waiting on somebody.
@@ -38,8 +54,9 @@ Every row carries four things the dashboard should not have to work out itself:
   `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
 
 Each check's `summary` counts every category, and beside them `attention` — the
-problem and review rows, which a signed-off row is never one of — and
-`verified`, agreed plus cleared. `attention` is what *needs attention* means
+problem and review rows, which a signed-off row is never one of — `verified`,
+agreed plus cleared, and `considered`, the rows the check could judge at all,
+which is the row count less the excluded ones. `attention` is what *needs attention* means
 everywhere: the rail, the segmented control and the overview queue all read it,
 so they cannot disagree about how much is left. `verified` is what the headline
 tiles count, because a sign-off is how the things a check cannot settle get

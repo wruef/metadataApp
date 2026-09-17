@@ -284,6 +284,44 @@
   word-break: break-all;
 }
 
+/* ---- a sortable column header ---- */
+/* The button carries the header's own type so the cell reads the same as it did
+   before it could be clicked; only the cursor and the arrow say it is live. */
+.sortable { padding: 0 }
+.sortable button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  color: inherit;
+  white-space: nowrap;
+}
+.sortable button:hover { color: var(--color-primary-700) }
+.sortable[aria-sort='ascending'] button,
+.sortable[aria-sort='descending'] button { color: var(--color-primary-700) }
+
+/* A caret that points the way the column is pointed, and reserves its own width
+   so a header does not shift sideways when it becomes the sorted one. */
+.ind {
+  display: block;
+  width: 7px;
+  height: 4px;
+  flex: none;
+  background: currentColor;
+  opacity: 0;
+}
+.sortable button:hover .ind { opacity: 0.3 }
+.ind.ascending { opacity: 1; clip-path: polygon(50% 0, 100% 100%, 0 100%) }
+.ind.descending { opacity: 1; clip-path: polygon(0 0, 100% 0, 50% 100%) }
+.ind.none { clip-path: polygon(50% 0, 100% 100%, 0 100%) }
+
 /* ---- the coefficients that disagree ---- */
 
 /* The table sits in the left half of a two-column panel, and a table is as wide

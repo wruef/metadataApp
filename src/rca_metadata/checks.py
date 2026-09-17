@@ -197,14 +197,18 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
         if not fileName.endswith('.ext'):
             row['duplicateCoeff'] = _duplicateVerdict(githubCal)
 
-        if row['calRepo_check'] == 'NOMATCH':
-            row['vendorMatch'] = 'NAN'
-        else:
-            verdict, *differences = compareCalCoefficients(
-                githubCal, vendorFiles.stemPath(stem), params['coeffMap'],
-                params['constants'], params['assets'])
-            row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
-            row['differences'] = differences
+        ## A file with no vendor original is still worth reading: some
+        ## instruments carry fixed values that no vendor ever measures, and
+        ## those are compared against coefficientConstants.csv instead. The
+        ## comparison is told there is no vendor file, so everything that needs
+        ## one is left alone rather than reported as disagreeing with nothing.
+        vendorPresent = row['calRepo_check'] == 'MATCH'
+        verdict, *differences = compareCalCoefficients(
+            githubCal, vendorFiles.stemPath(stem) if vendorPresent else stem,
+            params['coeffMap'], params['constants'], params['assets'],
+            vendorPresent=vendorPresent)
+        row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
+        row['differences'] = differences
         rows.append(row)
 
     missing = sorted(set(vendorFiles.stems) - set(seen))
@@ -322,6 +326,13 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
 
             row['calFile'], row['calFile_verify'] = _assignCalFile(deployment, calHistory)
             row['calibrationRequired'] = any(name in refDes for name in calibratedInstruments)
+            ## asset-management holds no calibration directory for this
+            ## instrument at all, so there is nothing to compare and nothing was
+            ## missed. Said outright rather than left as 'none', which reads as
+            ## a calibration that should be there and is not -- 32 deployments
+            ## are exactly that, and they keep the 'none' they have earned.
+            if not row['calibrationRequired'] and row['calFile_verify'] == 'none':
+                row['calFile_verify'] = 'EXCLUDED'
 
             rawRow = _lookupRow(params['rawSN'], refDes, deployment['deployNum'], year)
             if rawRow is not None:

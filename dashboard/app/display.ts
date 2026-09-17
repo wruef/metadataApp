@@ -15,6 +15,7 @@ export const SEVERITY_TONE: Record<Severity, Tone> = {
   unchecked: 'na',
   cleared: 'warn',
   ok: 'ok',
+  excluded: 'na',
 }
 
 /**
@@ -59,6 +60,9 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> 
       MISSING_COEFFICIENT: 'problem',
       NO_VENDOR_FILE: 'problem',
       CONSTANT_MISMATCH: 'review',
+      COMPARED_CONSTANTS: 'ok',
+      NO_CONSTANTS: 'review',
+      CONFIGURATION_ONLY: 'unchecked',
       PDF_NOTCOMPARED: 'unchecked',
       FORMAT_NOTCOMPARED: 'unchecked',
       NOTCOMPARED: 'unchecked',
@@ -101,6 +105,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> 
     calFile_verify: {
       VALID_FILE: 'ok',
       NO_VALID_FILE: 'problem',
+      EXCLUDED: 'excluded',
       VALID_FILE_CAL_OLDER_THAN_15MONTHS: 'review',
       none: 'unchecked',
       NAN: 'unchecked',
@@ -143,6 +148,34 @@ export function toneOf(check: string, column: string, value: string): Tone | nul
   if (!mapped) return null
   const severity = mapped[splitVerdict(value).token]
   return severity ? SEVERITY_TONE[severity] : 'warn'
+}
+
+/**
+ * Two cell values, ordered the way a person reading the column would.
+ *
+ * Almost every column here is an identifier with digits in it — `deployNum`,
+ * `ATAPL-58320-00003`, `CTDBPN106` — and plain string order puts 10 before 9
+ * in all of them. Collation with `numeric` reads the digit runs as numbers, so
+ * a column of reference designators sorts the way the eye expects.
+ *
+ * Empty goes last whichever way the column is pointed: a row with nothing in it
+ * is not the smallest value, it is the absence of one, and burying it under the
+ * rows that do have values is the useful behaviour in both directions.
+ */
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
+/** `direction` is 1 ascending, -1 descending. It is taken here rather than by
+ *  negating the result, because negating would drag the empty rows to the top
+ *  the moment a column is reversed. */
+export function compareValues(a: unknown, b: unknown, direction: 1 | -1 = 1) {
+  const left = a === null || a === undefined || a === '' ? null : a
+  const right = b === null || b === undefined || b === '' ? null : b
+  if (left === null || right === null) return left === right ? 0 : left === null ? 1 : -1
+  if (typeof left === 'number' && typeof right === 'number') return direction * (left - right)
+  if (typeof left === 'boolean' && typeof right === 'boolean') {
+    return direction * (Number(left) - Number(right))
+  }
+  return direction * collator.compare(String(left), String(right))
 }
 
 /**

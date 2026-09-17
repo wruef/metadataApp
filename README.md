@@ -66,7 +66,8 @@ the spreadsheet contradicts*, *deployments an extraction would settle* — each
 with its count and a link that opens the check already filtered to exactly those
 rows. The count and the table it opens are the same filter, so they cannot drift
 apart. Below it, deployments by the year they went in the water, split by
-severity, which is where a bad season shows up as a shape rather than a number.
+review status, which is where a bad season shows up as a shape rather than a
+number.
 
 The other views: one per check, ranked worst first; **Changes**, the diff between
 two runs when a run was given a baseline; **Reference designators**, the list the
@@ -92,7 +93,14 @@ A PDF-only vendor calibration is left for a person to read.
 A check opens on its queue — problems and rows needing a person — rather than on
 everything, so a check with 1,558 agreeing rows does not bury the 105 that do
 not. The segmented control at the top switches that, and carries the count for
-each severity so the distribution is visible without changing anything.
+each so the distribution is visible without changing anything.
+
+Every column header sorts: once for ascending, again for descending, a third
+time back to the queue order the check opens in. **Review status** sorts by
+consequence rather than alphabetically, because `problem` before `review` is the
+order that means something and alphabetically it is the reverse. A row with
+nothing in the sorted column goes last whichever way the column points — an
+empty cell is the absence of a value, not the smallest one.
 
 Beside it are dropdowns over the columns worth narrowing by: instrument and
 comparison result for calibrations, site and year for deployments and positions,
@@ -264,7 +272,7 @@ row separates them. Those rows need a person, and are the ones to resolve first.
       vendor.py         one reader per vendor file format
       loading.py        reading the repositories and the parameter files
       sources.py        a repository at a ref, local clone or GitHub API
-      report.py         the run report contract, and severity
+      report.py         the run report contract, and review status
       compare.py        two reports into what moved between them
       history.py        deployment history and the season lists
       publish.py        proposing generated files as a pull request

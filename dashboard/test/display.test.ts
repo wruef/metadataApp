@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { identity, readDifference, siteOf, splitVerdict, toneOf, VERDICTS, yearOf } from '../app/display'
+import { compareValues, identity, readDifference, siteOf, splitVerdict, toneOf, VERDICTS, yearOf } from '../app/display'
 
 describe('verdict tone', () => {
   it('colours a verdict by the severity the run gives it', () => {
@@ -60,6 +60,51 @@ describe('the mirrored severity map', () => {
       // python closes a dict after a trailing comma; JSON does not.
       .replace(/,(\s*})/g, '$1')
     expect(JSON.parse(literal)).toEqual(VERDICTS)
+  })
+})
+
+describe('ordering a column', () => {
+  const sorted = (values: unknown[], direction: 1 | -1 = 1) =>
+    [...values].sort((a, b) => compareValues(a, b, direction))
+
+  /** Almost every column here is an identifier with digits in it, and plain
+   *  string order puts 10 before 9 in all of them. */
+  it('reads digit runs as numbers', () => {
+    expect(sorted(['10', '9', '2'])).toEqual(['2', '9', '10'])
+    expect(sorted([10, 9, 2])).toEqual([2, 9, 10])
+  })
+
+  it('sorts reference designators the way the eye expects', () => {
+    expect(
+      sorted(['RS03AXPS-SF03A-2A-CTDPFA302', 'RS03AXPS-SF03A-2A-CTDPFA10', 'RS03AXPS-SF03A-2A-CTDPFA9']),
+    ).toEqual([
+      'RS03AXPS-SF03A-2A-CTDPFA9',
+      'RS03AXPS-SF03A-2A-CTDPFA10',
+      'RS03AXPS-SF03A-2A-CTDPFA302',
+    ])
+  })
+
+  /** A row with nothing in the column is not the smallest value, it is the
+   *  absence of one, so it belongs under the rows that have values whichever
+   *  way the column is pointed. Negating the comparator would have dragged them
+   *  to the top the moment a column was reversed. */
+  it('keeps empty cells last in both directions', () => {
+    expect(sorted(['b', '', null, 'a'])).toEqual(['a', 'b', '', null])
+    expect(sorted(['b', '', null, 'a'], -1)).toEqual(['b', 'a', '', null])
+  })
+
+  it('reverses on the values themselves', () => {
+    expect(sorted(['a', 'c', 'b'], -1)).toEqual(['c', 'b', 'a'])
+    expect(sorted([2, 10, 9], -1)).toEqual([10, 9, 2])
+  })
+
+  it('orders verdicts and booleans predictably', () => {
+    expect(sorted(['MISMATCH', 'COMPARED', 'NO_VENDOR_FILE'])).toEqual([
+      'COMPARED',
+      'MISMATCH',
+      'NO_VENDOR_FILE',
+    ])
+    expect(sorted([true, false])).toEqual([false, true])
   })
 })
 

@@ -140,4 +140,19 @@ describe('the counts the report settles', () => {
       expect(check.summary.verified).toBe(settled)
     }
   })
+
+  /** An excluded row is in no other number, so a proportion measured against the
+   *  row count would shrink every time an instrument with no calibration was
+   *  deployed. */
+  it('leaves excluded rows out of what the check could judge', () => {
+    for (const check of Object.values(REPORT.checks)) {
+      const excluded = count(check, (row) => row.severity === 'excluded')
+      expect(check.summary.excluded).toBe(excluded)
+      expect(check.summary.considered).toBe(check.summary.total - excluded)
+    }
+  })
+
+  it('names the instruments nothing could be compared for', () => {
+    expect(Array.isArray(REPORT.excludedInstruments)).toBe(true)
+  })
 })

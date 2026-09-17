@@ -46,6 +46,16 @@ const verified = (key: string) => {
   return found.verified ?? found.ok + found.cleared
 }
 
+/** What the check could judge at all. An excluded row — an instrument
+ *  asset-management holds no calibration for — is in no other number, so
+ *  measuring against the row count would make the record look worse every time
+ *  one of them was deployed. */
+const considered = (key: string) => {
+  const found = summary(key)
+  if (!found) return 0
+  return found.considered ?? found.total
+}
+
 /** The headline measures, each the answer to a question someone actually asks. */
 const tiles = computed(() => {
   const deployments = summary('deployments')
@@ -56,13 +66,13 @@ const tiles = computed(() => {
   // does: nothing machine-readable could be compared, but a person read it. That
   // falls out of the counts, because a cleared row is no longer 'unchecked'.
   const neverChecked = calibrations?.unchecked ?? 0
-  const compared = calibrations ? calibrations.total - neverChecked : 0
+  const compared = considered('calibrations') - neverChecked
   return [
     {
       key: 'deployments',
       label: 'Deployments verified',
       value: verified('deployments'),
-      of: deployments?.total ?? 0,
+      of: considered('deployments'),
       note: `carry independent evidence that the instrument on the sheet is the one in the water, or a reviewer's sign-off — ${deployments?.cleared ?? 0} of them.`,
     },
     {
@@ -76,7 +86,7 @@ const tiles = computed(() => {
       key: 'positions',
       label: 'Positions matching the spreadsheet',
       value: verified('positions'),
-      of: positions?.total ?? 0,
+      of: considered('positions'),
       note: 'latitude, longitude and depth as the RCA position record has them.',
     },
   ]

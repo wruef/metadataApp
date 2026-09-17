@@ -29,7 +29,7 @@ SCHEMA_VERSION = 2
 
 ## Worst first. A row takes the worst severity of any of its verdicts, unless a
 ## reviewer has signed it off -- a sign-off is a category of its own.
-SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok']
+SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok', 'excluded']
 
 ## The severities that put a row in front of a person. 'cleared' is deliberately
 ## not among them: a sign-off is a person having already been.
@@ -43,6 +43,12 @@ CLEARED = 'Clear'
 ## it beside the badge, because three cleared calibrations turned out to carry
 ## real transcription errors and a category that hid them would be a lie.
 CLEARED_SEVERITY = 'cleared'
+
+## Outside what this check can judge: no calibration exists for the instrument
+## in asset-management, so there is nothing to compare and nothing was missed.
+## It is a category of its own rather than a pass or an omission, and it is
+## counted in neither -- 'unchecked' would claim a look that was never owed.
+EXCLUDED = 'excluded'
 
 ## verdict -> severity, per field. A verdict absent here is 'review', so a new
 ## one surfaces in the queue rather than disappearing into a pass.
@@ -59,6 +65,14 @@ SEVERITY = {
             'COMPARED': 'ok', 'COMPARED_XML': 'ok', 'MISMATCH': 'problem',
             'MISSING_COEFFICIENT': 'problem', 'NO_VENDOR_FILE': 'problem',
             'CONSTANT_MISMATCH': 'review', 'PDF_NOTCOMPARED': 'unchecked',
+            ## No vendor measures these -- an ADCP's scale factors, a
+            ## hydrophone's gain -- so the record is held to the fixed values
+            ## instead, and agreeing with them is a pass like any other.
+            'COMPARED_CONSTANTS': 'ok', 'NO_CONSTANTS': 'review',
+            ## The file holds only how the instrument was set up for this
+            ## deployment -- a transformation matrix, a bin size -- and none of
+            ## that is a calibration anyone can check.
+            'CONFIGURATION_ONLY': 'unchecked',
             ## A vendor file is on record in a format this instrument is not
             ## compared against -- a CTD with only a .cal. Unchecked rather than
             ## a problem: nothing disagrees, nothing was read.
@@ -84,6 +98,9 @@ SEVERITY = {
         'image_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NAN': 'unchecked'},
         'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'problem',
                            'VALID_FILE_CAL_OLDER_THAN_15MONTHS': 'review',
+                           ## No calibration directory exists for the instrument,
+                           ## so nothing could be compared and nothing is owed.
+                           'EXCLUDED': 'excluded',
                            'none': 'unchecked', 'NAN': 'unchecked'}},
     'positions': {'verdict': {
         'MATCH': 'ok', 'MISMATCH': 'problem', 'NEEDS_HITL': 'review',
@@ -98,17 +115,29 @@ def severityOf(check, row):
     A verdict with no mapping counts as 'review' rather than 'ok', so adding a
     verdict without adding it here puts rows in front of a person instead of
     quietly passing them.
+
+    An excluded verdict is skipped rather than ranked: it says this check has
+    nothing to judge on that field, so it neither passes the row nor holds it
+    back. A row whose every verdict is excluded is excluded itself.
     """
-    worst = 'ok'
+    worst = None
+    excluded = False
     for field, mapping in SEVERITY.get(check, {}).items():
         if field not in row:
             continue
         ## A verdict can carry detail after a colon -- 'MISMATCH: raw: 1130: AT...'
         verdict = str(row[field]).split(':')[0].strip()
         severity = mapping.get(verdict, 'review')
-        if SEVERITIES.index(severity) < SEVERITIES.index(worst):
+        if severity == EXCLUDED:
+            excluded = True
+            continue
+        if worst is None or SEVERITIES.index(severity) < SEVERITIES.index(worst):
             worst = severity
-    return worst
+    if worst is not None:
+        return worst
+    ## No field said anything. Excluded when one declined to, 'ok' when the
+    ## check has no verdicts of its own -- which is what it has always meant.
+    return EXCLUDED if excluded else 'ok'
 
 
 def _verdict(row, field):
@@ -139,16 +168,28 @@ def _calibrationReason(row):
         return 'A vendor file is on record, but not in the format this instrument is compared against'
     if vendor == 'PDF_NOTCOMPARED':
         return 'The vendor calibration is a scan, so it has to be read by a person'
+    if vendor == 'NO_CONSTANTS':
+        return 'No fixed values are written for this instrument to be checked against'
+    if vendor == 'CONFIGURATION_ONLY':
+        return 'The file holds only deployment configuration, so there is nothing to compare'
     if vendor in ('NOTCOMPARED', 'NAN'):
         return 'No comparison is written for this instrument yet'
     if _verdict(row, 'calRepo_check') == 'NOMATCH':
         return 'No vendor file in calibrationFiles for this calibration'
     if serial in ('NOTFOUND_FILE', 'NOTFOUND_SENSORBULK'):
         return 'No serial number could be found to check against the sensor bulk record'
+    ## Last, with the other settled sentence: a comparison that agreed says so
+    ## only once everything that could make the row open has had its say.
+    if vendor == 'COMPARED_CONSTANTS':
+        return 'Every coefficient matches the fixed values for this instrument'
     return 'Every coefficient matches the vendor calibration'
 
 
 def _deploymentReason(row):
+    ## Ahead of everything: a row with nothing to judge is not a row with a
+    ## problem, and the sentence has to say which it is.
+    if row.get('finding') == EXCLUDED:
+        return 'No calibration exists for this instrument, so there is nothing to compare'
     if _verdict(row, 'rawFile_verify') == 'MISMATCH':
         return 'The serial number in the raw archive is not the asset on the deployment sheet'
     if _verdict(row, 'image_verify') == 'MISMATCH':
@@ -283,6 +324,10 @@ def summarise(rows):
     counts['attention'] = sum(counts[severity] for severity in OPEN)
     ## Settled: agreed with the record on its own, or settled by a reviewer.
     counts['verified'] = counts['ok'] + counts['cleared']
+    ## Rows this check could judge at all. An excluded row is in no other
+    ## number, so a proportion measured against the total would shrink every
+    ## time an instrument with no calibration was deployed.
+    counts['considered'] = len(rows) - counts[EXCLUDED]
     counts['total'] = len(rows)
     return counts
 
@@ -335,6 +380,19 @@ def describeSource(source):
     return {'repo': source.repo, 'ref': source.ref, 'commit': commit or 'UNKNOWN'}
 
 
+def _excludedInstruments(deployments):
+    """The instruments whose deployments carry no calibration to compare.
+
+    Read off the rows rather than declared, so the list is what the run actually
+    saw. An instrument leaves it by acquiring a calibration directory, not by
+    anyone remembering to edit a file.
+    """
+    if not deployments:
+        return []
+    return sorted({str(row['refDes']).split('-')[-1] for row in deployments['rows']
+                   if not row.get('calibrationRequired') and row.get('refDes')})
+
+
 def buildReport(result, paramsPath='.'):
     """Turn a run's results into the document the dashboard reads."""
     checks = {}
@@ -359,6 +417,10 @@ def buildReport(result, paramsPath='.'):
         'parameters': gitProvenance(paramsPath),
         ## What the run covered, as opposed to what it found.
         'referenceDesignators': result.get('referenceDesignators', []),
+        ## The instruments asset-management holds no calibration for at all.
+        ## Listed rather than left implicit: a check that quietly covers less
+        ## than you think is worse than one that says what it skipped.
+        'excludedInstruments': _excludedInstruments(checks.get('deployments')),
         ## The reasons a sign-off picks from -- every note already in the
         ## 2i-HITL sheets, so a reviewer reuses the team's wording.
         'hitlNotes': result.get('hitlNotes', {}),

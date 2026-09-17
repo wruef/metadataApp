@@ -16,7 +16,7 @@
 
   "schemaVersion": 2,
 
-  "severities": ["problem", "review", "unchecked", "cleared", "ok"],
+  "severities": ["problem", "review", "unchecked", "cleared", "ok", "excluded"],
 
   "report": [
     "schemaVersion",
@@ -24,6 +24,7 @@
     "sources",
     "parameters",
     "referenceDesignators",
+    "excludedInstruments",
     "hitlNotes",
     "checks"
   ],
@@ -36,15 +37,17 @@
 
   "check": ["rows", "summary"],
 
-  "//summary": "Every category, plus attention (what is waiting on a person) and verified (agreed plus cleared).",
+  "//summary": "Every category, plus attention (what is waiting on a person), verified (agreed plus cleared), and considered (the rows this check could judge at all, which is total less excluded).",
   "summary": [
     "problem",
     "review",
     "unchecked",
     "cleared",
     "ok",
+    "excluded",
     "attention",
     "verified",
+    "considered",
     "total"
   ],
 

@@ -174,6 +174,29 @@ SENSORS = {
     ## it is never read. One calibration is three files on the github side --
     ## the csv plus two .ext sheets it points at -- and the .dev carries all
     ## three, so the sheets are resolved before the comparison sees them.
+    ## ---- no vendor file exists, and none ever will ----
+    ## These carry fixed values rather than measurements: the same numbers on
+    ## every instrument of the type, entered into asset-management by hand. So
+    ## there is nothing to fetch from a vendor and the record is held to
+    ## params/coefficientConstants.csv instead. They are identified through the
+    ## RCA instrument list rather than by an asset-ID code, which is why
+    ## 'assetIds' is empty.
+    'ADCP': {
+        'assetIds': [], 'parseGithub': 'floatOrList', 'sources': [], 'constantsOnly': True,
+        ## How the instrument was set up for this deployment, not a property of
+        ## it: bin size and depth change from one deployment to the next, so
+        ## there is no constant to hold them to and nothing to compare.
+        'notVendor': ('CC_bin_size', 'CC_dist_first_bin', 'CC_orientation', 'CC_depth'),
+    },
+    'VADCP': {
+        'assetIds': [], 'parseGithub': 'floatOrList', 'sources': [], 'constantsOnly': True,
+        ## The beam transformation matrix and its shape belong to the individual
+        ## instrument, so they are configuration in the same sense.
+        'notVendor': ('CC_rows', 'CC_columns', 'CC_TM', 'CC_vadcpb_orientation'),
+    },
+    'HYDBB': {'assetIds': [], 'parseGithub': 'float', 'sources': [], 'constantsOnly': True},
+    'ZPLSC': {'assetIds': [], 'parseGithub': 'float', 'sources': [], 'constantsOnly': True},
+
     'OPTAA': {
         'assetIds': ['69943', '58332'],
         'parseGithub': 'floatOrList',
@@ -353,19 +376,78 @@ def _difference(githubCoeff, expected, ordered=False):
     return githubCoeff - expected
 
 
-def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=None):
+def compareConstants(githubCal, spec, sensor, constants, stem):
+    """Compare a calibration against the fixed values, where no vendor file exists.
+
+    A handful of instruments carry the same coefficients on every unit of the
+    type -- an ADCP's four scale factors, a hydrophone's gain, the water
+    properties a ZPLSC is configured with. No vendor measures them, so nothing
+    is ever published to compare against, and until now the whole file read as
+    ``NAN``: not checked, and not checkable. It is checkable. The numbers are
+    written down in ``params/coefficientConstants.csv``, and a file that
+    disagrees with them is as much a transcription error as one that disagrees
+    with a vendor.
+    """
+    declared = constants.get(sensor, {})
+    if not declared:
+        ## The sensor is marked as one to compare against constants and nobody
+        ## has written any. Said out loud rather than passing.
+        return ['NO_CONSTANTS']
+
+    calCompare = ['COMPARED_CONSTANTS']
+    compared = 0
+    for _, row in githubCal.iterrows():
+        name = row['name']
+        if name in spec.get('notVendor', ()):
+            ## Configuration rather than calibration -- how the instrument was
+            ## set up for this deployment. Declared per sensor, so it reads as a
+            ## stated limit of the check rather than a silence.
+            continue
+        githubCoeff = _githubValue(row['value'], spec['parseGithub'])
+        if name not in declared:
+            ## A coefficient with no constant written for it was not checked
+            ## against anything, and an unchecked coefficient reading as a pass
+            ## is the failure mode this rewrite exists for.
+            recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing')
+            continue
+        expected = float(declared[name])
+        compared += 1
+        difference = githubCoeff - expected
+        if difference:
+            recordDiff(calCompare, stem, name, githubCoeff, expected, difference, 'constant')
+
+    ## Four VADCP files hold nothing but configuration -- a transformation
+    ## matrix and its shape -- so the loop above compares no coefficient at all
+    ## and would otherwise report a pass. A verdict of COMPARED set before
+    ## anything was read is the defect this whole rewrite exists for.
+    if not compared:
+        return ['CONFIGURATION_ONLY']
+    return calCompare
+
+
+def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=None,
+                           vendorPresent=True):
     """Compare one github calibration file against its vendor original.
 
     ``githubCal`` is the parsed github csv (``name``/``value`` rows), ``vendorPath``
     the vendor file path without its extension. ``assets`` is the RCA instrument
-    list, consulted only for an asset whose ID carries no model code. Returns
-    ``[verdict, *differences]``.
+    list, consulted only for an asset whose ID carries no model code.
+    ``vendorPresent`` is false when calibrationFiles holds nothing under this
+    name at all, which only a constants-only sensor can be compared without.
+    Returns ``[verdict, *differences]``.
     """
     sensor = identifySensor(vendorPath, assets)
     if sensor is None:
         return ['NAN']
 
     spec = SENSORS[sensor]
+    if spec.get('constantsOnly'):
+        return compareConstants(githubCal, spec, sensor, constants,
+                                os.path.basename(vendorPath))
+    if not vendorPresent:
+        ## Everything else needs a vendor file, and there is not one.
+        return ['NAN']
+
     calCompare = ['NO_VENDOR_FILE'] if spec['sources'] else ['NAN']
     names = list(githubCal['name'])
     ## Differences name the file, not where this run happened to keep it -- the

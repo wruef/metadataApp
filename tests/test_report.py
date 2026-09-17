@@ -69,8 +69,8 @@ def test_summaryCountsEverySeverityAndTheClearedRows():
         {'verdict': 'MATCH'}, {'verdict': 'MISMATCH'},
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'NO_BULK_SERIAL'}])
     assert summarise(rows) == {
-        'problem': 1, 'review': 0, 'unchecked': 1, 'cleared': 1, 'ok': 1,
-        'attention': 1, 'verified': 2, 'total': 4}
+        'problem': 1, 'review': 0, 'unchecked': 1, 'cleared': 1, 'ok': 1, 'excluded': 0,
+        'attention': 1, 'verified': 2, 'considered': 4, 'total': 4}
 
 
 def test_aClearedRowIsItsOwnCategoryRatherThanAProblem():
