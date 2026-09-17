@@ -161,6 +161,12 @@ fix but judgements about which record is right, and there was nowhere to write
 that judgement down. There is now: `2i_HITL/2i_HITL_sensorVerification.csv`, keyed on
 the asset ID, signed off from the dashboard like any other row.
 
+The view carries the instrument type too, taken from the RCA instrument list.
+Only that list names one — the bulk record describes equipment, `SENSOR CTD`,
+rather than naming an instrument — so the column is empty on exactly the 32 rows
+that say `MISSING_FROM_RCA_LIST`. That is not a gap in the column. It is the
+finding itself.
+
 The same change made `FORMAT_MATCH` agree rather than needing a person. It means
 the same serial number written two ways — a prefix one record carries and the
 other does not. The records agree about which instrument it is, which is what

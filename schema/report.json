@@ -59,7 +59,7 @@
     "calibrations": ["fileName", "instrument", "hitlKey", "calRepo_check", "fileParse"],
     "deployments": ["refDes", "deployNum", "deployYear", "AssetID", "hitlKey", "verificationStatus"],
     "positions": ["refDes", "deployNum", "deployYear", "verdict"],
-    "sensorBulk": ["assetID", "hitlKey", "verdict"],
+    "sensorBulk": ["assetID", "instrumentType", "hitlKey", "verdict"],
     "deploymentSheets": ["refDes", "deployYear", "verdict"]
   }
 }

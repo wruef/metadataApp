@@ -89,6 +89,7 @@
      "hitlKey": "ATAPL-58319-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": null,
      "finding": "review",
      "cleared": false,
      "severity": "review",
@@ -102,6 +103,7 @@
      "hitlKey": "ATAPL-58326-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": null,
      "finding": "review",
      "cleared": false,
      "severity": "review",
@@ -115,6 +117,7 @@
      "hitlKey": "ATAPL-58328-00006",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": null,
      "finding": "review",
      "cleared": false,
      "severity": "review",
@@ -130,6 +133,9 @@
      "hitlKey": "ATOSU-69825-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ADCPS-I"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -145,6 +151,9 @@
      "hitlKey": "ATOSU-69825-00002",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ADCPS-I"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -160,6 +169,9 @@
      "hitlKey": "ATOSU-69825-00003",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ADCPS-I"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -178,6 +190,9 @@
      "hitlKey": "ATAPL-70248-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "CAMHD-A"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -196,6 +211,9 @@
      "hitlKey": "ATAPL-70248-00002",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "CAMHD-A"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -211,6 +229,9 @@
      "hitlKey": "ATOSU-69827-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "CTDBP-N"
+     ],
      "finding": "ok",
      "cleared": false,
      "severity": "ok",
@@ -226,6 +247,9 @@
      "hitlKey": "ATAPL-75664-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ENGPRES"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -241,6 +265,9 @@
      "hitlKey": "ATAPL-75664-00002",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ENGPRES"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -256,6 +283,9 @@
      "hitlKey": "ATAPL-75664-00003",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "ENGPRES"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -271,6 +301,9 @@
      "hitlKey": "ATAPL-58693-00005",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "HYDLF-A"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -286,6 +319,9 @@
      "hitlKey": "PIRSN-CAMPIA-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "MARUM"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -301,6 +337,9 @@
      "hitlKey": "PIRSN-OVRSRA-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "MARUM"
+     ],
      "finding": "problem",
      "cleared": false,
      "severity": "problem",
@@ -316,6 +355,9 @@
      "hitlKey": "ATAPL-58338-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "PPSDN-A"
+     ],
      "finding": "unchecked",
      "cleared": false,
      "severity": "unchecked",
@@ -331,6 +373,9 @@
      "hitlKey": "ATAPL-58338-00002",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "PPSDN-A"
+     ],
      "finding": "unchecked",
      "cleared": false,
      "severity": "unchecked",
@@ -346,6 +391,9 @@
      "hitlKey": "ATAPL-58340-00001",
      "HITLstatus": "NA",
      "HITLnotes": "",
+     "instrumentType": [
+      "RASFL-A"
+     ],
      "finding": "unchecked",
      "cleared": false,
      "severity": "unchecked",

@@ -145,9 +145,13 @@ export const CHECKS = [
     ] },
   { key: 'sensorBulk', title: 'Sensor bulk', icon: 'fa-barcode',
     blurb: 'Serial numbers between the RCA instrument list and the OOI sensor bulk record.',
-    columns: ['assetID', 'rcaSerials', 'bulkSerial', 'verdict', 'HITLstatus'],
+    columns: ['assetID', 'instrumentType', 'rcaSerials', 'bulkSerial', 'verdict', 'HITLstatus'],
     facets: [
       { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
+      // Only the RCA instrument list names a type, so this is empty for exactly
+      // the assets it has never heard of.
+      { key: 'instrumentType', label: 'All instrument types',
+        of: (row) => (Array.isArray(row.instrumentType) ? row.instrumentType.join(', ') : '') },
       { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
     ] },
   { key: 'deploymentSheets', title: 'Duplicate asset deployments', icon: 'fa-table',

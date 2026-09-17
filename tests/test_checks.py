@@ -192,3 +192,24 @@ def test_anUnsignedSensorBulkRowSaysSo():
     rows = checkSensorBulk({'ATAPL-9': {'mfgSN': ['123']}}, {'ATAPL-9': '456'})
     assert rows[0]['HITLstatus'] == 'NA'
     assert rows[0]['hitlKey'] == 'ATAPL-9'
+
+
+def test_aSensorBulkRowSaysWhatTheInstrumentIs():
+    """Only the RCA instrument list names a type -- the bulk record describes
+    equipment rather than naming an instrument -- so an asset the list knows
+    carries one."""
+    from rca_metadata.checks import checkSensorBulk
+
+    rows = checkSensorBulk({'ATAPL-9': {'mfgSN': ['123'], 'instrumentType': ['OPTAA-C']}},
+                           {'ATAPL-9': '123'})
+    assert rows[0]['instrumentType'] == ['OPTAA-C']
+
+
+def test_anAssetTheRcaListNeverHeardOfHasNoType():
+    """Which is not a gap in the column. It is the finding itself, and it is
+    empty on exactly the 32 rows that say MISSING_FROM_RCA_LIST."""
+    from rca_metadata.checks import checkSensorBulk
+
+    rows = checkSensorBulk({}, {'ATAPL-9': '123'})
+    assert rows[0]['verdict'] == 'MISSING_FROM_RCA_LIST'
+    assert rows[0]['instrumentType'] is None

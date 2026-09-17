@@ -80,7 +80,14 @@ def checkSensorBulk(rcaAssets, serialByAsset, hitl=None):
     signed = hitl if hitl is not None else pd.DataFrame(
         columns=['Status', 'HITLnotes'], index=pd.Index([], name='assetID'))
 
-    def scored(row):
+    def scored(row, values=None):
+        ## What the RCA instrument list calls this asset. Only that list knows:
+        ## the bulk record describes equipment ('SENSOR CTD') rather than naming
+        ## an instrument type. So an empty one is not a gap in the column, it is
+        ## the finding itself -- these are the assets the RCA list has never
+        ## heard of.
+        types = values.get('instrumentType') if values is not None else None
+        row['instrumentType'] = types if isinstance(types, list) else None
         row['hitlKey'] = str(row['assetID'])
         row['HITLstatus'], row['HITLnotes'] = signOff(signed, row['assetID'])
         return row
@@ -94,7 +101,8 @@ def checkSensorBulk(rcaAssets, serialByAsset, hitl=None):
     for assetID, values in rcaAssets.items():
         if assetID not in serialByAsset:
             rows.append(scored({'assetID': assetID, 'rcaSerials': values['mfgSN'],
-                                'bulkSerial': None, 'verdict': 'MISSING_FROM_SENSOR_BULK'}))
+                                'bulkSerial': None, 'verdict': 'MISSING_FROM_SENSOR_BULK'},
+                               values))
             continue
 
         bulkSerial = str(serialByAsset[assetID]).strip()
@@ -111,7 +119,7 @@ def checkSensorBulk(rcaAssets, serialByAsset, hitl=None):
                 row['verdict'] = 'FORMAT_MATCH'
             else:
                 row['verdict'] = 'MISMATCH'
-        rows.append(scored(row))
+        rows.append(scored(row, values))
     return rows
 
 
