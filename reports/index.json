@@ -1,5 +1,94 @@
 [
  {
+  "name": "report_20260917T230227Z.json",
+  "runAt": "2026-09-17T23:01:54+00:00",
+  "parameters": {
+   "commit": "587700eab7eaa32e83e36ef168b369522f47beb4",
+   "dirty": false,
+   "python": "3.11.16",
+   "pandas": "3.0.5"
+  },
+  "sources": {
+   "assetManagement": {
+    "repo": "wruef/asset-management",
+    "ref": "master",
+    "commit": "91302dfd433f7d318be866489378c334866a7151"
+   },
+   "calibrationFiles": {
+    "repo": "OOI-CabledArray/calibrationFiles",
+    "ref": "master",
+    "commit": "4c55af419e7e5dd03ae54eabc5b71258fee3c849"
+   },
+   "deployments": {
+    "repo": "OOI-CabledArray/deployments",
+    "ref": "main",
+    "commit": "d4a3d942efbad9c08d26770d2f6ea5b044e6a475"
+   }
+  },
+  "summary": {
+   "sensorBulk": {
+    "problem": 30,
+    "review": 32,
+    "unchecked": 4,
+    "cleared": 0,
+    "ok": 376,
+    "excluded": 0,
+    "attention": 62,
+    "verified": 376,
+    "considered": 442,
+    "total": 442
+   },
+   "deploymentSheets": {
+    "problem": 2,
+    "review": 0,
+    "unchecked": 0,
+    "cleared": 0,
+    "ok": 0,
+    "excluded": 0,
+    "attention": 2,
+    "verified": 0,
+    "considered": 2,
+    "total": 2
+   },
+   "deployments": {
+    "problem": 37,
+    "review": 740,
+    "unchecked": 0,
+    "cleared": 152,
+    "ok": 484,
+    "excluded": 0,
+    "attention": 777,
+    "verified": 636,
+    "considered": 1413,
+    "total": 1413
+   },
+   "positions": {
+    "problem": 105,
+    "review": 0,
+    "unchecked": 0,
+    "cleared": 0,
+    "ok": 1558,
+    "excluded": 0,
+    "attention": 105,
+    "verified": 1558,
+    "considered": 1663,
+    "total": 1663
+   },
+   "calibrations": {
+    "problem": 28,
+    "review": 22,
+    "unchecked": 39,
+    "cleared": 432,
+    "ok": 653,
+    "excluded": 0,
+    "attention": 50,
+    "verified": 1085,
+    "considered": 1174,
+    "total": 1174
+   }
+  }
+ },
+ {
   "name": "report_20260917T225316Z.json",
   "runAt": "2026-09-17T22:52:49+00:00",
   "parameters": {
