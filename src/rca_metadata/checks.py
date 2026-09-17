@@ -199,7 +199,8 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
             row['vendorMatch'] = 'NAN'
         else:
             verdict, *differences = compareCalCoefficients(
-                githubCal, vendorFiles.stemPath(stem), params['coeffMap'], params['constants'])
+                githubCal, vendorFiles.stemPath(stem), params['coeffMap'],
+                params['constants'], params['assets'])
             row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
             row['differences'] = differences
         rows.append(row)

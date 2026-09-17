@@ -226,7 +226,21 @@ def assetIdOf(vendorPath):
     return parts[1] if len(parts) > 1 else ''
 
 
-def identifySensor(vendorPath):
+def sensorForType(instrumentType):
+    """Which sensor's rules an RCA instrument type falls under.
+
+    An instrument type in ``params/RCA-InstrumentList.csv`` is a sensor name and
+    a series letter -- ``OPTAA-C``, ``CTDPF-A``, ``FLOR-D`` -- so the rules are
+    the longest :data:`SENSORS` key the name begins with once the hyphen is
+    dropped. Longest, because ``DOSTA-D`` and ``DOFST-A`` differ by one letter
+    and a shorter key must not shadow a longer one.
+    """
+    name = str(instrumentType).replace('-', '').upper()
+    matched = [sensor for sensor in SENSORS if name.startswith(sensor)]
+    return max(matched, key=len) if matched else None
+
+
+def identifySensor(vendorPath, assets=None):
     """Which sensor's rules a vendor file is compared under.
 
     Matched against the asset ID field alone, not against the path as a string.
@@ -235,10 +249,27 @@ def identifySensor(vendorPath):
     spells 70111, which is FLCDR's. Two real calibrations -- a NUTNR and a
     SPKIR -- were checked against the wrong instrument's rules for years and
     reported as having no vendor file, while their .cal sat right beside them.
+
+    That field holds a model code for an RCA-owned asset and a word for a
+    borrowed one: ``ATSBE-LOANER-00001`` spells ``LOANER``, which is no model
+    code, so nothing matched and a loaner OPTAA went uncompared with its vendor
+    ``.dev`` sitting beside it. Where the field settles nothing, the RCA
+    instrument list is asked what the asset is -- it is the record of what every
+    RCA asset is, so the next oddly-named one needs no edit here.
     """
     assetId = assetIdOf(vendorPath)
     for sensor, spec in SENSORS.items():
         if assetId in spec['assetIds']:
+            return sensor
+
+    record = (assets or {}).get(os.path.basename(vendorPath).split('__')[0])
+    if record is None:
+        return None
+    ## One asset can be listed under more than one type; the first with rules wins.
+    types = record['instrumentType']
+    for instrumentType in types if isinstance(types, list) else []:
+        sensor = sensorForType(instrumentType)
+        if sensor:
             return sensor
     return None
 
@@ -322,13 +353,15 @@ def _difference(githubCoeff, expected, ordered=False):
     return githubCoeff - expected
 
 
-def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants):
+def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=None):
     """Compare one github calibration file against its vendor original.
 
     ``githubCal`` is the parsed github csv (``name``/``value`` rows), ``vendorPath``
-    the vendor file path without its extension. Returns ``[verdict, *differences]``.
+    the vendor file path without its extension. ``assets`` is the RCA instrument
+    list, consulted only for an asset whose ID carries no model code. Returns
+    ``[verdict, *differences]``.
     """
-    sensor = identifySensor(vendorPath)
+    sensor = identifySensor(vendorPath, assets)
     if sensor is None:
         return ['NAN']
 

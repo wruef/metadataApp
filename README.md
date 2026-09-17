@@ -353,9 +353,19 @@ of each array with it. Compared as sets — which is how the other spectra compa
 because a vendor publishes them unordered — a reversal would read as agreement,
 and 85 values would match 86 with a repeat among them.
 
-Of 110 OPTAA calibrations, **107 now compare and all 107 agree**. The other three
-are two with no vendor file at all and one loaner instrument whose name carries
-no asset-ID field.
+Of 110 OPTAA calibrations, **108 now compare and all 108 agree**. The other two
+have no vendor file at all.
+
+The 108th is a borrowed instrument. Sensor rules are keyed on the asset-ID field
+of the file name, which holds a model code for an RCA-owned asset and a word for
+a loaner: `ATSBE-LOANER-00001` spells `LOANER`, which is no model code, so
+nothing matched and the calibration reported `NOTCOMPARED` with its vendor
+`.dev` sitting beside it. Where that field settles nothing, the asset is now
+looked up in `params/RCA-InstrumentList.csv` and identified by the instrument
+type recorded there. That list is the record of what every RCA asset is, so the
+next oddly-named one needs no code change. The field still has the last word
+where it resolves, because keying on it is what fixed the calibration date being
+read as an asset ID.
 
 ### Certificates that were only ever published as a pdf
 

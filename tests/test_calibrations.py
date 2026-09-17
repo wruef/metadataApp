@@ -217,6 +217,50 @@ def test_theSurroundingPathCannotDecideTheSensor():
     assert identifySensor('ATOSU-68020-00008__20230209') == 'NUTNR'
 
 
+def test_anAssetWithNoModelCodeIsIdentifiedFromTheInstrumentList():
+    """A borrowed instrument carries a word where an RCA-owned one carries a
+    model code -- ATSBE-LOANER-00001 -- so nothing matches the rules and its
+    OPTAA calibration went uncompared with the vendor .dev sitting beside it.
+    The RCA instrument list knows what it is."""
+    from rca_metadata.calibrations import identifySensor
+
+    assets = {'ATSBE-LOANER-00001': {'instrumentType': ['OPTAA-C']}}
+    assert identifySensor('/any/where/ATSBE-LOANER-00001__20250623') is None
+    assert identifySensor('/any/where/ATSBE-LOANER-00001__20250623', assets) == 'OPTAA'
+
+
+def test_theAssetIdFieldStillDecidesWhenItCan():
+    """The list is a fallback, not a second opinion. The asset ID field was what
+    fixed the date-substring bug, so it has to keep the last word."""
+    from rca_metadata.calibrations import identifySensor
+
+    ## the list is wrong about this one; the model code in the name is not
+    assets = {'ATOSU-68020-00008': {'instrumentType': ['OPTAA-C']}}
+    assert identifySensor('/any/where/ATOSU-68020-00008__20170111', assets) == 'NUTNR'
+
+
+def test_anAssetTheListDoesNotKnowStaysUnidentified():
+    from rca_metadata.calibrations import identifySensor
+
+    assert identifySensor('/any/where/ATSBE-LOANER-00009__20250623', {}) is None
+
+
+def test_anInstrumentTypeMapsToTheRulesItFallsUnder():
+    """Types are a sensor name and a series letter, and two of them differ by a
+    single transposed letter -- DOSTA-D against DOFST-A."""
+    from rca_metadata.calibrations import sensorForType
+
+    assert sensorForType('OPTAA-C') == 'OPTAA'
+    assert sensorForType('OPTAA-D') == 'OPTAA'
+    assert sensorForType('CTDPF-A') == 'CTD'
+    assert sensorForType('DOSTA-D') == 'DOSTAD'
+    assert sensorForType('DOFST-A') == 'DOFSTA'
+    assert sensorForType('FLOR-D') == 'FLORD'
+    assert sensorForType('PARAD-A') == 'PARA'
+    ## an instrument nothing compares stays without rules
+    assert sensorForType('HYDBB-A') is None
+
+
 ## --- OPTAA: one calibration, three files on the github side ---
 
 OPTAA_DEV = (
