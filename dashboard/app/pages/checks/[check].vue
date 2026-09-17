@@ -22,21 +22,6 @@ const check = computed(() => store.report?.checks[route.params.check as string])
 
       <run-stamp />
 
-      <!-- Vendor originals on file that the repository holds nothing for: not a
-           row in the table, because there is no repository file to be a row. -->
-      <u-alert
-        v-if="check.missingFromGithub?.length"
-        color="warning"
-        variant="subtle"
-        :title="`${check.missingFromGithub.length} vendor files have no calibration file in the repository`"
-      >
-        <template #description>
-          <div class="font-mono max-h-32 mt-1 overflow-y-auto text-xs">
-            <div v-for="name in check.missingFromGithub" :key="name">{{ name }}</div>
-          </div>
-        </template>
-      </u-alert>
-
       <!-- Keyed, so moving between checks builds a fresh table rather than
            reusing one carrying the previous check's filters. -->
       <check-table

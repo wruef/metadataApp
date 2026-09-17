@@ -213,3 +213,15 @@ def test_anAssetTheRcaListNeverHeardOfHasNoType():
     rows = checkSensorBulk({}, {'ATAPL-9': '123'})
     assert rows[0]['verdict'] == 'MISSING_FROM_RCA_LIST'
     assert rows[0]['instrumentType'] is None
+
+
+def test_aVendorFileWithNoRepositoryFileCarriesItsInstrument():
+    """The vendor directory is the only thing on record that says what kind of
+    instrument these are, so it travels with the name."""
+    from rca_metadata.checks import signOff
+    import pandas as pd
+
+    sheet = pd.DataFrame({'Status': ['Clear'], 'HITLnotes': ['ingested by hand in 2019']},
+                         index=pd.Index(['ATAPL-1__20140101.csv'], name='githubFile'))
+    assert signOff(sheet, 'ATAPL-1__20140101.csv') == ('Clear', 'ingested by hand in 2019')
+    assert signOff(sheet, 'ATAPL-2__20140101.csv') == ('NA', '')

@@ -67,6 +67,25 @@ export function ready(source: Source) {
   return source.mode === 'production' || source.ref.trim() !== ''
 }
 
+/**
+ * How a published run is told apart from production in the run picker.
+ *
+ * Empty for a production run, because the stamp already says when it ran. For
+ * anything else it names what differs: the fork's owner, the branch, or both.
+ * Naming only the ref was not enough — a fork's `master` read as ` · master`,
+ * which is exactly what production looks like.
+ */
+export function sourceLabel(sources?: Record<string, { repo: string; ref: string } | unknown>) {
+  const source = sources?.assetManagement as { repo: string; ref: string } | undefined
+  if (!source) return ''
+  const forked = source.repo !== PRODUCTION.repo
+  const branched = source.ref !== PRODUCTION.ref
+  if (!forked && !branched) return ''
+  const owner = source.repo.split('/')[0]
+  if (forked && branched) return `${owner}@${source.ref}`
+  return forked ? owner! : source.ref
+}
+
 export interface WorkflowRun {
   id: number
   created_at: string

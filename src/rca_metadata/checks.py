@@ -307,7 +307,20 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
         row['differences'] = differences
         rows.append(row)
 
-    missing = sorted(set(vendorFiles.stems) - set(seen))
+    ## Vendor originals the repository holds nothing for. Not rows in the table,
+    ## because there is no repository file to be a row -- each carries the
+    ## directory the vendor filed it under, which is the only thing on record
+    ## that says what kind of instrument it is.
+    ##
+    ## Each is signed off in the calibration sheet under the name the repository
+    ## file would have if it were ingested, so a decision taken now is already
+    ## attached to the file on the day it arrives.
+    missing = []
+    for stem in sorted(set(vendorFiles.stems) - set(seen)):
+        key = stem + '.csv'
+        status, notes = signOff(hitlCal, key)
+        missing.append({'file': stem, 'instrument': vendorFiles.stems[stem][0][0],
+                        'hitlKey': key, 'HITLstatus': status, 'HITLnotes': notes})
     return {'files': rows, 'missingFromGithub': missing}
 
 

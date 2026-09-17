@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   dispatchInputs,
+  sourceLabel,
   flattenSteps,
   newSource,
   pickRun,
@@ -71,6 +72,34 @@ describe('what a run is dispatched with', () => {
     expect(ready(testing({ ref: '' }))).toBe(false)
     expect(ready(testing({ ref: '  ' }))).toBe(false)
     expect(ready(testing())).toBe(true)
+  })
+})
+
+describe('telling published runs apart', () => {
+  const sources = (repo: string, ref: string) => ({ assetManagement: { repo, ref, commit: 'a' } })
+
+  it('says nothing about a production run', () => {
+    expect(sourceLabel(sources(PRODUCTION.repo, PRODUCTION.ref))).toBe('')
+  })
+
+  /** A fork's own master read as ' · master', which is exactly what production
+   *  looks like — so a run against a fork was indistinguishable from one
+   *  against what is merged. */
+  it('names the fork when only the repository differs', () => {
+    expect(sourceLabel(sources('wruef/asset-management', 'master'))).toBe('wruef')
+  })
+
+  it('names the branch when only the ref differs', () => {
+    expect(sourceLabel(sources(PRODUCTION.repo, 'fix-nutnr'))).toBe('fix-nutnr')
+  })
+
+  it('names both when both differ', () => {
+    expect(sourceLabel(sources('wruef/asset-management', 'fix-nutnr'))).toBe('wruef@fix-nutnr')
+  })
+
+  it('says nothing when the run recorded no source', () => {
+    expect(sourceLabel(undefined)).toBe('')
+    expect(sourceLabel({})).toBe('')
   })
 })
 

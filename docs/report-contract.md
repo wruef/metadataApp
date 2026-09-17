@@ -136,6 +136,23 @@ under *Raw check output*, and remains a filter — it is the only way to ask for
 the deployments nothing confirms, which the review status cannot isolate because
 it folds in the calibration findings too.
 
+## Vendor calibrations with no repository file
+
+146 calibrations are on file in calibrationFiles with nothing in
+asset-management to compare them to. They are not rows in the calibration check,
+because there is no repository file to be a row, and they used to sit in an
+amber panel above the table — 146 names in a scrolling box on top of the queue
+someone was trying to work.
+
+They now have their own view, listing each with the directory the vendor filed
+it under, which is the only thing on record that says what kind of instrument it
+is. Half of them are hydrophones and optical absorption sensors.
+
+Each can be cleared or flagged, and the decision is written into the existing
+calibration sheet under the name the repository file **would** have if it were
+ingested — `<asset>__<date>.csv`. So a note taken now is already attached to the
+file on the day it arrives.
+
 ## Asset IDs, against every record that could hold one
 
 A deployment sheet names four assets per row, and two of them were never

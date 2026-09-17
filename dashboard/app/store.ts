@@ -43,6 +43,17 @@ export interface Row {
   [key: string]: unknown
 }
 
+/** A vendor calibration with no repository file, and whatever a reviewer has
+ *  recorded about it. Signed off in the calibration sheet under the name the
+ *  repository file would have. */
+export interface VendorOnly {
+  file: string
+  instrument: string
+  hitlKey: string
+  HITLstatus: string
+  HITLnotes: string
+}
+
 export interface Check {
   rows: Row[]
   /** `attention` is what is waiting on a person: the problem and review rows,
@@ -55,7 +66,9 @@ export interface Check {
     /** The rows this check could judge at all: total less excluded. */
     considered?: number
   }
-  missingFromGithub?: string[]
+  /** Vendor originals the repository holds nothing for. Runs published before
+   *  each carried its instrument and sign-off have a bare list of names. */
+  missingFromGithub?: (VendorOnly | string)[]
 }
 
 export interface Source {

@@ -100,11 +100,11 @@ const shown = computed(() => {
         ><template v-if="runs.source.baseline"> against <b>{{ runs.source.baseline }}</b></template
         >. Everything below is still the run
         <template v-if="shown">of <b>{{ shown }}</b></template> already loaded — start a run, publish
-        it, and reload to see the difference.
+        it, and choose it in the dropdown below to view results.
       </template>
       <template v-else>
-        Name a branch, tag or sha to verify. Until then a run would verify production, which the
-        report below already shows.
+        Name a test branch to verify against. Once published, choose the run in the dropdown below
+        to view results.
       </template>
     </div>
 

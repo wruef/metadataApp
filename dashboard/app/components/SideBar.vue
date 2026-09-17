@@ -23,6 +23,11 @@ function hot(key: string) {
   return (store.report?.checks?.[key]?.summary.problem ?? 0) > 0
 }
 
+/** Vendor calibrations the repository holds nothing for. */
+const vendorOnly = computed(
+  () => store.report?.checks?.calibrations?.missingFromGithub?.length ?? 0,
+)
+
 const runAt = computed(() =>
   store.report ? new Date(store.report.runAt).toLocaleDateString() : '',
 )
@@ -90,6 +95,13 @@ const LINK =
         <span v-if="store.report?.referenceDesignators?.length" class="n">
           {{ store.report.referenceDesignators.length }}
         </span>
+      </nuxt-link>
+      <!-- A list to read rather than a queue to work, which is why it is here
+           and no longer in an amber panel on top of the calibration table. -->
+      <nuxt-link v-if="vendorOnly" to="/vendor-only" :class="LINK" active-class="on">
+        <i class="fa-file-circle-question fas w-4" />
+        <span class="grow">Not in asset-management</span>
+        <span class="n">{{ vendorOnly }}</span>
       </nuxt-link>
       <nuxt-link v-if="signoff.count" to="/queue" :class="LINK" active-class="on">
         <i class="fa-pen-to-square fas w-4" />
