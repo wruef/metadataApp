@@ -57,7 +57,7 @@
   "//rows": "Per check, on top of the four above. hitlKey is the line a sign-off writes to, settled by the run rather than rebuilt in a browser.",
   "rows": {
     "calibrations": ["fileName", "instrument", "hitlKey", "calRepo_check", "fileParse"],
-    "deployments": ["refDes", "deployNum", "AssetID", "hitlKey", "verificationStatus"],
+    "deployments": ["refDes", "deployNum", "deployYear", "AssetID", "hitlKey", "verificationStatus"],
     "positions": ["refDes", "deployNum", "deployYear", "verdict"],
     "sensorBulk": ["assetID", "verdict"],
     "deploymentSheets": ["refDes", "verdict"]

@@ -49,6 +49,42 @@ disagreements that are an artefact of the choice rather than a fault in the data
 | PCO2W | `.pdf` | typed in from the certificate |
 | DOSTAD | `.pdf` | typed in from the certificate |
 
+### A vendor original that is not on record
+
+Matching is on the whole file name: `ATAPL-58322-00001__20170216` in
+asset-management finds the vendor original only if calibrationFiles holds that
+exact stem. An instrument with comparison rules and nothing on record used to
+report `NOTCOMPARED` — *not checked* — and 42 calibrations sat there looking as
+though nothing was owed. They are findings now.
+
+Where the same asset has a vendor calibration within a week of the date named,
+that file is **read** rather than guessed at, and what it holds decides the
+verdict.
+
+| verdict | meaning | calibrations |
+|---|---|---|
+| `NO_VENDOR_FILE` | nothing on record for this asset near this date | 30 |
+| `VENDOR_DATE_MISNAMED` | a file days away holds *exactly* these coefficients | 7 |
+| `VENDOR_DATE_NEAR_MISS` | a file days away, and its coefficients differ | 5 |
+
+The seven are settled. Every coefficient agrees, so the two are one calibration
+recorded under two dates and nothing about the numbers is in doubt — a file name
+is wrong. That is a `review` rather than a `problem`, because it needs a person
+and not an alarm. Five NUTNR and two FLNTU calibrations are in that state, one
+to three days out.
+
+The five are not. Four FLORD calibrations have a vendor file one day away whose
+`CC_scale_factor_cdom` differs, and one OPTAA has one seven days away differing
+in two coefficients. A near date and different numbers is a different
+calibration, so these really have no original on record.
+
+Seven days is the window. The OPTAA sits exactly on it — near enough to look at,
+far enough to be two calibrations, and reading it settled that it is.
+
+An instrument that nothing compares says nothing. A hydrophone has no vendor
+calibration and never will, so reporting a missing file for it would be
+inventing a finding.
+
 ### A difference carries what the file says about it
 
 Every calibration csv in asset-management has a `notes` column, and 12,810

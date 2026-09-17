@@ -59,6 +59,8 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       MISMATCH: 'problem',
       MISSING_COEFFICIENT: 'problem',
       NO_VENDOR_FILE: 'problem',
+      VENDOR_DATE_NEAR_MISS: 'problem',
+      VENDOR_DATE_MISNAMED: 'review',
       CONSTANT_MISMATCH: 'review',
       COMPARED_CONSTANTS: 'ok',
       NO_CONSTANTS: 'review',

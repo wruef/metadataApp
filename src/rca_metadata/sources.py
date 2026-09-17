@@ -9,6 +9,7 @@ Listing uses the GitHub contents API rather than scraping the directory page,
 so a rename of a class in GitHub's html cannot quietly empty a file list.
 """
 
+import datetime
 import os
 
 import requests
@@ -87,6 +88,21 @@ class RepoSource:
         return self.session.get(f'{RAW}{self.repo}/{self.ref}/{path}').content
 
 
+## How many days apart two calibration dates can be before they are two
+## calibrations rather than one recorded twice.
+NEAR_DAYS = 7
+
+
+def _asDate(value):
+    """A YYYYMMDD file-name date, or None if it is not one."""
+    if len(value) != 8 or not value.isdigit():
+        return None
+    try:
+        return datetime.date(int(value[:4]), int(value[4:6]), int(value[6:]))
+    except ValueError:
+        return None
+
+
 class VendorFiles:
     """Vendor originals, resolved to a file stem on disk.
 
@@ -104,8 +120,41 @@ class VendorFiles:
             for fileName in source.listFiles(sensor):
                 self.stems.setdefault(fileName.split('.')[0], []).append((sensor, fileName))
 
+        ## asset ID -> every calibration date on record for it. A file name that
+        ## matches nothing can then still say whether the vendor has one for the
+        ## same instrument a day or two away, which is what a mistyped date
+        ## looks like from here.
+        self.datesByAsset = {}
+        for stem in self.stems:
+            asset, _, date = stem.partition('__')
+            if len(date) == 8 and date.isdigit():
+                self.datesByAsset.setdefault(asset, set()).add(date)
+
     def __contains__(self, stem):
         return stem in self.stems
+
+    def nearestDate(self, stem, within=NEAR_DAYS):
+        """A vendor calibration for the same asset close to this one's date.
+
+        Returns ``(date, daysApart)`` or None. Matching is on the whole stem, so
+        a file name whose date is a day out matches nothing at all and the
+        calibration reads as having no vendor original -- when the original is
+        sitting there under a date one digit different. Four FLORD calibrations
+        are exactly that.
+        """
+        asset, _, date = stem.partition('__')
+        want = _asDate(date)
+        if want is None:
+            return None
+        nearest, apart = None, None
+        for candidate in self.datesByAsset.get(asset, ()):
+            other = _asDate(candidate)
+            if other is None:
+                continue
+            gap = abs((other - want).days)
+            if apart is None or gap < apart:
+                nearest, apart = candidate, gap
+        return (nearest, apart) if apart is not None and apart <= within else None
 
     def stemPath(self, stem):
         """Path to the vendor files for ``stem``, without an extension."""

@@ -11,7 +11,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from .calibrations import compareCalCoefficients, isConstantsOnly
+from .calibrations import comparisonRule, compareCalCoefficients, isConstantsOnly
 from .loading import RCA_ASSET_PREFIXES
 from .serials import partialMatch
 
@@ -153,6 +153,44 @@ def _duplicateVerdict(githubCal):
     return 'DUPLICATES_IDENTICAL'
 
 
+def _missingVendorVerdict(githubCal, stem, vendorFiles, params):
+    """Why a calibration has no vendor original, where one was expected.
+
+    An instrument with comparison rules and nothing on record is a finding, not
+    a silence: it read as NOTCOMPARED, which is 'not checked', and 42 of them
+    sat there looking like nothing was owed.
+
+    Where the same asset has a vendor calibration a few days away, the answer is
+    usually simpler than a missing file. Matching is on the whole file name, so
+    a date one digit out matches nothing at all -- four FLORD calibrations name
+    a date one day from the vendor's.
+
+    So the near file is read rather than guessed at. Where every coefficient
+    agrees, the two are one calibration under two dates and the fix is a file
+    name: nothing about the numbers is in doubt, and the verdict says so.
+    Where they differ, the near file is a different calibration and this one
+    really has no original on record.
+    """
+    spec = comparisonRule(stem, params['assets'])
+    if not spec or not spec['sources']:
+        return None
+    near = vendorFiles.nearestDate(stem)
+    if not near:
+        return 'NO_VENDOR_FILE'
+
+    date, days = near
+    apart = f'{date}, {days} day{"" if days == 1 else "s"} apart'
+    nearStem = stem.partition('__')[0] + '__' + date
+    verdict, *differences = compareCalCoefficients(
+        githubCal, vendorFiles.stemPath(nearStem), params['coeffMap'],
+        params['constants'], params['assets'])
+    if verdict in ('COMPARED', 'COMPARED_XML', 'COMPARED_CONSTANTS') and not differences:
+        return f'VENDOR_DATE_MISNAMED: {apart}, every coefficient agrees'
+    if differences:
+        return f'VENDOR_DATE_NEAR_MISS: {apart}, {len(differences)} coefficients differ'
+    return f'VENDOR_DATE_NEAR_MISS: {apart}, and it could not be compared either'
+
+
 def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
     """Every github calibration file against its vendor original.
 
@@ -215,6 +253,8 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
             githubCal, vendorFiles.stemPath(stem) if vendorPresent else stem,
             params['coeffMap'], params['constants'], params['assets'],
             vendorPresent=vendorPresent)
+        if verdict == 'NAN' and not vendorPresent:
+            verdict = _missingVendorVerdict(githubCal, stem, vendorFiles, params) or verdict
         row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
         row['differences'] = differences
         rows.append(row)
@@ -327,6 +367,10 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             ## the reader happened to be in, and a date near a year boundary
             ## shifts -- which appends a second line for a deployment that
             ## already has one rather than updating it.
+            ## The year the deployment went in the water, settled here rather
+            ## than sliced off a timestamp in the browser. The positions check
+            ## has carried one all along; this is the same field.
+            row['deployYear'] = year
             key = f"{refDes}.{year}.{deployment['deployNum']}"
             row['hitlKey'] = key
             row['HITLstatus'] = hitlDeploy.loc[key, 'Status'] if key in hitlDeploy.index else 'NA'

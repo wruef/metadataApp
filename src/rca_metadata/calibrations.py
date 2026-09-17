@@ -391,6 +391,12 @@ def _difference(githubCoeff, expected, ordered=False):
     return githubCoeff - expected
 
 
+def comparisonRule(vendorPath, assets=None):
+    """The rules this asset's calibration is compared under, or None."""
+    sensor = identifySensor(vendorPath, assets)
+    return SENSORS[sensor] if sensor else None
+
+
 def isConstantsOnly(vendorPath, assets=None):
     """Whether this asset's coefficients are fixed values rather than measurements.
 
@@ -400,8 +406,8 @@ def isConstantsOnly(vendorPath, assets=None):
     so reporting it as a missing file puts a row that agrees with everything it
     was checked against in front of a person for no reason.
     """
-    sensor = identifySensor(vendorPath, assets)
-    return bool(sensor and SENSORS[sensor].get('constantsOnly'))
+    spec = comparisonRule(vendorPath, assets)
+    return bool(spec and spec.get('constantsOnly'))
 
 
 def compareConstants(githubCal, spec, sensor, constants, stem):

@@ -112,10 +112,12 @@ export const CHECKS = [
     // the left already says what it concluded, so a column repeating it was
     // one more thing to read that told you nothing new. The value is still on
     // the row and still under Raw check output.
-    columns: ['refDes', 'deployNum', 'AssetID', 'rawFile_verify', 'image_verify', 'calFile_verify', 'HITLstatus'],
+    columns: ['refDes', 'deployNum', 'deployYear', 'AssetID', 'rawFile_verify', 'image_verify', 'calFile_verify', 'HITLstatus'],
     facets: [
       { key: 'site', label: 'All sites', of: (row) => siteOf(row.refDes) },
-      { key: 'year', label: 'All years', of: (row) => yearOf(row.deployDate) },
+      // From the year the run settled, falling back to the timestamp for runs
+      // published before it carried one.
+      { key: 'year', label: 'All years', of: (row) => String(row.deployYear ?? yearOf(row.deployDate)) },
       // Kept as a filter though it is no longer a column: it is the only way to
       // ask for the deployments nothing confirms, which the review status
       // cannot isolate because it folds in the calibration findings too.

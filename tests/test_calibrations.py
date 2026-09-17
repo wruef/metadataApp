@@ -267,6 +267,101 @@ def test_anInstrumentTypeMapsToTheRulesItFallsUnder():
     assert sensorForType('CAMDS-B') is None
 
 
+## --- a vendor original that is not on record ---
+
+class FakeVendorFiles:
+    """The date index a near-miss lookup needs, and a path for the file it finds."""
+
+    def __init__(self, dates):
+        from rca_metadata.sources import VendorFiles
+        self.datesByAsset = dates
+        self.nearestDate = VendorFiles.nearestDate.__get__(self)
+
+    def stemPath(self, stem):
+        return '/nowhere/' + stem
+
+
+PARAMS = {'assets': {'ATAPL-68020-00001': {'instrumentType': ['NUTNR-A']},
+                     'ATAPL-58324-00003': {'instrumentType': ['HYDBB-A']}},
+          'coeffMap': {}, 'constants': {}}
+
+
+def missingVerdict(stem, vendor, compared=None, monkeypatch=None):
+    """_missingVendorVerdict with the comparison against the near file stubbed,
+    so the branching is tested without a vendor file format on disk."""
+    from rca_metadata import checks
+
+    if compared is not None:
+        monkeypatch.setattr(checks, 'compareCalCoefficients', lambda *a, **k: compared)
+    return checks._missingVendorVerdict(None, stem, vendor, PARAMS)
+
+
+def test_aMissingVendorFileIsAFindingNotASilence():
+    """An instrument with comparison rules and nothing on record read as
+    NOTCOMPARED -- 'not checked' -- and 42 of them sat there looking like
+    nothing was owed."""
+    assert missingVerdict('ATAPL-68020-00001__20170202', FakeVendorFiles({})) == 'NO_VENDOR_FILE'
+
+
+def test_aCalibrationMonthsAwayIsNotANearMiss():
+    """Two calibrations, not one recorded twice."""
+    vendor = FakeVendorFiles({'ATAPL-68020-00001': {'20160201'}})
+    assert missingVerdict('ATAPL-68020-00001__20170202', vendor) == 'NO_VENDOR_FILE'
+
+
+def test_anInstrumentNothingComparesSaysNothing():
+    """A hydrophone has no vendor calibration and never will. Reporting a
+    missing file for it would be inventing a finding."""
+    assert missingVerdict('ATAPL-58324-00003__20140805', FakeVendorFiles({})) is None
+
+
+def test_aNearFileWhoseContentsAgreeIsAMisnamedFile(monkeypatch):
+    """Read rather than guessed at: where every coefficient agrees the two are
+    one calibration under two dates, nothing about the numbers is in doubt, and
+    the fix is a file name."""
+    vendor = FakeVendorFiles({'ATAPL-68020-00001': {'20170201'}})
+    verdict = missingVerdict('ATAPL-68020-00001__20170202', vendor, ['COMPARED'], monkeypatch)
+    assert verdict.startswith('VENDOR_DATE_MISNAMED')
+    assert '20170201, 1 day apart' in verdict
+    assert 'every coefficient agrees' in verdict
+
+
+def test_aNearFileWhoseContentsDifferIsADifferentCalibration(monkeypatch):
+    vendor = FakeVendorFiles({'ATAPL-68020-00001': {'20170201'}})
+    verdict = missingVerdict('ATAPL-68020-00001__20170202', vendor,
+                             ['MISMATCH', ['f', 'CC_a', 1.0, 2.0, -1.0, 'vendor', '']], monkeypatch)
+    assert verdict.startswith('VENDOR_DATE_NEAR_MISS')
+    assert '1 coefficients differ' in verdict
+
+
+def test_aNearFileThatCannotBeReadSaysSo(monkeypatch):
+    vendor = FakeVendorFiles({'ATAPL-68020-00001': {'20170201'}})
+    verdict = missingVerdict('ATAPL-68020-00001__20170202', vendor, ['FORMAT_NOTCOMPARED'],
+                             monkeypatch)
+    assert verdict.startswith('VENDOR_DATE_NEAR_MISS')
+    assert 'could not be compared' in verdict
+
+
+def test_theNearestOfSeveralIsTheOneRead(monkeypatch):
+    vendor = FakeVendorFiles({'ATAPL-68020-00001': {'20170201', '20160101', '20180101'}})
+    assert '20170201' in missingVerdict('ATAPL-68020-00001__20170202', vendor,
+                                        ['COMPARED'], monkeypatch)
+
+
+def test_eachVerdictSaysWhatItMeans():
+    from rca_metadata.report import reasonOf
+
+    misnamed = reasonOf('calibrations', {
+        'vendorMatch': 'VENDOR_DATE_MISNAMED: 20170201, 1 day apart, every coefficient agrees',
+        'cleared': False})
+    assert 'one calibration under two dates' in misnamed
+
+    differs = reasonOf('calibrations', {
+        'vendorMatch': 'VENDOR_DATE_NEAR_MISS: 20221031, 3 days apart, 2 coefficients differ',
+        'cleared': False})
+    assert 'different calibration' in differs
+
+
 ## --- instruments no vendor publishes a file for ---
 
 def constantsCal(pairs, notes=None):

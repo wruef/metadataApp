@@ -75,6 +75,16 @@ SEVERITY = {
             'COMPARED': 'ok', 'COMPARED_XML': 'ok', 'MISMATCH': 'problem',
             'MISSING_COEFFICIENT': 'problem', 'NO_VENDOR_FILE': 'problem',
             'CONSTANT_MISMATCH': 'review', 'PDF_NOTCOMPARED': 'unchecked',
+            ## The vendor has a calibration for this asset within days of the
+            ## one named here. Matching is on the whole file name, so a date one
+            ## digit out matches nothing -- the fix is a file name rather than a
+            ## hunt for a calibration nobody ever published.
+            'VENDOR_DATE_NEAR_MISS': 'problem',
+            ## The near file was read and holds exactly these coefficients, so
+            ## the two are one calibration under two dates. Nothing about the
+            ## numbers is in doubt; a file name is wrong. That needs a person,
+            ## not an alarm.
+            'VENDOR_DATE_MISNAMED': 'review',
             ## No vendor measures these -- an ADCP's scale factors, a
             ## hydrophone's gain -- so the record is held to the fixed values
             ## instead, and agreeing with them is a pass like any other.
@@ -197,6 +207,14 @@ def _calibrationReason(row):
         return 'The only differences are with the fixed values in coefficientConstants.csv'
     if vendor == 'NO_VENDOR_FILE':
         return 'No vendor calibration is on record to compare against'
+    if vendor == 'VENDOR_DATE_MISNAMED':
+        near = str(row.get('vendorMatch', '')).partition(':')[2].strip()
+        return (f'The vendor file dated {near}, so the two are one calibration under two '
+                'dates and the date in one of the file names is wrong')
+    if vendor == 'VENDOR_DATE_NEAR_MISS':
+        near = str(row.get('vendorMatch', '')).partition(':')[2].strip()
+        return (f'No vendor file under this name. The nearest for this asset is dated {near}, '
+                'so it is a different calibration and this one has no original on record')
     if vendor == 'FORMAT_NOTCOMPARED':
         return 'A vendor file is on record, but not in the format this instrument is compared against'
     if vendor == 'PDF_NOTCOMPARED':

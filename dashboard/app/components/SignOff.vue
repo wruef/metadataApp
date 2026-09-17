@@ -21,11 +21,25 @@ watchEffect(() => {
  *  calibration file since removed still carries wording worth reusing. */
 const reasons = computed(() => store.report?.hitlNotes?.[sheet] ?? [])
 
+/** What the asset-management file itself says about the coefficients that
+ *  disagree. A reviewer clearing one of these usually writes down exactly that
+ *  — the pressure offset added on purpose, the vendor file a value was read out
+ *  of — so it is offered rather than retyped from the panel above. */
+const fileNotes = computed(() => {
+  const differences = Array.isArray(row.differences) ? row.differences : []
+  const notes = differences.map((entry) =>
+    String((entry as Record<string, unknown>).note ?? '').trim(),
+  )
+  return [...new Set(notes.filter(Boolean))]
+})
+
+const options = computed(() => [...fileNotes.value, ...reasons.value])
+
 /** The dropdown follows the text rather than driving it, so editing a reason
  *  after picking it falls back to 'Something else' instead of leaving the two
  *  controls disagreeing about what the note says. */
 const picked = computed({
-  get: () => (reasons.value.includes(notes.value) ? notes.value : ''),
+  get: () => (options.value.includes(notes.value) ? notes.value : ''),
   set: (value: string) => {
     notes.value = value
     if (queued.value) decide(queued.value.status)
@@ -81,14 +95,21 @@ function decide(status: 'Clear' | 'NotClear') {
         <!-- What the team already writes, so a queue reads as one vocabulary
              rather than fifty spellings of the same judgement. -->
         <select
-          v-if="reasons.length"
+          v-if="options.length"
           v-model="picked"
           class="sel"
           style="max-width: 100%"
           aria-label="Reason this row was reviewed"
         >
           <option value="">Something else — write it below</option>
-          <option v-for="reason in reasons" :key="reason" :value="reason">{{ reason }}</option>
+          <!-- What the file says about the coefficients in question, first:
+               on a row that disagrees it is usually the answer. -->
+          <optgroup v-if="fileNotes.length" label="From the asset-management file">
+            <option v-for="note in fileNotes" :key="note" :value="note">{{ note }}</option>
+          </optgroup>
+          <optgroup v-if="reasons.length" label="Written before in 2i-HITL">
+            <option v-for="reason in reasons" :key="reason" :value="reason">{{ reason }}</option>
+          </optgroup>
         </select>
         <u-input
           v-model="notes"
