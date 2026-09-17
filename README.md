@@ -151,6 +151,13 @@ to compare against — the pre-cruise check, without leaving for the Actions tab
 The bar turns amber the moment it points anywhere other than production, so a
 run against a branch cannot be mistaken for a run against what is merged.
 
+Tick **Publish for review** on a testing run and it is committed under its own
+name and appears in the run picker, where you can read it and its comparison
+like any other run. It does not become `latest.json`, so the figures everyone
+else reads do not move. That is what makes a branch check readable in the
+dashboard rather than a zip you download from the Actions tab; only a production
+run replaces what the site opens on.
+
 Starting one dispatches `verify.yaml` **in your own fork of this repository**,
 so it runs against the parameter files you have. The run is then followed in a
 tray, step by step. Closing the tray stops following the run; it does not stop
@@ -188,7 +195,13 @@ compare against, and whether to publish. The report is kept as a build artifact
 either way, so a run that was only a look can still be read back.
 
 Publishing **commits the report to this repository** under `reports/`, rather
-than uploading it anywhere. A 2.1 MB report is roughly 75 KB as a git object, so
+than uploading it anywhere. Every published run is committed under its own name
+and added to `reports/index.json`, which is what the run picker reads. Only a
+production run is also copied to `reports/latest.json` — the run the site opens
+on, and the baseline later comparisons are measured against. A branch run
+therefore publishes without moving anything, which is why publishing one is
+offered rather than refused. `replace_production` overrides that, for a branch
+you mean to promote. A 2.1 MB report is roughly 75 KB as a git object, so
 a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
 

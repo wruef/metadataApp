@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { canPublish, PRODUCTION, ready } from '~/dispatch'
+import { PRODUCTION, ready } from '~/dispatch'
 import { useRuns } from '~/runs'
 import { useStore } from '~/store'
 
@@ -64,18 +64,19 @@ const shown = computed(() => {
 
       <span class="grow" />
 
+      <!-- A branch run publishes under its own name and appears in the run
+           picker; only a production run becomes the figures everyone reads. So
+           this is safe to offer either way, and it is the only way to open a
+           branch check in the dashboard rather than downloading a zip. -->
       <label
-        v-if="canPublish(runs.source)"
         class="flex gap-1.5 items-center"
-        title="Commits the report to this repository, which republishes the dashboard with it. Leave off for a look that changes nothing."
+        :title="testing
+          ? 'Commits the run under its own name so you can open it from the run picker. Production figures are untouched.'
+          : 'Commits the report and makes it the run everyone reads. Leave off for a look that changes nothing.'"
       >
         <input v-model="runs.source.publish" type="checkbox" >
-        Publish
+        {{ testing ? 'Publish for review' : 'Publish' }}
       </label>
-      <!-- A branch run answers a question about a branch. Publishing it would
-           replace the figures everyone else reads, so it is not offered here
-           and the workflow refuses it too. -->
-      <span v-else class="lbl">Testing runs do not publish</span>
 
       <button
         v-if="auth.signedIn"

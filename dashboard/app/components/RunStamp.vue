@@ -25,10 +25,20 @@ const days = computed(() => Math.round(store.ageInDays))
  *  clearing a selection and refuses it as an item value. */
 const CURRENT = 'current'
 
+/** Which ref a run read, where it is not production. A branch run published
+ *  for review sits in this list beside the production ones, and the stamp alone
+ *  does not say which is which. */
+function refOf(run: { sources?: Record<string, { repo: string; ref: string }> }) {
+  const source = run.sources?.assetManagement
+  if (!source) return ''
+  const production = source.repo === 'oceanobservatories/asset-management' && source.ref === 'master'
+  return production ? '' : ` · ${source.ref}`
+}
+
 const runOptions = computed(() => [
   { label: 'Current run', value: CURRENT },
   ...store.runs.map((run) => ({
-    label: `${new Date(run.runAt).toLocaleString()} · ${run.name.replace(/^report_|\.json$/g, '')}`,
+    label: `${new Date(run.runAt).toLocaleString()}${refOf(run)}`,
     value: run.name,
   })),
 ])

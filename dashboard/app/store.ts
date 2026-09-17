@@ -27,7 +27,7 @@ export const SEVERITY_COLOR = {
   problem: 'error',
   review: 'warning',
   unchecked: 'neutral',
-  cleared: 'warning',
+  cleared: 'success',
   ok: 'success',
   excluded: 'neutral',
 } as const satisfies Record<Severity, string>
@@ -238,12 +238,17 @@ export const useStore = defineStore('report', () => {
       }
       report.value = fetched
       status.value = 'ready'
+      // The comparison that belongs to the run being read, not whichever one
+      // was newest. Published runs are named report_<stamp> and their
+      // comparisons comparison_<stamp>, so one follows from the other; the
+      // fixed url is the fallback for the current run.
+      const comparisonUrl = name
+        ? url.replace(/[^/]+$/, name.replace('report_', 'comparison_'))
+        : withBase(base, config.public.comparisonUrl as string)
       // Absent unless a run was given a baseline, so a failure here is normal
       // and must not take the rest of the dashboard down with it.
       try {
-        comparison.value = await $fetch<Comparison>(
-          withBase(base, config.public.comparisonUrl as string),
-        )
+        comparison.value = await $fetch<Comparison>(comparisonUrl)
       } catch {
         comparison.value = null
       }

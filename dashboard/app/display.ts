@@ -13,23 +13,16 @@ export const SEVERITY_TONE: Record<Severity, Tone> = {
   problem: 'crit',
   review: 'warn',
   unchecked: 'na',
-  cleared: 'warn',
+  // Green, whatever the checks found. A sign-off is a person saying they have
+  // been and this row is settled, and that is as settled as a row gets — a
+  // reviewer's judgement is not a lesser kind of pass than a machine's. What
+  // they judged is not hidden: the finding keeps its own badge beside this one,
+  // in its own colour, so a cleared row over a real mismatch still shows the
+  // mismatch in red. Three signed-off calibrations turned out to hold real
+  // transcription errors, and that is what the second badge is for.
+  cleared: 'ok',
   ok: 'ok',
   excluded: 'na',
-}
-
-/**
- * How a whole row reads, which a sign-off splits in two.
- *
- * A reviewer clearing a row that also agrees with the record has confirmed a
- * pass: green, like any other agreement. A reviewer clearing a row that
- * disagrees has judged the disagreement acceptable — amber, because the
- * disagreement is still there. Three signed-off calibrations turned out to hold
- * real transcription errors, so this never goes green over a finding.
- */
-export function rowTone(severity: Severity, finding?: Severity): Tone {
-  if (severity !== 'cleared') return SEVERITY_TONE[severity]
-  return !finding || finding === 'ok' ? 'ok' : 'warn'
 }
 
 /**

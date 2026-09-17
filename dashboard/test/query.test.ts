@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { rowTone } from '../app/display'
+import { SEVERITY_TONE } from '../app/display'
 import { ALL, ATTENTION, matchesWhere } from '../app/query'
 import type { Row, Severity } from '../app/store'
 
@@ -52,22 +52,19 @@ describe('what still needs a person', () => {
 })
 
 describe('how a signed-off row reads', () => {
-  /** A reviewer clearing a row that also agrees has confirmed a pass. One
-   *  clearing a row that disagrees has judged the disagreement acceptable, and
-   *  the disagreement is still there — three of them turned out to be real
-   *  transcription errors. */
-  it('is green over an agreement and amber over a disagreement', () => {
-    expect(rowTone('cleared', 'ok')).toBe('ok')
-    expect(rowTone('cleared', 'problem')).toBe('warn')
-    expect(rowTone('cleared', 'review')).toBe('warn')
-    expect(rowTone('cleared', 'unchecked')).toBe('warn')
+  /** A sign-off is a person saying they have been and this row is settled, and
+   *  that is as settled as a row gets. What they judged is not hidden: the
+   *  finding keeps its own badge beside it, in its own colour. */
+  it('is green, whatever the checks found', () => {
+    expect(SEVERITY_TONE.cleared).toBe('ok')
   })
 
   it('leaves every other category coloured by itself', () => {
-    expect(rowTone('problem')).toBe('crit')
-    expect(rowTone('review')).toBe('warn')
-    expect(rowTone('ok')).toBe('ok')
-    expect(rowTone('unchecked')).toBe('na')
+    expect(SEVERITY_TONE.problem).toBe('crit')
+    expect(SEVERITY_TONE.review).toBe('warn')
+    expect(SEVERITY_TONE.ok).toBe('ok')
+    expect(SEVERITY_TONE.unchecked).toBe('na')
+    expect(SEVERITY_TONE.excluded).toBe('na')
   })
 })
 

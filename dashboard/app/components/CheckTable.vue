@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { compareValues, identity, rowTone, splitVerdict, toneOf, type Tone } from '~/display'
+import { compareValues, identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
 import { hitlKeyOf, HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
@@ -220,7 +220,7 @@ interface Cell {
 const paged = computed(() =>
   rows.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE).map((row) => ({
     row,
-    stripe: rowTone(row.severity, row.finding),
+    stripe: SEVERITY_TONE[row.severity],
     cells: columns.map((column): Cell => {
       const raw = row[column]
       const text =

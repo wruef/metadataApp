@@ -47,8 +47,10 @@ Every row carries four things the dashboard should not have to work out itself:
   says. A sign-off is a judgement *about* a finding rather than the absence of
   one: three signed-off calibrations turned out to hold real transcription
   errors, so the disagreement stays on the row and on screen beside the badge.
-  A cleared row reads green where its finding agrees and amber where it does
-  not, and carries a second badge naming what was found.
+  A cleared row reads **green**, whatever its finding — a reviewer's judgement
+  is not a lesser kind of pass than a machine's — and carries a second badge
+  naming what was found, in that finding's own colour. So a cleared row over a
+  real mismatch shows green beside red.
 - **`reason`** — one sentence saying why the row reads as it does, in the words
   someone would use out loud. A queue is worked by people, and
   `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.

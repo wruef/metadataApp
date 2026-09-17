@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { rowTone, SEVERITY_TONE } from '~/display'
+import { SEVERITY_TONE } from '~/display'
 import { SEVERITY_LABEL, type Severity } from '~/store'
 
 /** Plain elements, not `u-badge`. A table can hold well over a thousand rows,
@@ -10,9 +10,7 @@ import { SEVERITY_LABEL, type Severity } from '~/store'
  *  of these scans on colour alone and still reads when it is printed. */
 const { severity, finding } = defineProps<{ severity: Severity; finding?: Severity }>()
 
-/** Green for a sign-off over a row that agrees, amber for one over a row that
- *  does not. */
-const tone = computed(() => rowTone(severity, finding))
+const tone = computed(() => SEVERITY_TONE[severity])
 
 /** What the checks found, shown beside a sign-off that did not erase it. Some
  *  signed-off calibrations still carry real transcription errors, so the
