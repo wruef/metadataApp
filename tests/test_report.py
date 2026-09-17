@@ -1,6 +1,7 @@
 """Tests for the run report: severity, the two-state rule, and round-tripping."""
 
 import json
+import os
 
 import pytest
 
@@ -209,7 +210,12 @@ def test_aSourceRecordsWhatItsRefResolvedTo():
     from rca_metadata.report import describeSource
 
     class Source:
-        repo, ref, local = 'o/r', 'master', '/Users/wruef/githubRepos/metadataApp'
+        repo, ref = 'o/r', 'master'
+        ## This repository, found rather than written down. The path was fixed
+        ## to one laptop, so the test passed only there: anywhere else the
+        ## directory is absent, the commit reads UNKNOWN, and the assertion
+        ## below fails for a reason that has nothing to do with the code.
+        local = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     described = describeSource(Source())
     assert described['ref'] == 'master'
