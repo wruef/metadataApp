@@ -83,6 +83,15 @@ whole rewrite exists for, and it was not going to be reintroduced here. A
 coefficient with no fixed value written for it reports `MISSING_COEFFICIENT` for
 the same reason.
 
+One more thing had to give way. The check reports `NOMATCH` when
+calibrationFiles holds nothing under a calibration's name, and that alone is
+enough to put a row in front of a person. For a CTD it should: a vendor original
+that is missing is a gap. For these it is the normal state of the world, and it
+left files that agreed with everything they were checked against reading *needs
+a person* under the sentence *no vendor file in calibrationFiles*. They now
+report `NOT_EXPECTED`, which is excluded rather than a finding, so a calibration
+that agrees with its fixed values reads **agreed**.
+
 These instruments are identified through the RCA instrument list rather than by
 an asset-ID code, which is the same path a borrowed instrument takes.
 

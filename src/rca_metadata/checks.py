@@ -11,7 +11,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from .calibrations import compareCalCoefficients
+from .calibrations import compareCalCoefficients, isConstantsOnly
 from .loading import RCA_ASSET_PREFIXES
 from .serials import partialMatch
 
@@ -177,7 +177,15 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
         if fileName in hitlCal.index:
             row['HITLstatus'] = hitlCal.loc[fileName, 'Status']
             row['HITLnotes'] = hitlCal.loc[fileName, 'HITLnotes']
-        row['calRepo_check'] = 'MATCH' if stem in vendorFiles else 'NOMATCH'
+        if stem in vendorFiles:
+            row['calRepo_check'] = 'MATCH'
+        elif isConstantsOnly(stem, params['assets']):
+            ## Nothing is on record because nothing ever will be: these
+            ## coefficients are fixed values, not measurements. Not a finding,
+            ## and not a gap -- there is simply no vendor file to expect.
+            row['calRepo_check'] = 'NOT_EXPECTED'
+        else:
+            row['calRepo_check'] = 'NOMATCH'
         ## Where the vendor original lives, so a reader can open it beside the
         ## repository file. The two repos do not always name a sensor directory
         ## the same way, so this cannot be derived from the instrument.

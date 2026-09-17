@@ -376,6 +376,19 @@ def _difference(githubCoeff, expected, ordered=False):
     return githubCoeff - expected
 
 
+def isConstantsOnly(vendorPath, assets=None):
+    """Whether this asset's coefficients are fixed values rather than measurements.
+
+    Asked before the comparison, because the absence of a vendor original means
+    two different things. For a CTD it is a finding. For these it is the normal
+    state of the world -- no vendor has ever published one and none ever will --
+    so reporting it as a missing file puts a row that agrees with everything it
+    was checked against in front of a person for no reason.
+    """
+    sensor = identifySensor(vendorPath, assets)
+    return bool(sensor and SENSORS[sensor].get('constantsOnly'))
+
+
 def compareConstants(githubCal, spec, sensor, constants, stem):
     """Compare a calibration against the fixed values, where no vendor file exists.
 

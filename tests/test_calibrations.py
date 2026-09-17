@@ -367,6 +367,44 @@ def test_anInstrumentThatNeedsAVendorFileIsNotComparedWithout():
     assert verdict == 'NAN'
 
 
+def test_aVendorFileThatWillNeverExistIsNotAFinding():
+    """The absence of a vendor original means two different things. For a CTD it
+    is a gap. For an instrument whose coefficients are fixed values it is the
+    normal state of the world, and reporting it as a missing file put a row that
+    agreed with everything it was checked against in front of a person."""
+    from rca_metadata.calibrations import isConstantsOnly
+
+    assets = {'ATOSU-69825-00001': {'instrumentType': ['ADCPS-I']},
+              'ATAPL-66662-00002': {'instrumentType': ['CTDPF-A']}}
+    assert isConstantsOnly('ATOSU-69825-00001__20150803', assets)
+    assert not isConstantsOnly('ATAPL-66662-00002__20160303', assets)
+
+
+def test_aCalibrationAgreeingWithItsFixedValuesReadsAsAgreed():
+    """The whole point: it was compared, it agreed, and nothing about it needs a
+    person. A missing vendor file it will never have must not say otherwise."""
+    from rca_metadata.report import scoreRows
+
+    row = {'fileName': 'x.csv', 'instrument': 'ADCPSI', 'HITLstatus': 'NA',
+           'fileParse': 'SUCCESS_TYPE1', 'serialNumber': 'MATCH_SENSORBULK',
+           'duplicateCoeff': 'NONE', 'calRepo_check': 'NOT_EXPECTED',
+           'vendorMatch': 'COMPARED_CONSTANTS'}
+    scored = scoreRows('calibrations', [row])[0]
+    assert scored['severity'] == 'ok'
+    assert 'fixed values' in scored['reason']
+
+
+def test_aCtdWithNoVendorFileIsStillAFinding():
+    """Only the fixed-value instruments are excused; everything else keeps the
+    verdict it had."""
+    from rca_metadata.report import scoreRows
+
+    row = {'fileName': 'x.csv', 'instrument': 'CTDBPN', 'HITLstatus': 'NA',
+           'fileParse': 'SUCCESS_TYPE1', 'serialNumber': 'MATCH_SENSORBULK',
+           'duplicateCoeff': 'NONE', 'calRepo_check': 'NOMATCH', 'vendorMatch': 'NAN'}
+    assert scoreRows('calibrations', [row])[0]['severity'] == 'review'
+
+
 def test_theRealFixedValuesCoverTheRealFiles():
     """Against params/coefficientConstants.csv itself: every instrument declared
     as fixed-value has values written for it."""

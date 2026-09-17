@@ -78,7 +78,9 @@ SEVERITY = {
             ## a problem: nothing disagrees, nothing was read.
             'FORMAT_NOTCOMPARED': 'unchecked',
             'NOTCOMPARED': 'unchecked', 'NAN': 'unchecked'},
-        'calRepo_check': {'MATCH': 'ok', 'NOMATCH': 'review'},
+        ## NOT_EXPECTED: no vendor publishes a file for this instrument, so its
+        ## absence says nothing about the record and is counted as nothing.
+        'calRepo_check': {'MATCH': 'ok', 'NOMATCH': 'review', 'NOT_EXPECTED': 'excluded'},
         'fileParse': {'SUCCESS_TYPE1': 'ok', 'SUCCESS_TYPE2': 'ok', 'FAIL': 'problem'},
         'serialNumber': {
             'MATCH_SENSORBULK': 'ok', 'MISMATCH_SENSORBULK': 'problem', 'MULTIPLE': 'problem',

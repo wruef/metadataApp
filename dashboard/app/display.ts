@@ -68,7 +68,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity>>> 
       NOTCOMPARED: 'unchecked',
       NAN: 'unchecked',
     },
-    calRepo_check: { MATCH: 'ok', NOMATCH: 'review' },
+    calRepo_check: { MATCH: 'ok', NOMATCH: 'review', NOT_EXPECTED: 'excluded' },
     fileParse: { SUCCESS_TYPE1: 'ok', SUCCESS_TYPE2: 'ok', FAIL: 'problem' },
     serialNumber: {
       MATCH_SENSORBULK: 'ok',
