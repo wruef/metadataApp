@@ -357,7 +357,7 @@ ATOSU-58320-00008__20231129.csv,"JD,WR",7/1/24,Clear,
 ATOSU-58320-00020__20231129.csv,"JD,WR",7/1/24,Clear,
 ATOSU-58320-00021__20231126.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00002__20231205.csv,"JD,WR",7/1/24,Clear,
-ATAPL-58337-00004__20231102.csv,"JD,WR",7/1/24,Clear, 
+ATAPL-58337-00004__20231102.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00006__20231120.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00013__20231122.csv,"JD,WR",7/1/24,Clear,
 ATAPL-58337-00014__20240130.csv,"JD,WR",7/1/24,Clear,
@@ -376,5 +376,6 @@ ATAPL-58336-00001__20231204.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00004__20230816.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00001__20240213.csv,"JD,WR",7/1/24,Clear,
 ATOSU-70570-00002__20240213.csv,"JD,WR",7/1/24,Clear,
-ATAPL-70110-00004__20221028.csv,"JD,WR",7/1/24,Clear, values manually added from seabird correction matrix
-ATAPL-70110-00002__20221028.csv,"JD,WR",7/1/24,Clear, values manually added from seabird correction matrix
+ATAPL-70110-00004__20221028.csv,"JD,WR",7/1/24,Clear,values manually added from seabird correction matrix
+ATAPL-70110-00002__20221028.csv,"JD,WR",7/1/24,Clear,values manually added from seabird correction matrix
+ATAPL-58322-00001__20201007.csv,WR,9/16/26,Clear,This coefficient was enterded from vendor documentation
