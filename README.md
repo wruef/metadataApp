@@ -231,27 +231,33 @@ the calibration report embedded a python list literal containing commas in its
 last column, and the season lists wrote multi-valued serial numbers unquoted, so
 27 of 154 rows in the 2022 list had more fields than the header.
 
-Every row carries two things the dashboard should not have to work out itself:
+Every row carries four things the dashboard should not have to work out itself:
 
-- **`severity`** — `problem`, `review`, `unchecked` or `ok`, taken as the worst
-  of the row's verdicts, so a queue can be ranked by consequence rather than by
-  row order. A verdict with no mapping counts as `review`, so a new one reaches a
-  person instead of quietly passing.
-- **`cleared`** — whether a reviewer signed the row off, kept separate from its
-  severity. A sign-off outranks a failing check, but the failing check stays
-  visible on the row: *cleared, calibration noted*, never a plain pass.
+- **`severity`** — the category the row is in: `problem`, `review`, `unchecked`,
+  `cleared` or `ok`, taken as the worst of the row's verdicts, so a queue can be
+  ranked by consequence rather than by row order. A verdict with no mapping
+  counts as `review`, so a new one reaches a person instead of quietly passing.
+- **`cleared`** — whether a reviewer signed the row off. A signed-off row takes
+  the `cleared` category whatever its checks found, so it is never a problem and
+  never work waiting on somebody.
+- **`finding`** — what the checks themselves found, kept whatever the sign-off
+  says. A sign-off is a judgement *about* a finding rather than the absence of
+  one: three signed-off calibrations turned out to hold real transcription
+  errors, so the disagreement stays on the row and on screen beside the badge.
+  A cleared row reads green where its finding agrees and amber where it does
+  not, and carries a second badge naming what was found.
 - **`reason`** — one sentence saying why the row reads as it does, in the words
   someone would use out loud. A queue is worked by people, and
   `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
 
-Each check's `summary` counts every severity, and beside them `open` — the same
-breakdown over rows nobody has signed off — and `attention`, the problem and
-review rows among those. That last number is what *needs attention* means
+Each check's `summary` counts every category, and beside them `attention` — the
+problem and review rows, which a signed-off row is never one of — and
+`verified`, agreed plus cleared. `attention` is what *needs attention* means
 everywhere: the rail, the segmented control and the overview queue all read it,
-so they cannot disagree about how much is left. **A cleared row is not in it.**
-A sign-off is a person having dealt with the row, so it leaves the queue while
-keeping its severity badge and its finding — visible under *Cleared only*, and
-under its own severity, but never as outstanding work.
+so they cannot disagree about how much is left. `verified` is what the headline
+tiles count, because a sign-off is how the things a check cannot settle get
+settled, and leaving them out would leave the record looking permanently
+unfinished.
 
 The reason explains the severity, so the two must never contradict each other —
 a row reading *a photograph confirms the asset* above a badge reading *not

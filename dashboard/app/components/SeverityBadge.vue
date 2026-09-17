@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SEVERITY_TONE } from '~/display'
+import { rowTone, SEVERITY_TONE } from '~/display'
 import { SEVERITY_LABEL, type Severity } from '~/store'
 
 /** Plain elements, not `u-badge`. A table can hold well over a thousand rows,
@@ -8,14 +8,26 @@ import { SEVERITY_LABEL, type Severity } from '~/store'
  *
  *  The dot carries the severity and the word carries the finding, so a column
  *  of these scans on colour alone and still reads when it is printed. */
-const { severity, cleared = false } = defineProps<{ severity: Severity; cleared?: boolean }>()
+const { severity, finding } = defineProps<{ severity: Severity; finding?: Severity }>()
+
+/** Green for a sign-off over a row that agrees, amber for one over a row that
+ *  does not. */
+const tone = computed(() => rowTone(severity, finding))
+
+/** What the checks found, shown beside a sign-off that did not erase it. Some
+ *  signed-off calibrations still carry real transcription errors, so the
+ *  disagreement has to stay on screen rather than being covered by the
+ *  reviewer's decision. */
+const flagged = computed(() =>
+  severity === 'cleared' && finding && finding !== 'ok' ? finding : null,
+)
 </script>
 
 <template>
   <span class="flex gap-1.5 items-center">
-    <span class="b" :class="SEVERITY_TONE[severity]">{{ SEVERITY_LABEL[severity] }}</span>
-    <!-- A sign-off outranks a failing check, but the failing check stays visible
-         on the row: cleared, and noted. -->
-    <span v-if="cleared" class="b plain">CLEARED</span>
+    <span class="b" :class="tone">{{ SEVERITY_LABEL[severity] }}</span>
+    <span v-if="flagged" class="b" :class="SEVERITY_TONE[flagged]">
+      {{ SEVERITY_LABEL[flagged] }}
+    </span>
   </span>
 </template>

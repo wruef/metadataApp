@@ -7,9 +7,12 @@ valued serial numbers unquoted.
 
 Two things the dashboard should not have to work out for itself are settled
 here. Every row carries a **severity**, so a queue can be ranked by consequence
-rather than by row order. And every row that a reviewer has signed off carries
-**cleared**, separately from its severity: a sign-off outranks a failing check,
-but the failing check stays visible on the row.
+rather than by row order; a row a reviewer has signed off takes the severity
+'cleared', which is a category of its own and never work waiting on somebody.
+And it keeps **finding**, the severity its checks actually produced, because a
+sign-off is a judgement about a finding rather than the absence of one -- three
+signed-off calibrations turned out to carry real transcription errors, so a
+category that hid what was found would be a lie.
 """
 
 import datetime
@@ -21,13 +24,24 @@ import subprocess
 import numpy as np
 import pandas as pd
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
-## Worst first. A row takes the worst severity of any of its verdicts.
-SEVERITIES = ['problem', 'review', 'unchecked', 'ok']
+## Worst first. A row takes the worst severity of any of its verdicts, unless a
+## reviewer has signed it off -- a sign-off is a category of its own.
+SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok']
+
+## The severities that put a row in front of a person. 'cleared' is deliberately
+## not among them: a sign-off is a person having already been.
+OPEN = ('problem', 'review')
 
 ## What a reviewer's sign-off looks like in the 2i-HITL sheets.
 CLEARED = 'Clear'
+
+## The category a signed-off row takes, whatever its checks found. The finding
+## is not discarded -- it stays on the row as 'finding', and the dashboard shows
+## it beside the badge, because three cleared calibrations turned out to carry
+## real transcription errors and a category that hid them would be a lie.
+CLEARED_SEVERITY = 'cleared'
 
 ## verdict -> severity, per field. A verdict absent here is 'review', so a new
 ## one surfaces in the queue rather than disappearing into a pass.
@@ -159,11 +173,12 @@ def _deploymentReason(row):
                     if _verdict(row, 'rawFile_verify') == 'MATCH'
                     else 'The pre-deploy photograph')
         ## Confirmed by one thing while another was never looked at. Read off
-        ## the severity rather than from the fields, because the severity is the
+        ## the finding rather than from the fields, because the finding is the
         ## worst of every verdict on the row and this sentence has to explain
         ## it -- naming two of the four fields by hand left 442 deployments
-        ## claiming to be confirmed under a badge reading 'not checked'.
-        if row.get('severity') == 'unchecked':
+        ## claiming to be confirmed under a badge reading 'not checked'. The
+        ## finding rather than the severity, which a sign-off overwrites.
+        if row.get('finding') == 'unchecked':
             return f'{evidence} confirms the asset; not every check on this row could run'
         return f'{evidence} confirms the asset that was deployed'
     if status == 'RAW_SN_POSSIBLE':
@@ -235,11 +250,17 @@ def asDifference(recorded):
 
 
 def scoreRows(check, rows):
-    """Each row with its severity, and whether a reviewer has cleared it."""
+    """Each row with what its checks found, and the category it belongs in.
+
+    The two differ only for a signed-off row: it belongs in 'cleared', and it
+    keeps its finding so the disagreement stays on screen beside the sign-off.
+    """
     scored = []
     for row in rows:
-        scored.append({**row, 'severity': severityOf(check, row),
-                       'cleared': str(row.get('HITLstatus', '')).strip() == CLEARED})
+        finding = severityOf(check, row)
+        cleared = str(row.get('HITLstatus', '')).strip() == CLEARED
+        scored.append({**row, 'finding': finding, 'cleared': cleared,
+                       'severity': CLEARED_SEVERITY if cleared else finding})
         ## After cleared, because a sign-off changes what the row means.
         scored[-1]['reason'] = reasonOf(check, scored[-1])
         if 'differences' in row and check == 'calibrations':
@@ -247,25 +268,20 @@ def scoreRows(check, rows):
     return scored
 
 
-## The severities that put a row in front of a person, as opposed to those that
-## record something already settled or never checked.
-OPEN = ('problem', 'review')
-
-
 def summarise(rows):
     counts = {severity: 0 for severity in SEVERITIES}
     for row in rows:
         counts[row['severity']] += 1
+    ## The same set as the 'cleared' severity -- a signed-off row is in that
+    ## category and no other -- named separately because 'cleared' reads as a
+    ## count of sign-offs wherever the severities are not in view.
     counts['cleared'] = sum(1 for row in rows if row['cleared'])
-    ## What is still waiting on somebody, by severity. A sign-off is a person
-    ## having dealt with the row, so a cleared row leaves the queue even though
-    ## the failing check stays visible on it -- 'cleared, calibration noted'.
-    ## Counted here rather than in the dashboard so the rail, the segment and
-    ## the queue cannot drift into disagreeing about how much is left.
-    counts['open'] = {severity: sum(1 for row in rows
-                                    if row['severity'] == severity and not row['cleared'])
-                      for severity in SEVERITIES}
-    counts['attention'] = sum(counts['open'][severity] for severity in OPEN)
+    ## What is still waiting on somebody. Counted here rather than in the
+    ## dashboard so the rail, the segmented control and the overview queue
+    ## cannot drift into disagreeing about how much is left.
+    counts['attention'] = sum(counts[severity] for severity in OPEN)
+    ## Settled: agreed with the record on its own, or settled by a reviewer.
+    counts['verified'] = counts['ok'] + counts['cleared']
     counts['total'] = len(rows)
     return counts
 

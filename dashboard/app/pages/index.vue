@@ -37,33 +37,45 @@ const signedOff = computed(() =>
   Object.values(checks.value).reduce((total, check) => total + (check.summary.cleared ?? 0), 0),
 )
 
+/** Agreed with the record, or settled by a reviewer. A sign-off is how the
+ *  things a check cannot settle get settled, so leaving them out of the
+ *  headline would leave the record looking permanently unfinished. */
+const verified = (key: string) => {
+  const found = summary(key)
+  if (!found) return 0
+  return found.verified ?? found.ok + found.cleared
+}
+
 /** The headline measures, each the answer to a question someone actually asks. */
 const tiles = computed(() => {
   const deployments = summary('deployments')
   const calibrations = summary('calibrations')
   const positions = summary('positions')
   // A calibration with no comparison rule and no vendor file was never checked
-  // against anything, so it does not belong in the denominator.
-  const compared = calibrations ? calibrations.total - calibrations.unchecked : 0
+  // against anything, so it does not belong in the denominator. A signed-off one
+  // does: nothing machine-readable could be compared, but a person read it. That
+  // falls out of the counts, because a cleared row is no longer 'unchecked'.
+  const neverChecked = calibrations?.unchecked ?? 0
+  const compared = calibrations ? calibrations.total - neverChecked : 0
   return [
     {
       key: 'deployments',
       label: 'Deployments verified',
-      value: deployments?.ok ?? 0,
+      value: verified('deployments'),
       of: deployments?.total ?? 0,
-      note: 'carry independent evidence that the instrument on the sheet is the one in the water.',
+      note: `carry independent evidence that the instrument on the sheet is the one in the water, or a reviewer's sign-off — ${deployments?.cleared ?? 0} of them.`,
     },
     {
       key: 'calibrations',
-      label: 'Calibrations agreeing with the vendor',
-      value: calibrations?.ok ?? 0,
+      label: 'Calibrations verified',
+      value: verified('calibrations'),
       of: compared,
-      note: `of the ${calibrations?.total ?? 0} calibration files, ${calibrations?.unchecked ?? 0} have nothing to compare against.`,
+      note: `agreeing with the vendor or signed off. Of the ${calibrations?.total ?? 0} files, ${neverChecked} have nothing to compare against.`,
     },
     {
       key: 'positions',
       label: 'Positions matching the spreadsheet',
-      value: positions?.ok ?? 0,
+      value: verified('positions'),
       of: positions?.total ?? 0,
       note: 'latitude, longitude and depth as the RCA position record has them.',
     },

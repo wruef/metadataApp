@@ -17,12 +17,10 @@ function attention(key: string) {
   // whatever has been signed off rather than showing nothing.
   return summary.attention ?? summary.problem + summary.review
 }
-/** Red only while a problem is still open. A check whose problems have all been
- *  signed off is not the same as one that still has them. */
+/** Red only while a problem is still open. A signed-off row is in the cleared
+ *  category rather than the problem one, so this counts what is left. */
 function hot(key: string) {
-  const summary = store.report?.checks?.[key]?.summary
-  if (!summary) return false
-  return (summary.open?.problem ?? summary.problem) > 0
+  return (store.report?.checks?.[key]?.summary.problem ?? 0) > 0
 }
 
 const runAt = computed(() =>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
+import { identity, rowTone, splitVerdict, toneOf, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
 import { HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
@@ -108,11 +108,9 @@ const severityCounts = computed(() => {
   const counts: Record<string, number> = { [ALL]: base.length, [ATTENTION]: 0 }
   for (const row of base) {
     counts[row.severity] = (counts[row.severity] ?? 0) + 1
-    // Cleared rows keep their severity — and their place under it — but a
-    // sign-off takes them out of what is waiting on a person.
-    if (!row.cleared && (row.severity === 'problem' || row.severity === 'review')) {
-      counts[ATTENTION]!++
-    }
+    // A signed-off row is in the cleared category, never in these two, so
+    // nothing here has to exclude it.
+    if (row.severity === 'problem' || row.severity === 'review') counts[ATTENTION]!++
   }
   return counts
 })
@@ -179,7 +177,7 @@ interface Cell {
 const paged = computed(() =>
   rows.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE).map((row) => ({
     row,
-    stripe: SEVERITY_TONE[row.severity],
+    stripe: rowTone(row.severity, row.finding),
     cells: columns.map((column): Cell => {
       const raw = row[column]
       const text =
@@ -253,12 +251,6 @@ function label(column: string) {
           </option>
         </select>
 
-        <select v-model="clearedOnly" class="sel" aria-label="Sign-off">
-          <option value="all">Cleared and open</option>
-          <option value="open">Open only</option>
-          <option value="cleared">Cleared only</option>
-        </select>
-
         <input
           v-model="search"
           type="search"
@@ -315,7 +307,7 @@ function label(column: string) {
                 <i :class="['fas', opened === index ? 'fa-chevron-down' : 'fa-chevron-right', 'text-[10px]']" />
               </td>
               <td class="px-3 py-2 whitespace-nowrap">
-                <severity-badge :severity="entry.row.severity" :cleared="entry.row.cleared" />
+                <severity-badge :severity="entry.row.severity" :finding="entry.row.finding" />
               </td>
               <td
                 v-for="(cell, column) in entry.cells"

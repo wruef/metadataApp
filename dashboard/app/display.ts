@@ -13,7 +13,22 @@ export const SEVERITY_TONE: Record<Severity, Tone> = {
   problem: 'crit',
   review: 'warn',
   unchecked: 'na',
+  cleared: 'warn',
   ok: 'ok',
+}
+
+/**
+ * How a whole row reads, which a sign-off splits in two.
+ *
+ * A reviewer clearing a row that also agrees with the record has confirmed a
+ * pass: green, like any other agreement. A reviewer clearing a row that
+ * disagrees has judged the disagreement acceptable — amber, because the
+ * disagreement is still there. Three signed-off calibrations turned out to hold
+ * real transcription errors, so this never goes green over a finding.
+ */
+export function rowTone(severity: Severity, finding?: Severity): Tone {
+  if (severity !== 'cleared') return SEVERITY_TONE[severity]
+  return !finding || finding === 'ok' ? 'ok' : 'warn'
 }
 
 /**

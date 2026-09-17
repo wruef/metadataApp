@@ -1,5 +1,5 @@
 {
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "runAt": "2026-09-15T16:26:13",
  "checks": {
   "sensorBulk": {
@@ -10,7 +10,8 @@
      "bulkSerial": "5259243-0075",
      "verdict": "MISSING_FROM_RCA_LIST",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATAPL-58326-00001",
@@ -18,7 +19,8 @@
      "bulkSerial": "196",
      "verdict": "MISSING_FROM_RCA_LIST",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATAPL-58328-00006",
@@ -26,7 +28,8 @@
      "bulkSerial": "T1080",
      "verdict": "MISSING_FROM_RCA_LIST",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATOSU-69825-00001",
@@ -36,7 +39,8 @@
      "bulkSerial": "21498",
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "assetID": "ATOSU-69825-00002",
@@ -46,7 +50,8 @@
      "bulkSerial": "18153",
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "assetID": "ATOSU-69825-00003",
@@ -56,7 +61,8 @@
      "bulkSerial": "18919",
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "assetID": "ATAPL-70248-00001",
@@ -69,7 +75,8 @@
      "bulkSerial": "P1-SUBC13115",
      "verdict": "FORMAT_MATCH",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATAPL-70248-00002",
@@ -82,7 +89,8 @@
      "bulkSerial": "P2-SUBC13114",
      "verdict": "FORMAT_MATCH",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATOSU-69827-00001",
@@ -92,7 +100,8 @@
      "bulkSerial": "16-7230",
      "verdict": "FORMAT_MATCH",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "assetID": "ATAPL-75664-00001",
@@ -102,7 +111,8 @@
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "ATAPL-75664-00002",
@@ -112,7 +122,8 @@
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "ATAPL-75664-00003",
@@ -122,7 +133,8 @@
      "bulkSerial": null,
      "verdict": "MISSING_FROM_SENSOR_BULK",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "ATAPL-58693-00005",
@@ -132,7 +144,8 @@
      "bulkSerial": "299464",
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "PIRSN-CAMPIA-00001",
@@ -142,7 +155,8 @@
      "bulkSerial": "1",
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "PIRSN-OVRSRA-00001",
@@ -152,7 +166,8 @@
      "bulkSerial": "101409",
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "assetID": "ATAPL-58338-00001",
@@ -162,7 +177,8 @@
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "assetID": "ATAPL-58338-00002",
@@ -172,7 +188,8 @@
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "assetID": "ATAPL-58340-00001",
@@ -182,22 +199,18 @@
      "bulkSerial": "nan",
      "verdict": "NO_BULK_SERIAL",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     }
    ],
    "summary": {
     "problem": 6,
     "review": 6,
     "unchecked": 3,
-    "ok": 3,
     "cleared": 0,
-    "open": {
-     "problem": 6,
-     "review": 6,
-     "unchecked": 3,
-     "ok": 3
-    },
+    "ok": 3,
     "attention": 12,
+    "verified": 3,
     "total": 18
    }
   },
@@ -209,7 +222,8 @@
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXPS-PC03A-4A-DOSTAD303",
@@ -217,7 +231,8 @@
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -225,22 +240,18 @@
      "value": "ATAPL-58340-00003",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     }
    ],
    "summary": {
     "problem": 3,
     "review": 0,
     "unchecked": 0,
-    "ok": 0,
     "cleared": 0,
-    "open": {
-     "problem": 3,
-     "review": 0,
-     "unchecked": 0,
-     "ok": 0
-    },
+    "ok": 0,
     "attention": 3,
+    "verified": 0,
     "total": 3
    }
   },
@@ -264,7 +275,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
@@ -284,7 +296,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT2-MJ03D-12-VEL3DB304",
@@ -304,7 +317,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -324,7 +338,8 @@
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -344,7 +359,8 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT2-MJ03D-11-CTDPFB307",
@@ -364,7 +380,8 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT2-MJ03D-05-OBSSPA305",
@@ -383,8 +400,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-THSPHA301",
@@ -403,8 +421,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-THSPHA301",
@@ -423,8 +442,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -444,7 +464,8 @@
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -464,7 +485,8 @@
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03CCAL-MJ03F-12-CTDPFB305",
@@ -484,7 +506,8 @@
      "image_verify": "NAN",
      "verificationStatus": "RAW_SN_POSSIBLE",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -504,7 +527,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -524,7 +548,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03INT1-MJ03C-10-TRHPHA301",
@@ -544,7 +569,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "refDes": "RS03ECAL-MJ03E-09-HYDLFA304",
@@ -563,8 +589,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03ECAL-MJ03E-08-OBSSPA304",
@@ -583,8 +610,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03AXPS-SF03A-4A-NUTNRA301",
@@ -603,8 +631,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXPS-PC03A-08-HYDBBA303",
@@ -623,8 +652,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "refDes": "RS03AXPS-PC03A-06-VADCPA301",
@@ -643,8 +673,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -663,8 +694,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -683,8 +715,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -704,7 +737,8 @@
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -723,8 +757,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXPD-DP03A-02-VEL3DA303",
@@ -743,8 +778,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXBS-LJ03A-12-DOSTAD301",
@@ -764,7 +800,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03AXBS-LJ03A-09-HYDBBA302",
@@ -784,7 +821,8 @@
      "image_verify": "NAN",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -804,7 +842,8 @@
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03AXPD-DP03A-06-DOSTAD304",
@@ -823,8 +862,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "refDes": "RS01SLBS-MJ01A-06-PRESTA101",
@@ -843,8 +883,9 @@
      "imageAssetID": "undef",
      "image_verify": "NAN",
      "verificationStatus": "VERIFIED",
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-09-TRHPHA302",
@@ -864,7 +905,8 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-RASFLA301",
@@ -884,7 +926,8 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -904,7 +947,8 @@
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -924,7 +968,8 @@
      "image_verify": "MATCH",
      "verificationStatus": "VERIFIED",
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "refDes": "RS03INT1-MJ03C-05-CAMDSB303",
@@ -944,7 +989,8 @@
      "image_verify": "MISMATCH",
      "verificationStatus": "NOT_VERIFIED",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "CE02SHBP-LJ01D-10-PHSENH110",
@@ -963,23 +1009,19 @@
      "imageAssetID": null,
      "image_verify": "MISMATCH",
      "verificationStatus": "VERIFIED",
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     }
    ],
    "summary": {
-    "problem": 11,
-    "review": 13,
-    "unchecked": 12,
-    "ok": 0,
+    "problem": 6,
+    "review": 9,
+    "unchecked": 6,
     "cleared": 15,
-    "open": {
-     "problem": 6,
-     "review": 9,
-     "unchecked": 6,
-     "ok": 0
-    },
+    "ok": 0,
     "attention": 15,
+    "verified": 15,
     "total": 36
    }
   },
@@ -995,7 +1037,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
@@ -1007,7 +1050,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
@@ -1019,7 +1063,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "CE02SHBP-LJ01D-05-ADCPTB104",
@@ -1042,7 +1087,8 @@
      ],
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-CTDBPN106",
@@ -1065,7 +1111,8 @@
      ],
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "CE02SHBP-LJ01D-06-DOSTAD106",
@@ -1088,7 +1135,8 @@
      ],
      "verdict": "MISMATCH",
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "refDes": "CE02SHBP-MJ01C-08-CAMDSB107",
@@ -1100,7 +1148,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
@@ -1112,7 +1161,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "RS01SLBS-LJ01A-09-HYDBBA102",
@@ -1124,7 +1174,8 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "refDes": "RS01SUM2-MJ01B-05-CAMDSB103",
@@ -1136,22 +1187,18 @@
      "differences": [],
      "verdict": "MATCH",
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     }
    ],
    "summary": {
     "problem": 3,
     "review": 0,
     "unchecked": 0,
-    "ok": 7,
     "cleared": 0,
-    "open": {
-     "problem": 3,
-     "review": 0,
-     "unchecked": 0,
-     "ok": 7
-    },
+    "ok": 7,
     "attention": 3,
+    "verified": 7,
     "total": 10
    }
   },
@@ -1168,7 +1215,8 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "fileName": "ATOSU-69825-00002__20140815.csv",
@@ -1181,7 +1229,8 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "fileName": "ATOSU-69825-00002__20160722.csv",
@@ -1194,7 +1243,8 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-69827-10004__20240616.csv",
@@ -1221,7 +1271,8 @@
       }
      ],
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-69827-10004__20241109.csv",
@@ -1239,7 +1290,8 @@
      "vendorMatch": "COMPARED",
      "differences": [],
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "fileName": "ATAPL-69827-10005__20240609.csv",
@@ -1257,7 +1309,8 @@
      "vendorMatch": "COMPARED",
      "differences": [],
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "fileName": "ATAPL-69827-10005__20260306.csv",
@@ -1275,7 +1328,8 @@
      "vendorMatch": "COMPARED",
      "differences": [],
      "severity": "ok",
-     "cleared": false
+     "cleared": false,
+     "finding": "ok"
     },
     {
      "fileName": "ATAPL-66662-00002__20160303.csv",
@@ -1301,8 +1355,9 @@
        "source": "constant"
       }
      ],
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-66662-00008__20150412.csv",
@@ -1328,8 +1383,9 @@
        "source": "constant"
       }
      ],
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-66662-00009__20150419.csv",
@@ -1355,8 +1411,9 @@
        "source": "constant"
       }
      ],
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-67627-00001__20150423.csv",
@@ -1447,7 +1504,8 @@
       }
      ],
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-67627-00005__20170307.csv",
@@ -1464,8 +1522,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATOSU-58694-00007__20200922.csv",
@@ -1533,7 +1592,8 @@
       }
      ],
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-58320-00001__20121219.csv",
@@ -1550,8 +1610,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58320-00001__20181111.csv",
@@ -1568,8 +1629,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58320-00001__20201118.csv",
@@ -1586,8 +1648,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58320-00001__20241208.csv",
@@ -1605,7 +1668,8 @@
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58320-00003__20160302.csv",
@@ -1617,8 +1681,9 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-58320-00004__20160302.csv",
@@ -1630,8 +1695,9 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-58320-00004__20241208.csv",
@@ -1649,7 +1715,8 @@
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58320-00005__20160302.csv",
@@ -1661,8 +1728,9 @@
      "serialNumber": "MATCH_SENSORBULK",
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
-     "severity": "review",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-58320-00005__20260317.csv",
@@ -1680,7 +1748,8 @@
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-70110-00001__20130422.csv",
@@ -1722,8 +1791,9 @@
        "source": "vendor"
       }
      ],
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-70110-00002__20131205.csv",
@@ -1765,8 +1835,9 @@
        "source": "vendor"
       }
      ],
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-70110-00003__20140129.csv",
@@ -1784,8 +1855,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "COMPARED",
      "differences": [],
-     "severity": "ok",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "ok"
     },
     {
      "fileName": "ATOSU-70110-00007__20131205.csv",
@@ -1827,8 +1899,9 @@
        "source": "vendor"
       }
      ],
-     "severity": "problem",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "problem"
     },
     {
      "fileName": "ATOSU-68020-00008__20170111.csv",
@@ -1846,7 +1919,8 @@
      "vendorMatch": "NO_VENDOR_FILE",
      "differences": [],
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "fileName": "ATAPL-66645-00001__20110913.csv",
@@ -1863,8 +1937,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-66645-00002__20140128.csv",
@@ -1881,8 +1956,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
-     "severity": "unchecked",
-     "cleared": true
+     "severity": "cleared",
+     "cleared": true,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-78452-00003__20241008.csv",
@@ -1900,7 +1976,8 @@
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-78452-00004__20241008.csv",
@@ -1918,7 +1995,8 @@
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-78452-00005__20241008.csv",
@@ -1936,7 +2014,8 @@
      "vendorMatch": "PDF_NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-58341-00006__20170110.csv",
@@ -1954,7 +2033,8 @@
      "vendorMatch": "NO_VENDOR_FILE",
      "differences": [],
      "severity": "problem",
-     "cleared": false
+     "cleared": false,
+     "finding": "problem"
     },
     {
      "fileName": "ATOSU-58320-00019__20150519.csv",
@@ -1972,7 +2052,8 @@
      "vendorMatch": "NOTCOMPARED",
      "differences": [],
      "severity": "unchecked",
-     "cleared": false
+     "cleared": false,
+     "finding": "unchecked"
     },
     {
      "fileName": "ATAPL-68020-00001__20170202.csv",
@@ -1985,7 +2066,8 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     },
     {
      "fileName": "ATAPL-68020-00002__20140927.csv",
@@ -1998,22 +2080,18 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "severity": "review",
-     "cleared": false
+     "cleared": false,
+     "finding": "review"
     }
    ],
    "summary": {
-    "problem": 8,
-    "review": 11,
-    "unchecked": 13,
-    "ok": 4,
+    "problem": 5,
+    "review": 5,
+    "unchecked": 7,
     "cleared": 16,
-    "open": {
-     "problem": 5,
-     "review": 5,
-     "unchecked": 7,
-     "ok": 3
-    },
+    "ok": 3,
     "attention": 10,
+    "verified": 19,
     "total": 36
    }
   }

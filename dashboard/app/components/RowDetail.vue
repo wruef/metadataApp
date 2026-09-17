@@ -49,6 +49,11 @@ const links = computed(() => {
 
 const notes = computed(() => String(row.HITLnotes ?? '').trim())
 
+/** A sign-off settles a row as surely as the checks agreeing does. What the
+ *  checks found stays on the row either way — under Raw check output, and in
+ *  the differences table above it. */
+const settled = computed(() => row.severity === 'ok' || row.severity === 'cleared')
+
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
 /** What a sign-off keys on — the line it writes into the 2i-HITL sheet. */
@@ -68,7 +73,7 @@ const comparing = ref(false)
     <div class="det">
       <div>
         <!-- The sentence the run produced, ahead of any of its working. -->
-        <h4>Why this row is {{ row.severity === 'ok' ? 'settled' : 'open' }}</h4>
+        <h4>Why this row is {{ settled ? 'settled' : 'open' }}</h4>
         <p class="max-w-prose text-[13px] leading-relaxed">{{ row.reason }}.</p>
 
         <template v-if="differences.length">

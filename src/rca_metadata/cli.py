@@ -77,7 +77,8 @@ def main(argv=None):
         summary = check['summary']
         print(f"{name:18} {summary['total']:5} rows  "
               f"{summary['problem']:4} problem  {summary['review']:4} review  "
-              f"{summary['unchecked']:4} unchecked  {summary['ok']:5} ok")
+              f"{summary['unchecked']:4} unchecked  {summary['cleared']:5} cleared  "
+              f"{summary['ok']:5} ok")
     print('wrote ' + args.out)
     return 0
 

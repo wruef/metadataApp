@@ -44,11 +44,13 @@ def test_aCheckWithNoMappingIsNotScored():
 ## --- the two-state rule ---
 
 def test_aSignedOffRowKeepsItsFailingCheck():
-    """A sign-off outranks a failing check, but the check stays visible on the
-    row -- cleared, calibration noted."""
+    """A sign-off puts the row in its own category rather than among the
+    problems, and the check it failed stays visible on it -- cleared, and
+    noted. Some signed-off calibrations still hold real transcription errors."""
     rows = scoreRows('calibrations', [{'vendorMatch': 'MISMATCH', 'HITLstatus': 'Clear'}])
     assert rows[0]['cleared'] is True
-    assert rows[0]['severity'] == 'problem'
+    assert rows[0]['severity'] == 'cleared'
+    assert rows[0]['finding'] == 'problem'
 
 
 def test_notClearIsNotCleared():
@@ -65,19 +67,44 @@ def test_summaryCountsEverySeverityAndTheClearedRows():
         {'verdict': 'MATCH'}, {'verdict': 'MISMATCH'},
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'NO_BULK_SERIAL'}])
     assert summarise(rows) == {
-        'problem': 2, 'review': 0, 'unchecked': 1, 'ok': 1, 'cleared': 1,
-        'open': {'problem': 1, 'review': 0, 'unchecked': 1, 'ok': 1},
-        'attention': 1, 'total': 4}
+        'problem': 1, 'review': 0, 'unchecked': 1, 'cleared': 1, 'ok': 1,
+        'attention': 1, 'verified': 2, 'total': 4}
 
 
-def test_aClearedRowIsNotWaitingOnAnyone():
-    """Both rows disagree with the sensor bulk record and both stay 'problem';
-    only the one nobody has signed off is still work."""
-    rows = scoreRows('sensorBulk', [
-        {'verdict': 'MISMATCH'}, {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}])
-    counts = summarise(rows)
-    assert counts['problem'] == 2
+def test_aClearedRowIsItsOwnCategoryRatherThanAProblem():
+    """Both rows disagree with the sensor bulk record. The signed-off one is not
+    a problem and not work; the other is both."""
+    signed, open_ = scoreRows('sensorBulk', [
+        {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'MISMATCH'}])
+    assert signed['severity'] == 'cleared'
+    assert open_['severity'] == 'problem'
+    counts = summarise([signed, open_])
+    assert counts['problem'] == 1
     assert counts['attention'] == 1
+    assert counts['cleared'] == 1
+
+
+def test_aClearedRowKeepsWhatTheCheckFound():
+    """Three signed-off calibrations turned out to hold real transcription
+    errors, so the finding may never be discarded by the sign-off."""
+    row = scoreRows('sensorBulk', [{'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}])[0]
+    assert row['severity'] == 'cleared'
+    assert row['finding'] == 'problem'
+
+
+def test_aClearedRowThatAgreesKeepsAnAgreeingFinding():
+    """The dashboard colours a sign-off by its finding -- green over an
+    agreement, amber over a disagreement -- so the two must stay distinct."""
+    row = scoreRows('sensorBulk', [{'verdict': 'MATCH', 'HITLstatus': 'Clear'}])[0]
+    assert row['severity'] == 'cleared'
+    assert row['finding'] == 'ok'
+
+
+def test_signedOffRowsCountAsVerified():
+    rows = scoreRows('sensorBulk', [
+        {'verdict': 'MATCH'}, {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'},
+        {'verdict': 'MISMATCH'}])
+    assert summarise(rows)['verified'] == 2
 
 
 def test_aFlaggedRowIsStillWaitingOnSomeone():
@@ -87,14 +114,14 @@ def test_aFlaggedRowIsStillWaitingOnSomeone():
     assert summarise(rows)['attention'] == 1
 
 
-def test_theOpenBreakdownLeavesOutWhatWasSignedOff():
-    """The rail colours itself red on an open problem, so a problem everyone
-    has already dealt with must not count towards one."""
+def test_theProblemCountLeavesOutWhatWasSignedOff():
+    """The rail colours itself red on an open problem, so a problem somebody
+    has already dealt with must not light it."""
     rows = scoreRows('sensorBulk', [
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'MATCH'}])
     counts = summarise(rows)
-    assert counts['problem'] == 1
-    assert counts['open'] == {'problem': 0, 'review': 0, 'unchecked': 0, 'ok': 1}
+    assert counts['problem'] == 0
+    assert counts['attention'] == 0
 
 
 def test_aSettledRowNobodySignedOffIsNotWork():
@@ -310,6 +337,11 @@ def test_noReasonIsGivenToBothASettledRowAndAnOpenOne():
             ## A sign-off describes what a person did, not what the check
             ## found, so it sits beside any severity.
             if row['reason'] in REVIEWER_REASONS:
+                continue
+            ## A cleared badge claims neither. It says a reviewer has been, and
+            ## the sentence beside it names whatever they were looking at --
+            ## which is the finding, open or settled.
+            if row['cleared']:
                 continue
             (settled if row['severity'] == 'ok' else open_).add(row['reason'])
         assert not settled & open_, f'{check}: {settled & open_}'

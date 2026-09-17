@@ -1,43 +1,73 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+import { rowTone } from '../app/display'
 import { ALL, ATTENTION, matchesWhere } from '../app/query'
-import type { Row } from '../app/store'
+import type { Row, Severity } from '../app/store'
 
-/** Only the two fields the severity filter reads. */
-const row = (severity: Row['severity'], cleared: boolean): Row => ({ severity, cleared })
+/** Only the fields the severity filter and the tone rule read. */
+const row = (severity: Severity, finding?: Severity): Row => ({
+  severity,
+  finding,
+  cleared: severity === 'cleared',
+})
 
 const attention = (candidate: Row) => matchesWhere(candidate, [], { severity: ATTENTION })
 
 describe('what still needs a person', () => {
-  it('leaves out a failing row a reviewer has cleared', () => {
-    expect(attention(row('problem', true))).toBe(false)
-  })
-
-  it('leaves out a row that needs a person once a person has been', () => {
-    expect(attention(row('review', true))).toBe(false)
+  it('leaves out a signed-off row, whatever its checks found', () => {
+    expect(attention(row('cleared', 'problem'))).toBe(false)
+    expect(attention(row('cleared', 'review'))).toBe(false)
+    expect(attention(row('cleared', 'ok'))).toBe(false)
   })
 
   it('keeps a failing row nobody has signed off', () => {
-    expect(attention(row('problem', false))).toBe(true)
+    expect(attention(row('problem'))).toBe(true)
   })
 
   it('keeps a row waiting on a person', () => {
-    expect(attention(row('review', false))).toBe(true)
+    expect(attention(row('review'))).toBe(true)
   })
 
   it('leaves out rows that agree, or that nothing checked', () => {
-    expect(attention(row('ok', false))).toBe(false)
-    expect(attention(row('unchecked', false))).toBe(false)
+    expect(attention(row('ok'))).toBe(false)
+    expect(attention(row('unchecked'))).toBe(false)
   })
 
-  /** The sign-off takes the row out of the queue; it does not erase what the
-   *  check found. Every other view of the row still shows it. */
-  it('still shows a cleared row under its own severity', () => {
-    const cleared = row('problem', true)
-    expect(matchesWhere(cleared, [], { severity: 'problem' })).toBe(true)
+  /** A report published before sign-offs became a category of their own still
+   *  carries them as problems. The filter has to drop those too, or an old run
+   *  reads as having work that somebody already did. */
+  it('leaves out a cleared row in a report that predates the category', () => {
+    expect(matchesWhere({ severity: 'problem', cleared: true }, [], { severity: ATTENTION })).toBe(
+      false,
+    )
+  })
+
+  it('still shows a signed-off row under its own category', () => {
+    const cleared = row('cleared', 'problem')
+    expect(matchesWhere(cleared, [], { severity: 'cleared' })).toBe(true)
     expect(matchesWhere(cleared, [], { severity: ALL })).toBe(true)
     expect(matchesWhere(cleared, [], { cleared: 'cleared' })).toBe(true)
+  })
+})
+
+describe('how a signed-off row reads', () => {
+  /** A reviewer clearing a row that also agrees has confirmed a pass. One
+   *  clearing a row that disagrees has judged the disagreement acceptable, and
+   *  the disagreement is still there — three of them turned out to be real
+   *  transcription errors. */
+  it('is green over an agreement and amber over a disagreement', () => {
+    expect(rowTone('cleared', 'ok')).toBe('ok')
+    expect(rowTone('cleared', 'problem')).toBe('warn')
+    expect(rowTone('cleared', 'review')).toBe('warn')
+    expect(rowTone('cleared', 'unchecked')).toBe('warn')
+  })
+
+  it('leaves every other category coloured by itself', () => {
+    expect(rowTone('problem')).toBe('crit')
+    expect(rowTone('review')).toBe('warn')
+    expect(rowTone('ok')).toBe('ok')
+    expect(rowTone('unchecked')).toBe('na')
   })
 })
 
@@ -55,12 +85,20 @@ describe('against the rows of a real run', () => {
     }
   })
 
-  it('is smaller than the severities alone, because sign-offs have happened', () => {
-    const calibrations = REPORT.checks.calibrations!
-    const open = calibrations.rows.filter(
-      (candidate) => candidate.severity === 'problem' || candidate.severity === 'review',
-    )
-    const waiting = calibrations.rows.filter((candidate) => attention(candidate))
-    expect(waiting.length).toBeLessThan(open.length)
+  it('puts every signed-off row in the cleared category and nowhere else', () => {
+    for (const check of Object.values(REPORT.checks)) {
+      for (const candidate of check.rows) {
+        expect(candidate.cleared).toBe(candidate.severity === 'cleared')
+      }
+    }
+  })
+
+  it('counts a signed-off row as verified', () => {
+    for (const check of Object.values(REPORT.checks)) {
+      const verified = check.rows.filter(
+        (candidate) => candidate.severity === 'ok' || candidate.severity === 'cleared',
+      )
+      expect(verified.length).toBe(check.summary.verified)
+    }
   })
 })

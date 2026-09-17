@@ -3,14 +3,18 @@ import { defineStore } from 'pinia'
 import { siteOf, yearOf } from '~/display'
 import { withBase } from '~/paths'
 
-/** Worst first — the order a queue is worked in. */
-export const SEVERITIES = ['problem', 'review', 'unchecked', 'ok'] as const
+/** Worst first — the order a queue is worked in. `cleared` is a category of its
+ *  own rather than a flag beside a severity: a row a reviewer signed off is not
+ *  a problem and not work waiting on anybody. What the checks found is kept on
+ *  the row as `finding`, and shown beside the badge. */
+export const SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok'] as const
 export type Severity = (typeof SEVERITIES)[number]
 
 export const SEVERITY_LABEL: Record<Severity, string> = {
   problem: 'Problem',
   review: 'Needs a person',
   unchecked: 'Not checked',
+  cleared: 'Cleared in review',
   ok: 'Agreed',
 }
 
@@ -22,24 +26,30 @@ export const SEVERITY_COLOR = {
   problem: 'error',
   review: 'warning',
   unchecked: 'neutral',
+  cleared: 'warning',
   ok: 'success',
 } as const satisfies Record<Severity, string>
 
 export interface Row {
+  /** The category the row is in — `cleared` once a reviewer has signed it off,
+   *  whatever its checks found. */
   severity: Severity
+  /** What the checks themselves found, kept whatever the sign-off says. Absent
+   *  on runs published before it was carried. */
+  finding?: Severity
   cleared: boolean
   [key: string]: unknown
 }
 
 export interface Check {
   rows: Row[]
-  /** `open` is the severity breakdown of rows nobody has signed off, and
-   *  `attention` the problem and review rows among them — what is actually
-   *  waiting on a person. Optional because runs published before they were
-   *  carried have neither, and the rail falls back to the severities. */
+  /** `attention` is what is waiting on a person: the problem and review rows,
+   *  which a signed-off row is never one of. `verified` is agreed plus cleared.
+   *  Both optional because runs published before they were carried have
+   *  neither, and the dashboard falls back to the severities. */
   summary: Record<Severity | 'cleared' | 'total', number> & {
     attention?: number
-    open?: Record<Severity, number>
+    verified?: number
   }
   missingFromGithub?: string[]
 }
