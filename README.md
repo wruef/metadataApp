@@ -193,10 +193,20 @@ a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
 
 `.github/workflows/pages.yaml` builds the site and publishes it to **GitHub
-Pages**, with typecheck and tests blocking. It runs on a push that changes
-either half — the dashboard itself, or a report a run has committed — so a
-published run redeploys the site that serves it. A pull request builds but does
-not deploy.
+Pages**, with typecheck and tests blocking. It runs on a push that changes the
+dashboard, and on the verification workflow **finishing**, so a published run
+redeploys the site that serves it. A pull request builds but does not deploy.
+
+That second trigger is not decoration. A published run commits the report using
+the default `GITHUB_TOKEN`, and GitHub deliberately refuses to start a workflow
+from a push made with that token — it is how a workflow is stopped from
+triggering itself forever. So `on: push` never fires for a published run: the
+report reaches the repository, the site goes on serving the deploy before it,
+and the dashboard answers `404` for a report that is plainly there in git. A
+`workflow_run` trigger fires on the run completing rather than on its push, and
+is not suppressed. It also has to check out the **branch**, because the event
+carries the commit the verification run *started* from — the one before it
+published.
 
 Everything is inside GitHub. There is no bucket, no AWS credentials and no
 secret of any kind: the site and the runs it reads are one artifact, and the

@@ -4,8 +4,9 @@ name: Dashboard
 # report committed to this repository. Nothing is hosted outside GitHub: the
 # site and the runs it reads are the same artifact.
 #
-# Runs on a push that changes either half — the dashboard itself, or a report
-# a verification run committed.
+# Runs on a push that changes the dashboard, and when a verification run
+# finishes — a published run cannot announce itself with a push, because the
+# token it commits with is barred from starting workflows.
 
 on:
   push:
@@ -13,8 +14,18 @@ on:
     paths:
       - "dashboard/**"
       - "reports/**"
+      - ".github/workflows/pages.yaml"
   pull_request:
     paths: ["dashboard/**"]
+  # A published run commits the report with the default GITHUB_TOKEN, and GitHub
+  # deliberately does not start a workflow from a push made with that token --
+  # it is how it stops a workflow triggering itself forever. So the push above
+  # never fires for a published run, and the report reached the repository while
+  # the site went on serving the deploy before it. This trigger fires on the
+  # verify workflow *finishing*, which is not a push and is not suppressed.
+  workflow_run:
+    workflows: ["Verify metadata"]
+    types: [completed]
   workflow_dispatch:
 
 env:
@@ -31,8 +42,15 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    # A verify run that failed published nothing, so there is nothing to deploy.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          # A workflow_run event carries the sha the verify run *started* from,
+          # which is the commit before it published. The report is on the branch
+          # head, so the branch is what has to be built.
+          ref: ${{ github.event_name == 'workflow_run' && github.event.repository.default_branch || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
