@@ -432,8 +432,16 @@ def _assignCalFile(deployment, calHistory):
     return fileName, 'VALID_FILE'
 
 
-def _rawVerdict(deployment, serialByAsset):
-    """Does the serial number in the raw file match the deployed asset?"""
+def _rawVerdict(deployment, serialByAsset, aliases=None):
+    """Does the serial number in the raw file match the deployed asset?
+
+    ``aliases`` maps an asset ID to the serial its raw data reports where that
+    is a different number from the one the bulk record carries -- the five-beam
+    ADCPs, whose electronics answer to a serial of their own. A person confirms
+    each alias once, in params/serialAliases.csv, and the check is deterministic
+    from then on.
+    """
+    aliases = aliases or {}
     if deployment['firstRawFile'] == 'undef':
         return 'NAN'
     if deployment['firstRawFile'] == 'none':
@@ -444,7 +452,7 @@ def _rawVerdict(deployment, serialByAsset):
 
     assetID = deployment['AssetID']
     bulkSerial = str(serialByAsset.get(assetID, ''))
-    if rawSN == bulkSerial:
+    if rawSN == bulkSerial or rawSN == aliases.get(assetID):
         return 'MATCH'
     if rawSN in bulkSerial:
         ## The extractor keeps only a tail of the serial, because the two
@@ -465,7 +473,7 @@ def _rawVerdict(deployment, serialByAsset):
     ## a swapped pair is the common cause and the answer is more useful than the finding.
     found = 'unknown'
     for assetID, serial in serialByAsset.items():
-        if deployment['AssetID'][0:11] in assetID and rawSN in str(serial):
+        if deployment['AssetID'][0:11] in assetID and (rawSN in str(serial) or rawSN == aliases.get(assetID)):
             found = assetID
     return f'MISMATCH: raw: {rawSN}: {found}'
 
@@ -518,7 +526,7 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
                 row['rawSN'], row['firstRawFile'] = '-99999', 'none'
             else:
                 row['rawSN'], row['firstRawFile'] = 'undef', 'undef'
-            row['rawFile_verify'] = _rawVerdict(row, serialByAsset)
+            row['rawFile_verify'] = _rawVerdict(row, serialByAsset, params.get('serialAliases'))
 
             imageRow = _lookupRow(images, refDes, deployment['deployNum'], year)
             row['imageAssetID'] = imageRow.imageAssetID if imageRow is not None else 'undef'

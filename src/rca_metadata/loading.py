@@ -41,7 +41,17 @@ def loadParams(paramsDir='params'):
         'constants': constants,
         'rawSN': pd.read_csv(os.path.join(paramsDir, 'rawFileSN.csv')),
         'imageSN': pd.read_csv(os.path.join(paramsDir, 'imageSN.csv')),
+        ## asset ID -> the serial its raw data reports, where that differs from
+        ## the bulk record. Confirmed by a person, one row per asset.
+        'serialAliases': serialAliases(os.path.join(paramsDir, 'serialAliases.csv')),
     }
+
+
+def serialAliases(path):
+    if not os.path.exists(path):
+        return {}
+    aliases = pd.read_csv(path, comment='#', dtype=str)
+    return dict(zip(aliases.assetID.str.strip(), aliases.rawSerial.str.strip()))
 
 
 ## The sheet each signed-off check records in, and the column that identifies a

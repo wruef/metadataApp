@@ -1,0 +1,15 @@
+# The serial an asset's raw data reports, where it is a different number from
+# the one the sensor bulk record carries. A five-beam ADCP is one asset with
+# two Teledyne serials: the record holds the system's, the PD0 ensembles hold
+# the electronics'. The two are paired here once, by a person, from deployments
+# where the same asset read the same number season after season; after that the
+# deployment check treats the raw serial as confirming the asset.
+#
+# evidence names the deployments the pairing was read from. An asset seen with
+# a number only once is not here: RS03AXPS-PC03A VADCPA301 read 23248 in 2015
+# against a record of 23341, and 24494 in 2023 against 61247, and RS01SBPS-PC01A
+# VADCPA101 read 23248 in 2017 against a record of 23340. Those are findings for
+# a person, not aliases.
+assetID,recordSerial,rawSerial,evidence
+ATAPL-58345-00004,23340,21829,"RS01SBPS-PC01A-06-VADCPA101 deployments 2 6 8 10 (2015 2019 2021 2023)"
+ATAPL-58345-00006,23342,23244,"RS03AXPS-PC03A-06-VADCPA301 deployments 3 5 (2016 2019)"

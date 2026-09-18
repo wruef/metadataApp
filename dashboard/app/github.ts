@@ -125,13 +125,27 @@ export interface Comparison {
 export function syncRefusal(comparison: Comparison, upstream: string) {
   if (comparison.status === 'identical') return null
   const commits = (count: number) => `${count} commit${count === 1 ? '' : 's'}`
-  const how = {
-    behind: `${commits(comparison.behind_by)} behind`,
-    ahead: `${commits(comparison.ahead_by)} ahead of`,
-    diverged: `${commits(comparison.behind_by)} behind and ${commits(comparison.ahead_by)} ahead of`,
+
+  // What to do differs by which way the fork has moved, and getting it wrong
+  // costs work: GitHub's Sync fork on a fork that is *ahead* offers to discard
+  // the commits, which for a fork that is ahead because a correction has not
+  // been merged upstream yet would throw that correction away.
+  const behind = `Press Sync fork on GitHub, then run the checks again — a correction `
+    + 'has to start from what the run read.'
+  const ahead = `Those are changes ${upstream} does not have yet. Raise them upstream and wait `
+    + 'for them to merge. Do not press Sync fork: on a fork that is ahead it offers to '
+    + 'discard them.'
+
+  const { how, what } = {
+    behind: { how: `${commits(comparison.behind_by)} behind`, what: behind },
+    ahead: { how: `${commits(comparison.ahead_by)} ahead of`, what: ahead },
+    diverged: {
+      how: `${commits(comparison.behind_by)} behind and ${commits(comparison.ahead_by)} ahead of`,
+      what: `${ahead} Once they have, press Sync fork and run the checks again.`,
+    },
   }[comparison.status]
-  return `Your fork is ${how} ${upstream}. Sync it on GitHub, run the checks again, `
-    + 'then correct the file — a correction has to start from what the run read.'
+
+  return `Your fork is ${how} ${upstream}. ${what}`
 }
 
 /**

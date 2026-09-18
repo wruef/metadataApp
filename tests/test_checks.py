@@ -363,3 +363,16 @@ def test_aRowWithNoSignOffAtAllIsNotApplicable():
     sheet = pd.DataFrame({'Status': [], 'HITLnotes': []},
                          index=pd.Index([], name='githubFile'))
     assert signOff(sheet, 'a.csv') == ('NA', '')
+
+
+def test_anAliasedSerialConfirmsTheAsset():
+    """A five-beam ADCP reports its electronics' serial, not the system serial
+    the bulk record holds. Once a person has paired the two, the raw number
+    confirms the asset; and it names the asset when it turns up elsewhere."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATAPL-58345-00004': '23340', 'ATAPL-58345-00003': '19075'}
+    aliases = {'ATAPL-58345-00004': '21829'}
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk, aliases) == 'MATCH'
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk) .startswith('MISMATCH')
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00003'), bulk, aliases) == 'MISMATCH: raw: 21829: ATAPL-58345-00004'

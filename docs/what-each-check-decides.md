@@ -156,6 +156,14 @@ spell a serial differently — an instrument reporting `05400030` against a reco
 carrying `5471540-0030`. That is sound while no other instrument of the same
 model could answer to the number, which is what `AMBIGUOUS_SN` catches.
 
+A five-beam ADCP is the other way round: its raw data reports a serial that
+shares nothing with the record's, because the record holds the system serial
+and the PD0 ensembles hold the electronics'. `params/serialAliases.csv` pairs
+the two for each asset, once a person has seen the same asset read the same
+number season after season, and a raw serial equal to an asset's alias is a
+`MATCH`. A raw serial equal to *another* asset's alias names that asset in the
+`MISMATCH`, the same as a bulk serial would.
+
 ### The pre-deploy photograph — `image_verify`
 
 | verdict | status | meaning |

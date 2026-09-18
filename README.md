@@ -176,7 +176,15 @@ GitHub editor covers those.
 It refuses rather than warns. The reviewer's `asset-management` fork has to be
 exactly `oceanobservatories/asset-management` — behind, and the request reverts
 whatever landed upstream meanwhile; ahead, and the onward request carries
-unrelated commits along with the correction. It refuses again if the value no
+unrelated commits along with the correction. The refusal says which way it has
+moved, because the remedies differ: a fork that is behind is fixed by Sync fork,
+and a fork that is ahead is not — Sync fork offers to *discard* the commits it
+is ahead by, which is the correction itself.
+
+The correction therefore travels on the branch the dashboard wrote it on. The
+reviewer retargets that pull request at upstream rather than merging it into
+their own `master`, which would add a merge commit and leave the fork ahead,
+blocking the next correction until upstream catches up. It refuses again if the value no
 longer reads what the run read, which means upstream moved and the report is out
 of date. Between them, a correction can only start from the file the finding
 came from.
@@ -259,9 +267,11 @@ only written if the run was told to publish. Publishing commits it, which
 rebuilds the site a couple of minutes later; the run then appears in the picker
 in the run stamp, which is where you open it.
 
-Serial extraction is deliberately not here. It cannot complete without a person
-in the middle, so a button implying otherwise would be a lie; run it by hand
-until that changes.
+Serial extraction is not started from here. It is its own workflow, **Extract
+serial numbers**, and its result is a pull request rather than a report: the
+serial numbers it reads out of the raw archive go into `params/rawFileSN.csv`,
+a person merges them, and the next verification run reads them. See
+[Serial numbers from the raw archive](#serial-numbers-from-the-raw-archive).
 
 ## Publishing the generated files
 
@@ -298,6 +308,13 @@ not production: it promotes that run to `latest.json`. A production run becomes
 that anyway, so the input does nothing there. A 2.1 MB report is roughly 75 KB as a git object, so
 a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
+
+`.github/workflows/extract-serials.yaml` reads the raw archive on
+`workflow_dispatch` and proposes `params/rawFileSN.csv` as a pull request; it is
+kept apart from the verification run so that a run stays a function of the
+repositories and the committed parameter files, which is what lets two runs be
+compared. It needs **Settings → Actions → General → Allow GitHub Actions to
+create and approve pull requests** switched on, once.
 
 `.github/workflows/pages.yaml` builds the site and publishes it to **GitHub
 Pages**, with typecheck and tests blocking. It runs on a push that changes the
@@ -374,6 +391,61 @@ A blank `deployNum` means the row could not be tied to a single deployment: the
 reference designator has more than one deployment that year and nothing in the
 row separates them. Those rows need a person, and are the ones to resolve first.
 
+`rawFileSN.csv` also records the attempt: `attemptedAt` and `filesTried`, so a
+row holding `-99999` says which files were read to conclude there was nothing,
+and a deployment never attempted is told apart from one attempted and empty.
+
+`serialAliases.csv` pairs an asset with the serial its raw data reports where
+that is a different number from the one the sensor bulk record carries. The
+five-beam ADCPs are one asset with two Teledyne serials -- the record holds the
+system's, the data holds the electronics' -- and the same asset reads the same
+number season after season. A person writes the pair down once, with the
+deployments it was read from, and the deployment check treats the raw serial as
+confirming the asset from then on. An asset seen with a number only once is a
+finding, not an alias.
+
+## Serial numbers from the raw archive
+
+    extract-serials --clones repos
+
+reads the deployment sheets, finds every deployment whose instrument class writes
+a serial number into its raw data and has none on record yet, and reads the
+archive for it. The result is written back to `params/rawFileSN.csv`; `--all`
+attempts every deployment, `--refdes` limits the run to named instruments, and
+`--out` writes elsewhere. `.github/workflows/extract-serials.yaml` runs the same
+command and proposes the file as a pull request on a fixed branch, so a second
+run before the first merged updates the proposal rather than opening another.
+
+The archive is public Apache directory indexes, and listing is what a run costs:
+an instrument folder holds a month folder for every month since 2014. Only the
+years a deployment spans are listed, which is a dozen index pages rather than
+130, and only files dated within the deployment are read -- an earlier file
+holds the previous deployment's instrument, and reading it is how the wrong
+serial gets confirmed. A power-on banner is printed once, so the first few
+files are read for one. Everything else is read from the **middle** of the
+deployment: the sheet's times are approximate, a turnaround day's file opens
+with the recovered instrument's records, and a deep profiler went on reporting
+the recovered profiler's instruments 27 hours after the recorded start of the
+next deployment. Twelve deployments read as a different asset from the sheet
+before that rule, five of them in 2026.
+
+Text instruments print the serial in a power-on banner (CTD, SPKIR, NUTNR,
+FLORT, PREST, TMPSF) or on every data line (PARAD, and SPKIR and NUTNR again).
+The two binary instruments carry it in every record in a fixed place: the ADCP
+in bytes 55-58 of the PD0 fixed leader, read from the first ensemble whose
+checksum is intact, and the OPTAA in the three bytes after the meter type of an
+ac-s packet. Both are a few lines of `struct`; the notebooks shelled out to the
+python2 instrument drivers for them, and where that environment was missing
+every ADCP and OPTAA silently came back empty. The archive wraps every record
+-- in port agent packets since 2018, in `<OOI-TS>` text tags before -- and the
+wrapper is stripped before parsing, because an ensemble with a tag inside it
+fails its checksum. The VADCPB fitted in 2024 is a Nortek Signature rather than
+a Teledyne unit and writes text, with its serial on every `$PNORI` line. A five-beam ADCP is archived as
+two folders, `MAIN` and `-5TH`; only the main unit is read, because the fifth
+beam's serial belongs to no asset. Deep profiler serials are in the
+`sernums_hi-res_` engineering files, which begin in 2020; earlier profiler
+deployments cannot be confirmed this way.
+
 ## Layout
 
     src/rca_metadata/
@@ -390,9 +462,9 @@ row separates them. Those rows need a person, and are the ones to resolve first.
       publish.py        proposing generated files as a pull request
       rawarchive.py     listing the OOI raw data archive
       serials.py        serial numbers out of raw files
-      cli.py            the four entry points
+      cli.py            the five entry points
     dashboard/          the Nuxt SPA
-    params/             instrument list, coefficient map and constants
+    params/             instrument list, coefficient map, constants, raw serials
     2i_HITL/            reviewer sign-off sheets
     inputs/             the RCA position spreadsheet drops
     schema/             the report's fields, read by both test suites

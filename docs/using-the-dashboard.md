@@ -228,9 +228,19 @@ read, which means upstream moved and the report on screen is out of date.
 
 **One pull request per record, on your fork only.** One calibration file, or one
 deployment. Neither is batched with your sign-offs, and neither is batched with
-the other. Raise the onward pull request to
-`oceanobservatories/asset-management` by hand, and nothing anyone computes
-changes until that one is reviewed and merged.
+the other. Nothing anyone computes changes until it reaches
+`oceanobservatories/asset-management`, which you do by hand.
+
+**Do not merge it into your fork's `master`.** Open the pull request the
+dashboard made, press **Edit** next to its title, and change the base to
+`oceanobservatories/asset-management` `master`. That sends the one commit the
+dashboard wrote, straight from the branch it wrote it on.
+
+Merging into your own `master` instead costs you twice. GitHub adds a merge
+commit, so what should be one commit becomes two. And your fork is then ahead of
+upstream, which is exactly what the sync rule refuses, so you cannot correct
+anything else until upstream merges your work. Leaving `master` alone keeps it
+identical to upstream and keeps you able to correct the next file.
 
 ### Correcting a calibration
 
@@ -351,8 +361,11 @@ third box, `replace_production`. Leave it off. It applies only to a run that is
 useful when a branch result should stand in before the branch is merged, and
 wrong every other time. A production run becomes that report anyway.
 
-Serial extraction is deliberately not here. It cannot finish without a person in
-the middle, so a button implying otherwise would be a lie.
+Serial extraction is not started from here. It has its own workflow in the
+Actions tab, **Extract serial numbers**, and what it produces is a pull request
+against `params/rawFileSN.csv` rather than a report. Merge it, and the next run
+reads the serial numbers it found; the count under *deployments an extraction
+would settle* on the overview is what it works from.
 
 ## Checking a branch before it merges
 
@@ -397,10 +410,17 @@ either.
 
 ## When something goes wrong
 
-**It says my fork is not in sync.** It is refusing on purpose. Open your
-`asset-management` fork on GitHub, press **Sync fork**, and if it says your
-branch is ahead as well, delete the extra commits or re-fork. Then run the
-checks again and correct the file from that run.
+**It says my fork is not in sync.** It is refusing on purpose, and what to do
+depends on which way it has moved. The message says which.
+
+*Behind* means upstream has moved on. Press **Sync fork** on GitHub, run the
+checks again, and correct the file from that run.
+
+*Ahead* means your fork carries work upstream does not, usually a correction you
+merged into your own `master` rather than sending upstream. **Do not press Sync
+fork:** on a fork that is ahead it offers to discard those commits, which would
+throw the correction away. Get them merged upstream instead, and the fork
+becomes identical again on its own.
 
 **GitHub refused the sign-off.** Your token is missing a permission. The reads
 before the write all succeed, so a failure at the first write means **Contents**

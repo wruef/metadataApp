@@ -68,8 +68,23 @@ describe('whether a fork may be corrected', () => {
     expect(refusal).toContain('2 commits ahead of')
   })
 
-  it('says what to do about it', () => {
+  it('tells a fork that is behind to sync', () => {
     expect(syncRefusal({ status: 'behind', ahead_by: 0, behind_by: 1 }, UPSTREAM))
-      .toContain('Sync it on GitHub, run the checks again')
+      .toContain('Press Sync fork')
+  })
+
+  /** Sync fork on a fork that is ahead offers to discard the commits. Telling
+   *  somebody to press it would throw away a correction that upstream has not
+   *  merged yet, which is the usual reason a fork is ahead at all. */
+  it('never tells a fork that is ahead to sync', () => {
+    const refusal = syncRefusal({ status: 'ahead', ahead_by: 1, behind_by: 0 }, UPSTREAM)!
+    expect(refusal).toContain('Do not press Sync fork')
+    expect(refusal).toContain('Raise them upstream')
+  })
+
+  it('tells a diverged fork to get its own work merged before syncing', () => {
+    const refusal = syncRefusal({ status: 'diverged', ahead_by: 1, behind_by: 1 }, UPSTREAM)!
+    expect(refusal).toContain('Raise them upstream')
+    expect(refusal).toContain('Once they have, press Sync fork')
   })
 })

@@ -1,0 +1,109 @@
+name: Extract serial numbers
+
+# Reads deployment serial numbers out of the OOI raw data archive and proposes
+# the updated params/rawFileSN.csv as a pull request. Separate from the
+# verification run on purpose: a run is a function of the repositories and the
+# committed parameter files, so two runs can be compared; this is a network
+# crawl whose result a person reviews before it becomes one of those files.
+#
+# There is no schedule. Run it after the cruise, once the deployment sheets
+# for the season are in asset-management, and again whenever a deployment
+# still shows RAW_SN_POSSIBLE in the dashboard.
+#
+# Once, in Settings -> Actions -> General: "Allow GitHub Actions to create and
+# approve pull requests" must be on, or the last step is refused.
+
+on:
+  workflow_dispatch:
+    inputs:
+      asset_management_repo:
+        description: "asset-management repository holding the deployment sheets"
+        default: oceanobservatories/asset-management
+      asset_management_ref:
+        description: "asset-management ref"
+        default: master
+      refdes:
+        description: "optional: reference designators to attempt, space separated. Blank attempts every deployment without a serial."
+        default: ""
+      everything:
+        description: "attempt every deployment, including those with a serial already, to re-read the whole archive"
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: 3.11
+
+concurrency:
+  group: extract-serials
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    name: Read the raw archive
+    runs-on: ubuntu-latest
+    # A full pass over the archive is an hour or two of index pages; the
+    # incremental default is minutes.
+    timeout-minutes: 300
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v5
+
+      - name: Clone asset-management
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.asset_management_repo }}
+          ref: ${{ inputs.asset_management_ref }}
+          path: repos/asset-management
+          fetch-depth: 1
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install package
+        run: pip install . -c constraints.txt
+
+      - name: Extract
+        env:
+          REFDES: ${{ inputs.refdes }}
+          EVERYTHING: ${{ inputs.everything }}
+        run: |
+          args=""
+          for rd in $REFDES; do args="$args --refdes $rd"; done
+          if [ "$EVERYTHING" = true ]; then args="$args --all"; fi
+          extract-serials \
+            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}' \
+            --clones repos $args | tee extract.log
+
+      - name: Summarise
+        id: summary
+        run: |
+          {
+            echo 'body<<EOF'
+            echo 'Serial numbers read from the raw data archive by the Extract serial numbers workflow.'
+            echo
+            echo '```'
+            grep -v '^  deploy\|: listing' extract.log
+            echo '```'
+            echo
+            echo 'A row with `-99999` was attempted and found nothing; `filesTried` says which files were read. Rows not in this diff were not attempted.'
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      # The reviewer's decision is the merge. The branch is fixed, so running
+      # again before the last proposal merged updates that proposal rather than
+      # opening a second one.
+      - name: Propose the parameter file
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: extract-serials
+          title: "Serial numbers from the raw archive"
+          commit-message: "Serial numbers from the raw archive"
+          body: ${{ steps.summary.outputs.body }}
+          add-paths: params/rawFileSN.csv
+          delete-branch: true

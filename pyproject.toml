@@ -36,6 +36,7 @@ verify-metadata = "rca_metadata.cli:main"
 compare-metadata = "rca_metadata.cli:compareMain"
 publish-metadata = "rca_metadata.cli:publishMain"
 index-metadata = "rca_metadata.cli:indexMain"
+extract-serials = "rca_metadata.cli:extractMain"
 
 
 [tool.setuptools.packages.find]

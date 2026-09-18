@@ -288,3 +288,41 @@ def indexMain(argv=None):
         json.dump(updated, handle, indent=1)
     print(f'{len(updated)} runs in {args.out}')
     return 0
+
+
+def extractMain(argv=None):
+    """Read deployment serial numbers out of the raw data archive.
+
+    Writes the parameter file the deployment check reads. Nothing here decides a
+    verdict: the file is proposed as a pull request and read by the next run.
+    """
+    from .serials import MISSING, extractSerials, mergeSerials, openDeployments
+
+    parser = argparse.ArgumentParser(description='Read deployment serial numbers out of the raw archive.')
+    parser.add_argument('--asset-management', default=AM_REPO, metavar='OWNER/REPO[@REF]')
+    parser.add_argument('--clones', metavar='DIR')
+    parser.add_argument('--params', default='params')
+    parser.add_argument('--refdes', action='append', metavar='REFDES',
+                        help='only these reference designators (repeatable)')
+    parser.add_argument('--all', action='store_true',
+                        help='attempt every deployment, not only those without a serial on record')
+    parser.add_argument('--out', help='where to write the updated file (default: in place)')
+    args = parser.parse_args(argv)
+
+    path = os.path.join(args.params, 'rawFileSN.csv')
+    table = pd.read_csv(path)
+    deployments = loading.loadDeployments(parseSource(args.asset_management, args.clones))
+    byRefDes = loading.deploymentsByRefDes(deployments)
+    wanted = openDeployments(byRefDes, table, refDes=args.refdes, everything=args.all)
+    print(f'{len(wanted)} deployment(s) across {len({rd for rd, _ in wanted})} reference designator(s) to attempt')
+
+    rows = extractSerials(byRefDes, wanted)
+    merged = mergeSerials(table, rows)
+    merged.to_csv(args.out or path, index=False)
+
+    found = [r for r in rows if r['rawSerialNumber'] != MISSING]
+    print(f"\n{len(found)} serial(s) found, {len(rows) - len(found)} deployment(s) still without one")
+    for row in found:
+        print(f"  {row['referenceDesignator']} deploy {row['deployNum']} ({row['deployYear']}): {row['rawSerialNumber']}")
+    print('wrote ' + (args.out or path))
+    return 0
