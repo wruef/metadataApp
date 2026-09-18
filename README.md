@@ -168,8 +168,10 @@ column, and for a calibration a note column, so the value being copied and the
 box it goes into are side by side; clicking the vendor's own number takes it.
 There used to be a read-only table and an editable copy of it behind a button,
 which showed every number twice and invited reading one pair while typing at the
-other. A line whose value is not one number says so rather than offering a box,
-and a link to the file's GitHub editor covers those.
+other. A coefficient holding several numbers is edited as the file
+writes it and each element is written back in its own notation; above eight
+values the line says so instead of offering a box, and a link to the file's
+GitHub editor covers those.
 
 It refuses rather than warns. The reviewer's `asset-management` fork has to be
 exactly `oceanobservatories/asset-management` — behind, and the request reverts
@@ -189,8 +191,11 @@ because an instrument can be deployed twice in a season. Where that row's notes
 say the parameters are preliminary, they are cleared along with the position,
 which is what `applyPositions` does to the same column.
 
-Array coefficients are not editable here; an OPTAA's `CC_acwo` is eighty-three
-numbers in one quoted field, and a single text box would be guessing.
+A coefficient that is a short list is editable as the list the file writes,
+with each element kept in its own notation and the length held fixed. The cutoff
+is eight: every array-valued disagreement in the report is two values long,
+while an OPTAA's `CC_acwo` is eighty-three, where typing the array back would be
+guessing rather than correcting.
 
 ### Publishing the deployment history
 

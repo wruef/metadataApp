@@ -2,7 +2,7 @@
 import { FORKS, useAuth } from '~/auth'
 import { calibrationPath, type Correction } from '~/calfile'
 import { deploymentKey, useCorrections } from '~/corrections'
-import { scalar } from '~/csv'
+import { parseList, scalar } from '~/csv'
 import { deploymentPath, POSITION_FIELDS, type FieldCorrection } from '~/deployfile'
 import { readDifference } from '~/display'
 import { type Row } from '~/store'
@@ -57,16 +57,27 @@ const id = computed(() => (isCalibration.value
 const busy = computed(() => Boolean(corrections.submitting[id.value]))
 const result = computed(() => corrections.results[id.value])
 
+/** A short list is worth a text box; a long one is not. An OPTAA's `CC_acwo`
+ *  is eighty-three numbers, where typing the whole array back is guessing. A
+ *  DOSTA's `CC_conc_coef` is two, where it is just typing. */
+const LIST_LIMIT = 8
+
 /**
  * Which lines can be typed over.
  *
- * A calibration coefficient has to be one number: an OPTAA's `CC_acwo` is
- * eighty-three of them in one field, and a text box would be guessing. A
- * position field is one of the four a position governs and nothing else.
+ * A calibration coefficient is one number, or a short list of them. A position
+ * field is one of the four a position governs and nothing else.
  */
 function editableLine(entry: Difference) {
-  if (isCalibration.value) return typeof entry.github === 'number' && Number.isFinite(entry.github)
-  return POSITION_FIELDS.includes(nameOf(entry))
+  if (!isCalibration.value) return POSITION_FIELDS.includes(nameOf(entry))
+  if (Array.isArray(entry.github)) return entry.github.length <= LIST_LIMIT
+  return typeof entry.github === 'number' && Number.isFinite(entry.github)
+}
+
+/** The written form of a value, which is what a box holds and what a click
+ *  takes. A list reads as the file writes it. */
+function asText(value: unknown) {
+  return Array.isArray(value) ? `[${value.join(', ')}]` : String(value)
 }
 
 const anyEditable = computed(() => correctable.value && differences.value.some(editableLine))
@@ -85,7 +96,7 @@ const notes = ref<Record<string, string>>({})
 /** The value on the right is what the finding says the file should say. */
 function take(entry: Difference) {
   if (entry.expected === null || entry.expected === undefined) return
-  values.value = { ...values.value, [nameOf(entry)]: String(entry.expected) }
+  values.value = { ...values.value, [nameOf(entry)]: asText(entry.expected) }
 }
 
 function takeAll() {
@@ -96,7 +107,7 @@ function takeAll() {
 const queued = computed(() => differences.value.flatMap((entry) => {
   if (!editableLine(entry)) return []
   const typed = (values.value[nameOf(entry)] ?? '').trim()
-  if (!typed || typed === String(heldBy(entry))) return []
+  if (!typed || typed === asText(heldBy(entry))) return []
   return [{ entry, typed }]
 }))
 
@@ -109,15 +120,21 @@ const queued = computed(() => differences.value.flatMap((entry) => {
  * value rather than a missing one.
  */
 const unreadable = computed(() => (isCalibration.value
-  ? queued.value.filter(({ typed }) => scalar(typed) === null).map(({ entry }) => nameOf(entry))
+  ? queued.value.filter(({ entry, typed }) => (Array.isArray(entry.github)
+      ? parseList(typed)?.length !== entry.github.length
+      : scalar(typed) === null)).map(({ entry }) => nameOf(entry))
   : []))
 
 function propose() {
   if (isCalibration.value) {
     const corrections_: Correction[] = queued.value.map(({ entry, typed }) => {
       const note = (notes.value[nameOf(entry)] ?? '').trim()
-      return { coefficient: nameOf(entry), from: entry.github as number,
-               to: Number(typed), ...(note ? { note } : {}) }
+      return {
+        coefficient: nameOf(entry),
+        from: entry.github as number | number[],
+        to: Array.isArray(entry.github) ? parseList(typed)! : Number(typed),
+        ...(note ? { note } : {}),
+      }
     })
     corrections.proposeCalibration(String(row.instrument), String(row.fileName), corrections_)
   } else {
@@ -181,7 +198,7 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
             <tr>
               <td>{{ nameOf(entry) }}</td>
               <!-- What each file records, exactly as it was read. -->
-              <td class="num text-right">{{ heldBy(entry) }}</td>
+              <td class="num text-right">{{ asText(heldBy(entry)) }}</td>
               <td class="num text-right">
                 <button
                   v-if="editing && editableLine(entry)
@@ -190,8 +207,9 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
                   type="button"
                   :title="`Use ${entry.expected}`"
                   @click="take(entry)"
-                >{{ entry.expected }}</button>
-                <span v-else>{{ entry.expected ?? '—' }}</span>
+                >{{ asText(entry.expected) }}</button>
+                <span v-else>{{ entry.expected === undefined || entry.expected === null
+                  ? '—' : asText(entry.expected) }}</span>
               </td>
               <td v-if="isCalibration" class="d num text-right">
                 {{ readDifference(entry.difference) }}
@@ -202,10 +220,10 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
                   v-if="editableLine(entry)"
                   v-model="values[nameOf(entry)]"
                   class="fld num"
-                  :placeholder="String(heldBy(entry))"
+                  :placeholder="asText(heldBy(entry))"
                   :aria-label="`New value for ${nameOf(entry)}`"
                 >
-                <span v-else class="notedit">not one number</span>
+                <span v-else class="notedit">too many values to type</span>
               </td>
               <td v-if="editing && isCalibration">
                 <input
@@ -265,7 +283,7 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
 
       <template v-else>
         <p v-if="unreadable.length" class="mt-2 text-red-700 text-[12.5px]">
-          Not a number: {{ unreadable.join(', ') }}.
+          Cannot be read as the value this coefficient holds: {{ unreadable.join(', ') }}.
         </p>
         <div class="flex flex-wrap gap-2 items-center mt-2.5">
           <u-button

@@ -56,6 +56,19 @@ ASSET_COLUMNS = [
 ]
 
 
+def _written(cell):
+    """A sheet cell as text, where an empty one is empty.
+
+    ``str(cell or '')`` does not do this. A blank cell reads as NaN, NaN is a
+    float, and a float NaN is *truthy* -- so the ``or`` never fired and the
+    empty cell came back as the string ``'nan'``. It reached the dashboard as a
+    reviewer note reading "nan" on 335 of the 1,174 calibration rows, and
+    pre-filled the sign-off box with it, so clearing one of those rows wrote
+    "nan" into the sheet as the reason.
+    """
+    return '' if cell is None or pd.isna(cell) else str(cell).strip()
+
+
 def signOff(sheet, key):
     """What a reviewer recorded for this row, if anything.
 
@@ -63,7 +76,8 @@ def signOff(sheet, key):
     asks the same question the same way.
     """
     if key in sheet.index:
-        return str(sheet.loc[key, 'Status']), str(sheet.loc[key, 'HITLnotes'] or '')
+        return (_written(sheet.loc[key, 'Status']) or 'NA',
+                _written(sheet.loc[key, 'HITLnotes']))
     return 'NA', ''
 
 

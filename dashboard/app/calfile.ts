@@ -8,7 +8,8 @@
  * the deployment sheets share.
  */
 
-import { asField, columnIndex, holdsValue, matchNotation, scalar, splitLine } from '~/csv'
+import { asField, columnIndex, formatList, holdsValue, matchNotation, scalar,
+         splitLine } from '~/csv'
 
 /** Where a calibration file lives in asset-management. */
 export function calibrationPath(instrument: string, fileName: string) {
@@ -29,9 +30,10 @@ export function valuesByCoefficient(text: string) {
 
 export interface Correction {
   coefficient: string
-  /** The value the run read, which the file must still hold. */
-  from: number
-  to: number
+  /** The value the run read, which the file must still hold. A list where the
+   *  coefficient is one: a DOSTA's `CC_conc_coef` is two numbers. */
+  from: number | number[]
+  to: number | number[]
   /** Replaces the `notes` column when given; the column is left alone when not. */
   note?: string
 }
@@ -68,7 +70,18 @@ export function applyCorrections(text: string, corrections: Correction[]) {
       )
     }
     seen.add(correction.coefficient)
-    fields[valueAt] = matchNotation(held, String(correction.to))
+    if (Array.isArray(correction.to)) {
+      const written = formatList(held, correction.to)
+      if (written === null) {
+        throw new Error(
+          `${correction.coefficient} is ${(correction.from as number[]).length} values in the file `
+          + `and ${correction.to.length} were given. A coefficient cannot change length here.`,
+        )
+      }
+      fields[valueAt] = written
+    } else {
+      fields[valueAt] = matchNotation(held, String(correction.to))
+    }
     if (correction.note !== undefined && fields.length > notesAt) {
       fields[notesAt] = asField(correction.note)
     }

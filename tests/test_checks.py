@@ -333,3 +333,33 @@ def test_theDeploymentDayCalibrationIsNotAlsoCalledStale():
     history = {'A': [(datetime.datetime(2014, 8, 5), 'A__20140805.csv'),
                      (datetime.datetime(2016, 7, 12), 'A__20160712.csv')]}
     assert _assignCalFile(deployment, history) == ('A__20160712.csv', 'VALID_FILE')
+
+
+## --- a blank reviewer note ---
+
+def test_aBlankReviewerNoteIsEmptyRatherThanTheWordNan():
+    """A blank cell reads as NaN, NaN is a float, and a float NaN is truthy --
+    so `str(cell or '')` returned it and the note came back as 'nan'. It showed
+    on 335 calibration rows and pre-filled the sign-off box, so clearing one
+    wrote 'nan' into the sheet as the reason."""
+    from rca_metadata.checks import signOff
+
+    sheet = pd.DataFrame({'Status': ['Clear'], 'HITLnotes': [float('nan')]},
+                         index=pd.Index(['a.csv'], name='githubFile'))
+    assert signOff(sheet, 'a.csv') == ('Clear', '')
+
+
+def test_aWrittenReviewerNoteSurvives():
+    from rca_metadata.checks import signOff
+
+    sheet = pd.DataFrame({'Status': ['Clear'], 'HITLnotes': ['  shipboard cal?? sn 344 ']},
+                         index=pd.Index(['a.csv'], name='githubFile'))
+    assert signOff(sheet, 'a.csv') == ('Clear', 'shipboard cal?? sn 344')
+
+
+def test_aRowWithNoSignOffAtAllIsNotApplicable():
+    from rca_metadata.checks import signOff
+
+    sheet = pd.DataFrame({'Status': [], 'HITLnotes': []},
+                         index=pd.Index([], name='githubFile'))
+    assert signOff(sheet, 'a.csv') == ('NA', '')

@@ -239,10 +239,15 @@ reads back to you as *asset-management note*. The number is written in the
 notation the line already uses, so the diff is a changed digit rather than a
 reformatted file.
 
-An array coefficient cannot be typed over. An OPTAA's `CC_acwo` is eighty-three
-numbers in one field, and a single text box would be guessing. Those lines say
-*not one number* instead of offering a box, and the GitHub link is how you edit
-them.
+A coefficient that holds several numbers is shown and edited as the file writes
+it, `[-0.9765852, 1.081678]`. Clicking the vendor's value takes the whole list,
+and each number is written back in the notation its own element already used. A
+replacement has to have the same number of values, because a coefficient cannot
+change length through a text box.
+
+Above eight values there is no box, and the line says *too many values to type*.
+An OPTAA's `CC_acwo` is eighty-three numbers, where typing the array back is
+guessing rather than correcting. The GitHub link is how you edit those.
 
 ### Correcting a position
 

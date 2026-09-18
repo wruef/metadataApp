@@ -125,3 +125,49 @@ describe('what the pull request says', () => {
     expect(body).toContain('raise the pull request to the upstream repository by hand')
   })
 })
+
+/**
+ * A DOSTA's `CC_conc_coef` is two numbers in one quoted field, and one of them
+ * disagrees with the vendor. Every array-valued difference in the report is two
+ * elements long, so refusing them left exactly two rows uncorrectable for a
+ * reason that only applies to an OPTAA's eighty-three.
+ */
+describe('correcting a coefficient that is a list', () => {
+  const DOSTA = [
+    'serial,name,value,notes',
+    '476,CC_conc_coef,"[-9.765852e-01, 1.081678]",',
+    '476,CC_csv,"[0.00289149, 0.000123681, 2.40123e-06]",',
+    '',
+  ].join('\n')
+
+  it('writes each element in the notation it already used', () => {
+    const corrected = applyCorrections(DOSTA, [{
+      coefficient: 'CC_conc_coef',
+      from: [-0.9765852, 1.081678],
+      to: [-0.9768582, 1.081678],
+    }])
+    expect(corrected).toContain('"[-9.768582e-01, 1.081678]"')
+  })
+
+  it('keeps the quoting, the brackets and the spacing', () => {
+    const corrected = applyCorrections(DOSTA, [{
+      coefficient: 'CC_conc_coef',
+      from: [-0.9765852, 1.081678],
+      to: [-0.9768582, 1.081678],
+    }])
+    expect(splitLine(corrected.split('\n')[1]!)).toHaveLength(4)
+    expect(corrected.split('\n')[2]).toBe(DOSTA.split('\n')[2])
+  })
+
+  it('refuses a list the file no longer holds', () => {
+    expect(() => applyCorrections(DOSTA, [{
+      coefficient: 'CC_conc_coef', from: [-0.9, 1.081678], to: [-0.97, 1.081678],
+    }])).toThrow(/now reads/)
+  })
+
+  it('refuses a replacement of a different length', () => {
+    expect(() => applyCorrections(DOSTA, [{
+      coefficient: 'CC_conc_coef', from: [-0.9765852, 1.081678], to: [-0.9768582],
+    }])).toThrow(/cannot change length/)
+  })
+})
