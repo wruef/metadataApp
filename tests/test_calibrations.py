@@ -674,3 +674,18 @@ def test_aRecordClaimingMoreThanTheCertificateShowsIsStillAFinding(vendorStem, m
 def test_withoutADefaultAnOmittedCoefficientIsStillUnchecked(vendorStem):
     verdict, *differences = compare(githubCal(CC_absent=7.0), vendorStem)
     assert verdict == 'MISSING_COEFFICIENT'
+
+
+def test_aCoefficientWithNoConstantIsAFindingNotConfiguration():
+    """The 'missing' differences were recorded and then thrown away by the
+    configuration-only return, downgrading a problem to unchecked."""
+    import pandas as pd
+
+    from rca_metadata.calibrations import SENSORS, compareConstants
+
+    sensor = next(name for name, spec in SENSORS.items() if spec.get('constantsOnly'))
+    spec = SENSORS[sensor]
+    cal = pd.DataFrame({'name': ['CC_never_declared'], 'value': [1.0], 'notes': ['']})
+    result = compareConstants(cal, spec, sensor, {sensor: {'CC_something_else': 0.0}}, 'stem')
+    assert result[0] != 'CONFIGURATION_ONLY'
+    assert len(result) > 1

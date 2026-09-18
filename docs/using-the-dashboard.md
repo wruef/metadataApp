@@ -2,6 +2,9 @@
 
 A walkthrough for anyone reviewing RCA metadata: signing in, working the queue,
 recording a decision, and starting a run. No programming required for any of it.
+For the whole post-cruise review in order, step by step, read
+[post-cruise-review.md](post-cruise-review.md) and come back here for the
+detail of any one step.
 
 The dashboard is at **https://wruef.github.io/metadataApp/**. It is a web page
 with no server behind it. Everything it shows comes from one file that a
@@ -31,8 +34,8 @@ and a token only to record decisions or to start a run.
 If you are going to do either, fork three repositories to your own GitHub
 account first. Open each one and press **Fork**:
 
-- `OOI-CabledArray/metadataApp` — this repository, which holds the sign-off
-  sheets and the workflows
+- `wruef/metadataApp` — this repository, which holds the sign-off sheets and
+  the workflows
 - `oceanobservatories/asset-management`
 - `OOI-CabledArray/deployments`
 
@@ -58,7 +61,7 @@ Then open **Permissions → Repository permissions** and set:
 
 | permission | level | why |
 |---|---|---|
-| Contents | Read and write | to write your decisions into the sheets, corrections into calibration files, and the deployment history |
+| Contents | Read and write | to write your decisions into the sheets, corrections into calibration files and deployment sheets, and the deployment history |
 | Pull requests | Read and write | to open the pull request carrying them |
 | Actions | Read and write | to start a verification run from the dashboard |
 
@@ -234,6 +237,9 @@ into are side by side.
   or the spreadsheet's position, and on most rows it is the whole answer.
 - **Or type your own** in the box.
 - **A box left blank is left alone.** Only lines you changed are proposed.
+- **Take every vendor value** fills the column in one go.
+- **Edit the whole file on GitHub** opens your fork's editor, for the cases a
+  text box cannot do.
 
 ### Correcting the instrument a deployment names
 
@@ -254,11 +260,8 @@ prompt to go and find out, not as the answer.
 Correcting the asset does **not** clear the preliminary-parameters note the way
 correcting a position does. That note is about where the instrument sat, and
 this says nothing about that.
-- **Take every vendor value** fills the column in one go.
-- **Edit the whole file on GitHub** opens your fork's editor, for the cases a
-  text box cannot do.
 
-### Rules both of them follow
+### Rules all of them follow
 
 **Your fork has to be exactly `oceanobservatories/asset-management`.** Not
 behind it, not ahead of it. The dashboard checks before the editor opens and
@@ -275,23 +278,27 @@ from. For the same reason it refuses if the value no longer reads what the run
 read, which means upstream moved and the report on screen is out of date.
 
 **One pull request per kind, on your fork only.** Every calibration file you
-corrected in one request, every deployment you repositioned in another, and your
-sign-offs in a third on a different fork entirely. Each record has its own
+corrected in one request, every deployment you repositioned or reassigned in
+another, and your sign-offs in a third on a different fork entirely. Each record has its own
 section of the body, with every value before and after it, so a batch is no
 harder to read than a single correction was — there are simply fewer requests to
 raise. Nothing anyone computes changes until it reaches
 `oceanobservatories/asset-management`, which you do by hand.
 
-**Do not merge it into your fork's `master`.** Open the pull request the
-dashboard made, press **Edit** next to its title, and change the base to
-`oceanobservatories/asset-management` `master`. That sends the one commit the
-dashboard wrote, straight from the branch it wrote it on.
+**Do not merge it into your fork's `master`.** The pull request on your fork is
+for you to read. The route upstream is a *new* pull request from the same
+branch, opened on the shared repository's compare page with your fork's branch
+as the head. That sends the one commit the dashboard wrote, straight from the
+branch it wrote it on. A pull request cannot be moved to another repository once
+opened, so editing the fork's request will not do it.
 
 Merging into your own `master` instead costs you twice. GitHub adds a merge
 commit, so what should be one commit becomes two. And your fork is then ahead of
 upstream, which is exactly what the sync rule refuses, so you cannot correct
 anything else until upstream merges your work. Leaving `master` alone keeps it
-identical to upstream and keeps you able to correct the next batch.
+identical to upstream and keeps you able to correct the next batch. The exact
+clicks, and how to recover if you have already merged, are in
+[post-cruise-review.md](post-cruise-review.md#7-raise-each-pull-request-upstream--without-a-second-commit).
 
 ### Correcting a calibration
 
@@ -500,10 +507,21 @@ publish unticked keeps its report as a build artifact only.
 **A row I signed off is still in the queue.** Sign-offs are read at the start of
 a run. Merge the pull request, then run again.
 
+**I published a run and it is not in the dropdown.** A run publishes only when it
+was started from the repository's default branch. Started from the Actions tab
+on another branch, it keeps its report as a build artifact and prints a warning
+saying so. The dashboard always starts runs from the default branch.
+
+**A run in the dropdown will not open.** It was probably deleted from the
+repository after your browser last fetched the list. The report you were reading
+stays on screen and the message under the dropdown says what happened; reload
+the page to refresh the list.
+
 ## The other guides
 
 | guide | what it covers |
 |---|---|
+| [The post-cruise review, step by step](post-cruise-review.md) | the whole season's review in order, and how to raise a change upstream without a second commit |
 | [What each check decides](what-each-check-decides.md) | every verdict a check can return, what it means, and whether it passes |
 | [Calibration comparison](calibration-comparison.md) | which vendor format each instrument is compared against, and why |
 | [The report contract](report-contract.md) | the shape of the file a run produces, for anyone reading it directly |

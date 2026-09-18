@@ -8,9 +8,22 @@ import struct
 
 import pandas as pd
 
-from rca_metadata.serials import (MISSING, SNfromFirstRaw, SNfromRaw, SNfromRawBinary, _candidates,
-                                  acsSerial, mergeSerials, openDeployments, partialMatch, pd0Serial,
-                                  portAgentPayload, searchLines, FIRST_RAW_PATTERNS, DATA_LINE_PATTERNS)
+from rca_metadata.instruments import partialMatch
+from rca_metadata.serials import (
+    DATA_LINE_PATTERNS,
+    FIRST_RAW_PATTERNS,
+    MISSING,
+    SNfromFirstRaw,
+    SNfromRaw,
+    SNfromRawBinary,
+    _candidates,
+    acsSerial,
+    mergeSerials,
+    openDeployments,
+    pd0Serial,
+    portAgentPayload,
+    searchLines,
+)
 
 CTD = 'CE02SHBP-LJ01D-06-CTDBPN106'
 ADCP = 'RS01SBPS-PC01A-05-ADCPTB104'
@@ -237,7 +250,10 @@ def test_partialMatchOnTrailingDigits():
     ## tail is the match that counts.
     assert partialMatch('5471540-0030', '05400030', 4) is True
     assert partialMatch('1234567', '44567', 4) is True
-    ## a string no longer than the match length is not enough to go on
-    assert partialMatch('1234567', '4567', 4) is False
+    ## a string exactly as long as the match is a whole-string containment,
+    ## and the rule is the same whichever side it is on
+    assert partialMatch('1234567', '4567', 4) is True
+    assert partialMatch('101', '0101', 3) is partialMatch('0101', '101', 3) is True
+    ## shorter than the match, on either side, is not enough to go on
     assert partialMatch('12', '123456', 4) is False
     assert partialMatch('1234567', '9999', 4) is False

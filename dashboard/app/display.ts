@@ -100,7 +100,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       NO_SN: 'unchecked',
       NAN: 'excluded',
     },
-    image_verify: { MATCH: 'ok', MISMATCH: 'warning', NAN: 'excluded' },
+    image_verify: { MATCH: 'ok', MISMATCH: 'warning', NAN: 'excluded', NO_IMAGE_ASSET: 'excluded' },
     calFile_verify: {
       VALID_FILE: 'ok',
       NO_VALID_FILE: 'problem',
@@ -118,6 +118,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       NO_POSITION: 'review',
       NO_POSITION_NAME: 'review',
       BAD_POSITION_RECORD: 'review',
+      HITL_PIN_NOT_FOUND: 'review',
     },
   },
 }

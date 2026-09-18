@@ -14,6 +14,12 @@ on:
       - "params/**"
       - "2i_HITL/**"
       - "pyproject.toml"
+      # tests/test_pins.py reads these three, so a change to any of them has to
+      # run it. Without them a pin could be bumped in constraints.txt alone and
+      # the test that exists to catch that would never be executed.
+      - "constraints.txt"
+      - "environment.yml"
+      - ".github/workflows/verify.yaml"
       - ".github/workflows/tests.yaml"
   pull_request:
     paths:
@@ -22,6 +28,9 @@ on:
       - "params/**"
       - "2i_HITL/**"
       - "pyproject.toml"
+      - "constraints.txt"
+      - "environment.yml"
+      - ".github/workflows/verify.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -65,4 +74,4 @@ jobs:
 
       - name: Record what it ran against
         if: always()
-        run: pip list --format=freeze | grep -Ei '^(pandas|numpy|pdfplumber|openpyxl|requests|beautifulsoup4)='
+        run: pip list --format=freeze | grep -Ei '^(pandas|numpy|pdfplumber|openpyxl|requests|beautifulsoup4)=' || true

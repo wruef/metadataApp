@@ -31,7 +31,7 @@ on:
         default: false
 
 env:
-  PYTHON_VERSION: 3.11
+  PYTHON_VERSION: "3.11"
 
 concurrency:
   group: extract-serials
@@ -68,17 +68,21 @@ jobs:
       - name: Install package
         run: pip install . -c constraints.txt
 
+      # bash named explicitly, because GitHub's default shell has no pipefail:
+      # `extract-serials | tee` would exit 0 after a crawl that died five hours
+      # in, and the run would go green having proposed nothing.
       - name: Extract
+        shell: bash
         env:
+          REPO: ${{ inputs.asset_management_repo }}
+          REF: ${{ inputs.asset_management_ref }}
           REFDES: ${{ inputs.refdes }}
           EVERYTHING: ${{ inputs.everything }}
         run: |
           args=""
           for rd in $REFDES; do args="$args --refdes $rd"; done
           if [ "$EVERYTHING" = true ]; then args="$args --all"; fi
-          extract-serials \
-            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}' \
-            --clones repos $args | tee extract.log
+          extract-serials --asset-management "$REPO@$REF" --clones repos $args | tee extract.log
 
       - name: Summarise
         id: summary
@@ -99,7 +103,10 @@ jobs:
       # again before the last proposal merged updates that proposal rather than
       # opening a second one.
       - name: Propose the parameter file
-        uses: peter-evans/create-pull-request@v7
+        # The one third-party action, in a job that can push to this repository
+        # and open pull requests on it, so it is pinned to a commit rather than
+        # to a tag somebody else can move.
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           branch: extract-serials
           title: "Serial numbers from the raw archive"

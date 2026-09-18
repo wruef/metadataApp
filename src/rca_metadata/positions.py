@@ -68,7 +68,7 @@ def loadPositions(xlsxPath, sheet=POSITION_SHEET):
 def loadPositionNameMap(path):
     """Reference designator -> the position name it sits at."""
     frame = pd.read_csv(path)
-    return dict(zip(frame['referenceDesignator'], frame['positionName']))
+    return dict(zip(frame['referenceDesignator'], frame['positionName'], strict=True))
 
 
 def loadHITLPositions(path):
@@ -85,9 +85,21 @@ def loadHITLPositions(path):
     return hitl
 
 
+def _spells(cell, value):
+    """Whether a sheet cell names ``value``: 10, 10.0, '10' or a list '10,11'."""
+    wanted = str(value).strip().removesuffix('.0')
+    return wanted in [part.strip().removesuffix('.0') for part in str(cell).split(',')]
+
+
 def _hitlEntry(refDes, deployYear, deployNum, hitl):
+    """The pinned position for one deployment, or None.
+
+    Matched exactly rather than by substring: deployment 1 is not deployment
+    10, 11 or 12, which is what a contains-test made it on every profiler past
+    its ninth season.
+    """
     for entry in hitl.get(refDes, []):
-        if str(deployYear) in str(entry['deployYear']) and str(deployNum) in str(entry['deployNum']):
+        if _spells(entry['deployYear'], deployYear) and _spells(entry['deployNum'], deployNum):
             return entry
     return None
 
@@ -170,7 +182,8 @@ def checkPositions(deployments, positions, nameMap, hitl):
         if record is None:
             ## An unresolved position is not a pass -- the sheet may be right or
             ## wrong and nothing here can say which.
-            result['verdict'] = 'NEEDS_HITL' if resolution == 'AMBIGUOUS' else 'NO_POSITION'
+            result['verdict'] = {'AMBIGUOUS': 'NEEDS_HITL',
+                                 'HITL_START_NOT_FOUND': 'HITL_PIN_NOT_FOUND'}.get(resolution, 'NO_POSITION')
             result['differences'] = []
         else:
             result['differences'] = _differences(row, expectedValues(refDes, record))
@@ -201,11 +214,12 @@ def applyPositions(deployments, positions, nameMap, hitl):
             continue
 
         expected = expectedValues(refDes, record)
-        changed = []
+        ## The same test the check applies, so a value the check calls equal --
+        ## 80.0 against 80 -- is not written and logged as a correction here.
+        changed = [difference['field'] for difference in _differences(row, expected)]
         for column, key in POSITION_FIELDS:
-            if str(row[column]) != str(expected[key]):
+            if column in changed:
                 corrected.at[index, column] = expected[key]
-                changed.append(column)
         if PRELIMINARY_NOTE in str(row['notes']):
             corrected.at[index, 'notes'] = ''
         if changed:
@@ -250,30 +264,3 @@ def nodePositionFile(corrected):
     refDes = corrected['Reference Designator']
     nodes = corrected[refDes.str.len() <= NODE_REFDES_LENGTH]
     return {'NODE_deployments.csv': _asCsv(nodes)} if len(nodes) else {}
-
-
-def publishPositions(corrected, pullRequest, title=None):
-    """Propose corrected deployment sheets to the author's fork of asset-management.
-
-    Returns the pull request url, or None when the sheets already agree with the
-    spreadsheet. What changed is in the position check's own rows, so no separate
-    change log is written here.
-    """
-    return _propose(pullRequest, positionFiles(corrected), title, 'asset-management')
-
-
-def publishNodePositions(corrected, pullRequest, title=None):
-    """Propose corrected node deployments to the author's fork of the deployments repo."""
-    return _propose(pullRequest, nodePositionFile(corrected), title, 'deployments')
-
-
-def _propose(pullRequest, files, title, upstream):
-    if not files:
-        return None
-    title = title or f'Deployment positions, {datetime.date.today().isoformat()}'
-    return pullRequest.open(
-        files, title,
-        body='Latitude, longitude and depths taken from the RCA position '
-             'spreadsheet.\n\n'
-             f'Review here, then raise the pull request to the upstream {upstream} '
-             'repository by hand.')

@@ -23,11 +23,14 @@ reports/history.json
 repos/
 baseline/
 
-# session transcript carried over from metadataVerification
-*.jsonl
+# session transcript carried over from metadataVerification, at the root only
+/*.jsonl
 .pytest_cache/
-build/
-dist/
+.coverage
+.ruff_cache/
+# the python build outputs at the root; dashboard/dist is named on its own below
+/build/
+/dist/
 dashboard/node_modules/
 dashboard/.nuxt/
 dashboard/.output/

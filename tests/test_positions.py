@@ -7,8 +7,12 @@ import datetime
 import pandas as pd
 import pytest
 
-from rca_metadata.positions import (applyPositions, checkPositions, expectedValues,
-                                    resolvePosition)
+from rca_metadata.positions import (
+    applyPositions,
+    checkPositions,
+    expectedValues,
+    resolvePosition,
+)
 
 LJ01D = 'CE02SHBP-LJ01D-06-CTDBPN106'
 PROFILER = 'RS01SBPS-SF01A-2A-CTDPFA102'
@@ -176,3 +180,52 @@ def test_anUnresolvedPositionLeavesTheSheetAlone():
     corrected, log = applyPositions(deployment(lat=44.0), POSITIONS, {}, {})
     assert corrected.loc[0, 'lat'] == 44.0
     assert log == []
+
+
+## --- review fixes ---
+
+def test_aPinNamesOneDeploymentNotEveryNumberContainingIt():
+    from rca_metadata.positions import _hitlEntry
+
+    hitl = {'X': [{'deployYear': 2022, 'deployNum': 10, 'positionName': 'P', 'positionStartTime': 't'}]}
+    assert _hitlEntry('X', 2022, 1, hitl) is None
+    assert _hitlEntry('X', 2022, 10, hitl) is not None
+    ## the sheets also spell a number as 10.0, and a pin can list several
+    assert _hitlEntry('X', 2022, '10.0', hitl) is not None
+    hitl['X'][0]['deployNum'] = '10,11'
+    assert _hitlEntry('X', 2022, 11, hitl) is not None
+
+
+def test_aPinToARowThatIsGoneIsItsOwnFinding():
+    """The reason used to read 'the spreadsheet holds no position', which is
+    false: a person pinned one and the row moved."""
+    import datetime
+
+    import pandas as pd
+
+    from rca_metadata.positions import checkPositions
+
+    sheet = pd.DataFrame([{'Reference Designator': 'RS03AXPS-SF03A-2A-CTDPFA302', 'deploymentNumber': 3,
+                           'startDateTime': '2022-08-01T00:00:00', 'lat': '1', 'lon': '2',
+                           'water_depth': '3', 'deployment_depth': '4', 'notes': ''}])
+    hitl = {'RS03AXPS-SF03A-2A-CTDPFA302': [{'deployYear': 2022, 'deployNum': 3, 'positionName': 'SF03A',
+                                             'positionStartTime': datetime.datetime(2022, 7, 1)}]}
+    [row] = checkPositions(sheet, {'SF03A': {}}, {'RS03AXPS-SF03A-2A-CTDPFA302': 'SF03A'}, hitl)
+    assert row['verdict'] == 'HITL_PIN_NOT_FOUND'
+
+
+def test_applyPositionsAgreesWithTheCheckAboutWhatDiffers():
+    """80.0 on the sheet against 80 in the spreadsheet is the same depth. The
+    check said so; the correction logged it as a change anyway."""
+    import pandas as pd
+
+    from rca_metadata.positions import applyPositions, expectedValues
+
+    sheet = pd.DataFrame([{'Reference Designator': 'RS03AXPS-SF03A-2A-CTDPFA302', 'deploymentNumber': 3,
+                           'startDateTime': '2022-08-01T00:00:00', 'lat': 45.5, 'lon': -125.5,
+                           'water_depth': 80.0, 'deployment_depth': 'N/A', 'notes': ''}])
+    record = {'lat': 45.5, 'lon': -125.5, 'waterDepth': 80, 'deploymentDepth': 'N/A', 'sourceRow': 1}
+    positions = {'SF03A': {pd.Timestamp('2022-07-01').to_pydatetime(): record}}
+    expected = expectedValues('RS03AXPS-SF03A-2A-CTDPFA302', record)
+    _, log = applyPositions(sheet, positions, {'RS03AXPS-SF03A-2A-CTDPFA302': 'SF03A'}, {})
+    assert log == [] or all(entry.get('changed') != ['water_depth'] for entry in log), (log, expected)

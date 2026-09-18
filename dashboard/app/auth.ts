@@ -5,7 +5,7 @@ import { defineStore } from 'pinia'
  *  shared repository, and the onward pull request is raised by hand. */
 export const FORKS = [
   { key: 'hitl', repo: 'metadataApp', base: 'main',
-    upstream: 'OOI-CabledArray/metadataApp',
+    upstream: 'wruef/metadataApp',
     what: 'HITL sign-offs, and the workflows a run is started from' },
   { key: 'assetManagement', repo: 'asset-management', base: 'master',
     upstream: 'oceanobservatories/asset-management',
@@ -18,8 +18,23 @@ export const FORKS = [
 export type ForkKey = (typeof FORKS)[number]['key']
 
 const TOKEN_KEY = 'rca.metadata.token'
+/** Forks are kept per GitHub login, so two reviewers sharing a browser do not
+ *  inherit each other's repositories. */
 const FORKS_KEY = 'rca.metadata.forks'
 const INITIALS_KEY = 'rca.metadata.initials'
+
+/** ``owner/repository``, which is the only shape a fork name can take. */
+export function isRepoName(value: string) {
+  return /^[\w.-]+\/[\w.-]+$/.test(value)
+}
+
+function readForks(login: string): Record<string, string> {
+  try {
+    return JSON.parse(read(`${FORKS_KEY}.${login}`) ?? '{}')
+  } catch {
+    return {}
+  }
+}
 
 /** Browser storage can be unavailable or throw — a private window, blocked site
  *  data — and none of that should take the dashboard down. */
@@ -61,7 +76,11 @@ export const useAuth = defineStore('auth', () => {
    *  user's own fork of that repository. */
   function forkFor(key: ForkKey) {
     const definition = FORKS.find((fork) => fork.key === key)!
-    return forks.value[key] || (user.value ? `${user.value.login}/${definition.repo}` : '')
+    const named = forks.value[key]
+    // A name that is not owner/repository cannot be a fork; the default stands
+    // until it is, and the settings page says so beside the box.
+    return (named && isRepoName(named) ? named : '')
+      || (user.value ? `${user.value.login}/${definition.repo}` : '')
   }
 
   function setInitials(value: string) {
@@ -71,7 +90,7 @@ export const useAuth = defineStore('auth', () => {
 
   function setFork(key: ForkKey, value: string) {
     forks.value = { ...forks.value, [key]: value.trim() }
-    write(FORKS_KEY, JSON.stringify(forks.value))
+    if (user.value) write(`${FORKS_KEY}.${user.value.login}`, JSON.stringify(forks.value))
   }
 
   /** Confirms the token works and says who it belongs to. The token is sent to
@@ -88,6 +107,7 @@ export const useAuth = defineStore('auth', () => {
       )
       token.value = trimmed
       user.value = { login: account.login, avatarUrl: account.avatar_url }
+      forks.value = readForks(account.login)
       status.value = 'signedIn'
       write(TOKEN_KEY, trimmed)
     } catch (caught) {
@@ -103,6 +123,7 @@ export const useAuth = defineStore('auth', () => {
   function signOut() {
     token.value = ''
     user.value = null
+    forks.value = {}
     status.value = 'signedOut'
     error.value = ''
     write(TOKEN_KEY, null)
@@ -112,14 +133,7 @@ export const useAuth = defineStore('auth', () => {
    *  token — it may have been revoked since. */
   async function restore() {
     initials.value = read(INITIALS_KEY) ?? ''
-    const stored = read(FORKS_KEY)
-    if (stored) {
-      try {
-        forks.value = JSON.parse(stored)
-      } catch {
-        forks.value = {}
-      }
-    }
+    // Forks are read once the login is known, in signIn.
     const previous = read(TOKEN_KEY)
     if (previous) await signIn(previous)
   }

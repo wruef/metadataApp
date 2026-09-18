@@ -27,13 +27,11 @@ on:
         default: true
 
 env:
-  PYTHON_VERSION: 3.11
+  PYTHON_VERSION: "3.11"
 
-# Publishing a run commits to the same branch, and two commits racing over
-# reports/ is how an index loses an entry it should have kept.
-concurrency:
-  group: publish-reports
-  cancel-in-progress: false
+# No concurrency group: the commit step rebases over anything a verification
+# run published meanwhile and rebuilds the index from disk on a conflict. See
+# .github/actions/commit-reports.
 
 jobs:
   prune:
@@ -57,7 +55,11 @@ jobs:
       # The run the dashboard opens on is spared by the keep rule and refused by
       # name, so this cannot leave latest.json serving a run the picker has
       # forgotten.
+      # bash named explicitly, because GitHub's default shell has no pipefail:
+      # `prune-runs | tee` would exit 0 whatever prune-runs did, and a refused
+      # deletion would show as a green run.
       - name: Prune
+        shell: bash
         env:
           KEEP: ${{ inputs.keep }}
           REMOVE: ${{ inputs.remove }}
@@ -79,17 +81,8 @@ jobs:
 
       - name: Commit the deletions
         if: ${{ !inputs.dry_run }}
-        run: |
-          if git diff --quiet -- reports; then
-            echo '::notice title=Nothing to commit::no run was deleted'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add -A reports
-          git commit -m "Delete published runs
-
-          $(head -c 2000 prune.log)"
-          # A verification run may have published while this one was working.
-          git pull --rebase origin ${{ github.ref_name }}
-          git push origin HEAD:${{ github.ref_name }}
+        uses: ./.github/actions/commit-reports
+        with:
+          branch: ${{ github.ref_name }}
+          message: Delete published runs
+          message-file: prune.log

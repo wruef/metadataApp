@@ -13,7 +13,7 @@ import os
 import pandas as pd
 
 from .calibrations import comparisonRule
-from .loading import calFileBits, inForceAt, readDeploymentSheet
+from .loading import calFileBits, inForceAt
 
 HISTORY_COLUMNS = ['sensorType', 'referenceDesignator', 'startTime', 'endTime', 'assetID',
                    'instrumentSN', 'lat', 'lon', 'githubCalibrationFile', 'vendorCalibrationFile']
@@ -176,21 +176,6 @@ def writeHistory(rows, outDir):
             handle.write(content)
         written.append(path)
     return written
-
-
-def publishHistory(rows, pullRequest, title=None):
-    """Propose the published files to the author's fork of the deployments repo.
-
-    Returns the pull request url, or None when nothing changed -- most runs
-    between cruises change nothing, and an empty pull request is noise.
-    """
-    title = title or f'Deployment history, {datetime.date.today().isoformat()}'
-    return pullRequest.open(
-        historyFiles(rows), title,
-        body='Regenerated from the asset-management deployment sheets and the '
-             'calibration files in both repositories.\n\n'
-             'Review here, then raise the pull request to the upstream '
-             'deployments repository by hand.')
 
 
 def _seasonRows(deployments, assets, dateColumn):

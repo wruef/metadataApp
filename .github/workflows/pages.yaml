@@ -31,6 +31,12 @@ on:
     types: [completed]
   workflow_dispatch:
 
+# The build job reads the repository and nothing else; the deploy job names
+# what it needs itself. Without this the build would run with whatever the
+# repository's default token permissions happen to be.
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: 24
 
@@ -42,11 +48,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Whether there is anything to deploy. A workflow_run fires for every verify
+  # run, including one that only looked, and for every dry-run prune; each used
+  # to rebuild and redeploy an unchanged site. A run that published or deleted
+  # pushed a commit, so the default branch has moved past the sha the run
+  # started from; one that did neither left it where it was. That is the test.
+  decide:
+    name: Anything to deploy?
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          STARTED_FROM: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$EVENT" != workflow_run ]; then
+            echo 'changed=true' >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$CONCLUSION" != success ]; then
+            echo 'A run that failed published nothing.'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          head=$(gh api "repos/$REPO/commits/$DEFAULT_BRANCH" --jq .sha)
+          if [ "$head" = "$STARTED_FROM" ]; then
+            echo "The run started from $STARTED_FROM and the branch is still there: it published nothing."
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo "The branch moved from $STARTED_FROM to $head since the run started."
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    # A verify run that failed published nothing, so there is nothing to deploy.
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    needs: decide
+    if: ${{ needs.decide.outputs.changed == 'true' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -114,8 +156,11 @@ jobs:
   deploy:
     name: Deploy
     # A pull request builds to prove it still compiles; only the default branch
-    # is published.
-    if: ${{ github.event_name != 'pull_request' }}
+    # is published. A workflow_run always builds the default branch (see the
+    # checkout above); a push or a dispatch has to be *on* it, or a branch
+    # dispatched "to see the build" would replace the live site.
+    if: ${{ github.event_name == 'workflow_run'
+         || (github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch) }}
     needs: build
     runs-on: ubuntu-latest
     permissions:

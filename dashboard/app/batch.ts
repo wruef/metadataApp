@@ -465,7 +465,7 @@ export const useBatch = defineStore('batch', () => {
           ? { url, message: `Pull request opened on ${fork}.` }
           : { url: null, message: `${fork} already holds these values — nothing to propose.` },
       }
-      if (url) discardEntriesOf(batch)
+      if (url) discardEntries(batch, mine)
     } catch (caught) {
       results.value = { ...results.value, [batch]: { url: null, message: message(caught) } }
     } finally {
@@ -473,10 +473,13 @@ export const useBatch = defineStore('batch', () => {
     }
   }
 
-  /** Clears the entries without clearing the result, which is the link to what
-   *  they became. */
-  function discardEntriesOf(batch: BatchKey) {
-    entries.value = entries.value.filter((each) => each.batch !== batch)
+  /** Clears the entries the request carried, and only those. Anything queued
+   *  into the batch while the request was in flight was not in it, and must
+   *  not vanish as though it had been. The result stays: it is the link to
+   *  what the batch became. */
+  function discardEntries(batch: BatchKey, sent: Entry[]) {
+    const keys = new Set(sent.map((each) => each.key))
+    entries.value = entries.value.filter((each) => !(each.batch === batch && keys.has(each.key)))
   }
 
   /** Every batch with something in it, one pull request each, in order. Run one

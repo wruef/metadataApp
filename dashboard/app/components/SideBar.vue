@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { GUIDE } from '~/paths'
+import { GUIDE, REVIEW_GUIDE } from '~/paths'
 import { useBatch } from '~/batch'
 import { useStore } from '~/store'
 
@@ -38,7 +38,7 @@ const runAt = computed(() =>
 const sources = computed(() =>
   Object.values(store.report?.sources ?? {})
     .filter((value) => value && typeof value === 'object')
-    .map((value) => value as { repo: string; ref: string }),
+    .map((value) => value as { repo: string; ref: string; commit: string | null }),
 )
 
 const LINK =
@@ -64,6 +64,20 @@ const LINK =
     </nuxt-link>
 
     <div class="bg-white/20 h-px mx-4" />
+
+    <!-- The season's review, step by step. At the top because after a cruise
+         it is the first thing to open, and it says which of everything below
+         to do in what order. -->
+    <a
+      :href="REVIEW_GUIDE"
+      target="_blank"
+      rel="noopener"
+      class="flex gap-3 items-center mt-3 mx-3 px-3 py-2 rounded-md bg-white/10 hover:bg-white/15 text-[13px] text-white"
+    >
+      <i class="fa-list-check fas w-4" />
+      <span class="grow leading-tight">Post-cruise review,<br >step by step</span>
+      <i class="fa-arrow-up-right-from-square fas text-[10px] text-white/40" />
+    </a>
 
     <div class="rail-label px-4 pb-1.5 pt-4">Checks</div>
     <nav class="nav flex flex-col">
@@ -127,7 +141,7 @@ const LINK =
       <template v-for="source in sources" :key="source.repo">
         <a
           class="text-[#a9d4ea] hover:underline"
-          :href="`https://github.com/${source.repo}/tree/${source.ref}`"
+          :href="`https://github.com/${source.repo}/tree/${source.commit && source.commit !== 'UNKNOWN' ? source.commit : source.ref}`"
           target="_blank"
           rel="noopener"
         >{{ source.repo.split('/')[1] }}</a><br >

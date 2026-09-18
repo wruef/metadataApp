@@ -7,9 +7,9 @@ what would have been sent.
 import pandas as pd
 import pytest
 
-from rca_metadata.history import historyFiles, publishHistory
+from rca_metadata.history import historyFiles
 from rca_metadata.positions import nodePositionFile, positionFiles
-from rca_metadata.publish import PullRequest
+from rca_metadata.publish import PullRequest, baseBranchOf, publishHistory
 
 BASE_TREE = 'basetree'
 
@@ -149,3 +149,12 @@ def test_referenceDesignatorListIsPublishedAlongsideTheHistory():
              'githubCalibrationFile': 'none', 'vendorCalibrationFile': 'none'}]
     files = historyFiles(rows)
     assert files['refDesList.csv'] == 'referenceDesignator\nCE02SHBP-LJ01D-06-CTDBPN106\n'
+
+
+def test_theBaseBranchFollowsTheRepositoryNameNotTheOwner():
+    """Inferred from the fork's name before, which made a fork called anything
+    else propose against a branch that was not there."""
+    assert baseBranchOf('wruef/asset-management') == 'master'
+    assert baseBranchOf('someone/deployments') == 'main'
+    assert baseBranchOf('someone/metadataApp') == 'main'
+    assert baseBranchOf('someone/deployments-2026') == 'master'

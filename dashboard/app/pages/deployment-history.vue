@@ -63,34 +63,11 @@ const types = computed(() => history.files.filter((file) => file.name !== REFDES
         </div>
       </div>
 
-      <div v-if="!auth.canSignOff" class="text-gray-500 text-sm">
-        <nuxt-link to="/settings" class="text-primary-700 underline">Sign in</nuxt-link>
-        with your initials to propose this history.
-      </div>
-
-      <template v-else>
-        <p v-if="history.checking" class="text-gray-500 text-sm">
-          Checking your fork against OOI-CabledArray/deployments…
-        </p>
-
-        <!-- The same rule as an asset-management correction, for the same
-             reason: a fork that is not exactly upstream is a fork this
-             dashboard has never read. -->
-        <u-alert
-          v-else-if="history.refusal"
-          color="error"
-          variant="subtle"
-          title="Your fork is not in sync"
-          :description="history.refusal"
-        >
-          <template #actions>
-            <u-button size="xs" color="neutral" variant="subtle" @click="history.recheck()">
-              Check again
-            </u-button>
-          </template>
-        </u-alert>
-
-        <div v-else class="flex flex-wrap gap-2.5 items-center">
+      <!-- The same rule as an asset-management correction, for the same
+           reason: a fork that is not exactly upstream is a fork this dashboard
+           has never read. -->
+      <fork-guard fork="deployments" action="propose this history">
+        <div class="flex flex-wrap gap-2.5 items-center">
           <u-button
             size="sm"
             color="primary"
@@ -104,7 +81,7 @@ const types = computed(() => history.files.filter((file) => file.name !== REFDES
             {{ history.files.length }} files. Raise the pull request upstream by hand.
           </span>
         </div>
-      </template>
+      </fork-guard>
 
       <u-alert
         v-if="history.result"

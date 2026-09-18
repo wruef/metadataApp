@@ -1,15 +1,21 @@
 """Tests for the published deployment history and the season lists."""
 
 import csv
-import datetime
 
 import pandas as pd
-import pytest
 
-from rca_metadata.history import (calibrationLinks, currentDeployments, deployedIn,
-                                  deploymentHistory, historyBundle, historyFiles,
-                                  recoveredIn, sensorTypeName, writeHistory,
-                                  writeSeasonList)
+from rca_metadata.history import (
+    calibrationLinks,
+    currentDeployments,
+    deployedIn,
+    deploymentHistory,
+    historyBundle,
+    historyFiles,
+    recoveredIn,
+    sensorTypeName,
+    writeHistory,
+    writeSeasonList,
+)
 
 CAM = 'RS01SBPS-PC01A-07-CAMDSB103'
 CTD = 'CE02SHBP-LJ01D-06-CTDBPN106'

@@ -64,6 +64,9 @@ const runOptions = computed(() => [
           class="min-w-64"
           @update:model-value="(name: string) => store.load(name === CURRENT ? undefined : name)"
         />
+        <p v-if="store.switching" class="mt-1 text-gray-500 text-xs">Loading that run…</p>
+        <!-- The report already on screen stays; this says why the other one did not open. -->
+        <p v-if="store.switchError" class="mt-1 text-red-700 text-xs">{{ store.switchError }}</p>
       </div>
       <div v-for="source in sources" :key="source.name">
         <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">

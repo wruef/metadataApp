@@ -5,8 +5,9 @@ files. Every deployed sensor should be correctly assigned, and every calibration
 file in `asset-management` should match the vendor original in `calibrationFiles`.
 
 A run produces one JSON report. A dashboard reads that report, ranks what it
-found by consequence, and lets a reviewer sign rows off — each sign-off going
-back to GitHub as a pull request on the reviewer's own fork.
+found by consequence, and lets a reviewer sign rows off and correct the files
+behind them — each batch of decisions going back to GitHub as a pull request on
+the reviewer's own fork.
 
 This package replaces the notebooks in the `metadataVerification` repository.
 The package is the source of truth; nothing is maintained in two places.
@@ -51,9 +52,10 @@ the commit it read. [docs/report-contract.md](docs/report-contract.md) says why.
 ## The dashboard
 
 **If you are here to review metadata rather than to work on the code, read
-[docs/using-the-dashboard.md](docs/using-the-dashboard.md).** It covers creating
-a token, finding your way around, recording a decision and starting a run, step
-by step. The site is at **https://wruef.github.io/metadataApp/**.
+[docs/post-cruise-review.md](docs/post-cruise-review.md)** for the whole review
+in order, and [docs/using-the-dashboard.md](docs/using-the-dashboard.md) for
+the detail of any step: creating a token, finding your way around, recording a
+decision, starting a run. The site is at **https://wruef.github.io/metadataApp/**.
 
 A Nuxt 4 single-page app that reads a published report. No backend: the report
 is a file it fetches, and everything else happens in the browser.
@@ -79,10 +81,11 @@ number.
 
 The other views: one per check, ranked worst first; **Changes**, the diff between
 two runs when a run was given a baseline; **Reference designators**, the list the
-run saw; and **Sign-offs**, the queue of decisions waiting to be proposed. The run
-stamp at the top of every page names the run being read — nothing refreshes on
-its own, so a report older than a season is marked stale rather than left to look
-current.
+run saw; **Not in asset-management**, the vendor calibrations with no repository
+file; **Deployment history**, the product the run built; and **Queued changes**,
+everything decided and not yet proposed. The run stamp at the top of every page
+names the run being read — nothing refreshes on its own, so a report older than a
+season is marked stale rather than left to look current.
 
 A filtered table is a URL. Sending someone
 `/checks/calibrations?instrument=NUTNRA&vendorMatch=MISMATCH` sends them the view,
@@ -112,13 +115,14 @@ empty cell is the absence of a value, not the smallest one.
 
 Beside it are dropdowns over the columns worth narrowing by: instrument and
 comparison result for calibrations, site and year for deployments and positions,
-verdict for the rest, and sign-off status for the two checks that have one. Their options come from the rows in the report rather than
-from a list in the code, so a new instrument or a new verdict appears on its own.
+verdict for the rest, and sign-off status for the three checks that have one.
+Their options come from the rows in the report rather than from a list in the
+code, so a new instrument or a new verdict appears on its own.
 Each option carries a count measured against every *other* active filter, so
 narrowing one does not leave the numbers beside the alternatives stale.
 
-Checks with more than 50 rows are paged. The report is around 2 MB, which gzips
-to roughly 74 KB over the wire.
+Checks with more than 50 rows are paged. The report is just under 3 MB, which
+gzips to roughly 110 KB over the wire.
 
 ## Signing in, and signing off
 
@@ -172,7 +176,9 @@ of numbers has not agreed to move an instrument on the seabed, so the two travel
 separately. What shares a *file* does not get split further, though — where a
 deployment sat and which instrument it was are both corrections to one row of
 one sheet, so they ride together. Two requests editing `RS03AXPS_Deploy.csv` on
-branches cut from the same base would conflict the moment the first merged. Opening them all runs one request after another rather than
+branches cut from the same base would conflict the moment the first merged.
+
+Opening every batch at once runs one request after another rather than
 together — two branches cut from the same base at once is how the second lands
 empty.
 
@@ -221,9 +227,11 @@ and a fork that is ahead is not — Sync fork offers to *discard* the commits it
 is ahead by, which is the correction itself.
 
 The correction therefore travels on the branch the dashboard wrote it on. The
-reviewer retargets that pull request at upstream rather than merging it into
-their own `master`, which would add a merge commit and leave the fork ahead,
-blocking the next batch until upstream catches up. It refuses again if a value no
+reviewer opens a second pull request from that branch on the shared repository's
+compare page, rather than merging the fork's own request into their `master`,
+which would add a merge commit and leave the fork ahead, blocking the next batch
+until upstream catches up. [docs/post-cruise-review.md](docs/post-cruise-review.md)
+walks through it click by click. It refuses again if a value no
 longer reads what the run read, which means upstream moved and the report is out
 of date. Between them, a correction can only start from the file the finding
 came from.
@@ -254,7 +262,7 @@ It is what the `deployments` repository holds.
 Every run builds it, because a run already has everything it needs -- the
 deployment sheets and both repositories' calibration indexes -- so building it
 costs no further reads. It is published beside the report as
-`reports/history_<stamp>.json` rather than inside it, because it is 600 KB of
+`reports/history_<stamp>.json` rather than inside it, because it is 400 KB of
 csv that every other page of the dashboard would otherwise carry, and as
 `history-latest.json` for whichever run became the current one.
 
@@ -330,9 +338,14 @@ half of them into the wrong sheet.
 `.github/workflows/verify.yaml` runs the checks on `workflow_dispatch` only.
 There is no schedule: a run is an event someone chooses, usually once a season
 after the cruise, and occasionally to check a branch before it merges. Inputs
-select the asset-management repository and ref, an optional `baseline_ref` to
-compare against, and whether to publish. The report is kept as a build artifact
-either way, so a run that was only a look can still be read back.
+select the asset-management repository and ref, the calibrationFiles ref, an
+optional `baseline_ref` to compare against, and whether to publish. The report is
+kept as a build artifact either way, so a run that was only a look can still be
+read back. Publishing only happens when the workflow was dispatched from the
+default branch: dispatched from any other branch, the report would be committed
+there, the site rebuilds from the default branch and never shows it, and the run
+would go green regardless. Such a run keeps its artifact and says so in a
+warning instead.
 
 Publishing **commits the report to this repository** under `reports/`, rather
 than uploading it anywhere. Every published run is committed under its own name
@@ -388,8 +401,20 @@ create and approve pull requests** switched on, once.
 
 `.github/workflows/pages.yaml` builds the site and publishes it to **GitHub
 Pages**, with typecheck and tests blocking. It runs on a push that changes the
-dashboard, and on the verification workflow **finishing**, so a published run
-redeploys the site that serves it. A pull request builds but does not deploy.
+dashboard, and on the verification or deletion workflow **finishing**, so a
+published run redeploys the site that serves it and a deleted one leaves it. A
+run that only looked, or a dry-run prune, pushed nothing, and the build first
+checks whether the default branch has moved since that run started; if it has
+not, there is nothing to deploy and it stops there. A pull request builds but
+does not deploy.
+
+Two workflows commit to `reports/`, and they can run at the same time. Neither
+uses a concurrency group: GitHub holds one running and one pending run per
+group and cancels a third, so a busy afternoon of publishes lost runs. Instead
+both commit through `.github/actions/commit-reports`, which rebases over
+whatever landed meanwhile and resolves the one file two runs both write, the
+index, by rebuilding it from the reports on disk with `index-metadata --rebuild`.
+The `-latest` copies go to the run that finished later.
 
 That second trigger is not decoration. A published run commits the report using
 the default `GITHUB_TOKEN`, and GitHub deliberately refuses to start a workflow
@@ -431,6 +456,9 @@ Nothing else is configured, and nothing needs to be configured again.
 The reasoning behind the answers, kept out of this file so it stays a guide to
 running the thing:
 
+- [docs/post-cruise-review.md](docs/post-cruise-review.md) — the whole
+  post-cruise review, step by step, including how to raise a change upstream
+  without a second commit.
 - [docs/using-the-dashboard.md](docs/using-the-dashboard.md) — the reviewer's
   walkthrough: token, navigation, sign-offs, corrections, runs, and what to do when GitHub
   refuses something.
@@ -510,9 +538,9 @@ every ADCP and OPTAA silently came back empty. The archive wraps every record
 -- in port agent packets since 2018, in `<OOI-TS>` text tags before -- and the
 wrapper is stripped before parsing, because an ensemble with a tag inside it
 fails its checksum. The VADCPB fitted in 2024 is a Nortek Signature rather than
-a Teledyne unit and writes text, with its serial on every `$PNORI` line. A five-beam ADCP is archived as
-two folders, `MAIN` and `-5TH`; only the main unit is read, because the fifth
-beam's serial belongs to no asset. Deep profiler serials are in the
+a Teledyne unit and writes text, with its serial on every `$PNORI` line. A
+five-beam ADCP is archived as two folders, `MAIN` and `-5TH`; only the main unit
+is read, because the fifth beam's serial belongs to no asset. Deep profiler serials are in the
 `sernums_hi-res_` engineering files, which begin in 2020; earlier profiler
 deployments cannot be confirmed this way.
 
@@ -532,9 +560,10 @@ deployments cannot be confirmed this way.
       publish.py        proposing generated files as a pull request
       rawarchive.py     listing the OOI raw data archive
       serials.py        serial numbers out of raw files
-      cli.py            the five entry points
+      instruments.py    which classes write a serial, and how one is matched
+      cli.py            the six entry points
     dashboard/          the Nuxt SPA
-    params/             instrument list, coefficient map, constants, raw serials
+    params/             instrument list, coefficient map, constants, raw serials and aliases
     2i_HITL/            reviewer sign-off sheets
     inputs/             the RCA position spreadsheet drops
     schema/             the report's fields, read by both test suites
@@ -588,5 +617,5 @@ them, so a number on screen can be traced to the library that read it.
     pip install -e ".[test]"
 
 The dashboard tests cover the code that rewrites the HITL sheets, against the
-real 380-row calibration sheet. A bug there corrupts years of sign-offs, and the
+team's real calibration sheet. A bug there corrupts years of sign-offs, and the
 first version of it would have rewritten every line of the file on every commit.

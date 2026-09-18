@@ -29,20 +29,18 @@ on:
         default: false
 
 env:
-  PYTHON_VERSION: 3.11
+  PYTHON_VERSION: "3.11"
   REPORT: reports/report.json
   COMPARISON: reports/comparison.json
   # The published deployment history, beside the report rather than inside it:
   # the dashboard fetches it only when a reviewer opens the history view.
   HISTORY: reports/history.json
 
-# A published run commits to the default branch, which starts the Pages deploy.
-# Two runs publishing at once would race over that commit, and so would a prune
-# deleting runs -- both rewrite reports/index.json -- so everything that writes
-# there queues behind one group. A run that only looks does not.
-concurrency:
-  group: ${{ inputs.publish && 'publish-reports' || 'verify-check' }}
-  cancel-in-progress: false
+# No concurrency group, on purpose. A group holds one running and ONE pending
+# run and cancels a third arrival, so a busy afternoon of publishes lost runs.
+# Publishing instead rebases over whatever landed meanwhile and resolves the one
+# file two runs both write -- the index -- by rebuilding it from the reports on
+# disk. See .github/actions/commit-reports.
 
 jobs:
   verify:
@@ -97,11 +95,18 @@ jobs:
       - name: Install package
         run: pip install . -c constraints.txt
 
+      # Inputs reach the shell through the environment rather than being pasted
+      # into the script: a ref with a quote in it would otherwise end the string
+      # early and fail the run with a syntax error.
       - name: Run all checks
+        env:
+          REPO: ${{ inputs.asset_management_repo }}
+          REF: ${{ inputs.asset_management_ref }}
+          CAL_REF: ${{ inputs.calibration_files_ref }}
         run: |
           verify-metadata \
-            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}' \
-            --calibration-files 'OOI-CabledArray/calibrationFiles@${{ inputs.calibration_files_ref }}' \
+            --asset-management "$REPO@$REF" \
+            --calibration-files "OOI-CabledArray/calibrationFiles@$CAL_REF" \
             --deployments 'OOI-CabledArray/deployments@main' \
             --clones repos \
             --out "$REPORT" \
@@ -122,13 +127,17 @@ jobs:
 
       - name: Run the baseline and compare
         if: ${{ inputs.baseline_ref != '' }}
+        env:
+          REPO: ${{ inputs.asset_management_repo }}
+          BASELINE: ${{ inputs.baseline_ref }}
+          CAL_REF: ${{ inputs.calibration_files_ref }}
         run: |
           # the other two repositories are the same in both runs
           ln -s "$PWD/repos/calibrationFiles" baseline/calibrationFiles
           ln -s "$PWD/repos/deployments" baseline/deployments
           verify-metadata \
-            --asset-management '${{ inputs.asset_management_repo }}@${{ inputs.baseline_ref }}' \
-            --calibration-files 'OOI-CabledArray/calibrationFiles@${{ inputs.calibration_files_ref }}' \
+            --asset-management "$REPO@$BASELINE" \
+            --calibration-files "OOI-CabledArray/calibrationFiles@$CAL_REF" \
             --deployments 'OOI-CabledArray/deployments@main' \
             --clones baseline \
             --out reports/baseline.json
@@ -155,8 +164,11 @@ jobs:
       # run to the picker and moving nothing. A branch check is a question, and
       # a question you can open in the dashboard is worth more than one you
       # download as a zip.
-      - name: Commit the report
-        if: ${{ inputs.publish }}
+      # Only from the default branch. Dispatched from any other branch, the
+      # report would be committed there: the site rebuilds from the default
+      # branch and never shows it, and the run goes green all the same.
+      - name: Stage the report
+        if: ${{ inputs.publish && github.ref_name == github.event.repository.default_branch }}
         env:
           REPO: ${{ inputs.asset_management_repo }}
           REF: ${{ inputs.asset_management_ref }}
@@ -164,6 +176,7 @@ jobs:
           REPLACE: ${{ inputs.replace_production }}
         run: |
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
           cp "$REPORT" "reports/report_$stamp.json"
           index-metadata --report "$REPORT" --name "report_$stamp.json" \
             --index reports/index.json --out reports/index.json
@@ -219,13 +232,23 @@ jobs:
               "picker. latest.json is unchanged, because $REPO@$REF is not production."
           fi
 
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add -f $files
-          git commit -m "Verification run $stamp
 
-          asset-management ${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}
-          calibrationFiles @${{ inputs.calibration_files_ref }}"
-          # Another run may have published while this one was working.
-          git pull --rebase origin ${{ github.ref_name }}
-          git push origin HEAD:${{ github.ref_name }}
+      - name: Commit the report
+        if: ${{ inputs.publish && github.ref_name == github.event.repository.default_branch }}
+        uses: ./.github/actions/commit-reports
+        with:
+          branch: ${{ github.ref_name }}
+          message: |
+            Verification run ${{ env.STAMP }}
+
+            asset-management ${{ inputs.asset_management_repo }}@${{ inputs.asset_management_ref }}
+            calibrationFiles @${{ inputs.calibration_files_ref }}
+
+      - name: Not published
+        if: ${{ inputs.publish && github.ref_name != github.event.repository.default_branch }}
+        run: |
+          echo "::warning title=Not published::publish was ticked, but this run was dispatched from" \
+            "'${{ github.ref_name }}', not the default branch. The report is in the run's artifact;" \
+            "dispatch from the default branch to publish it."
+

@@ -122,7 +122,11 @@ watch(status, async (value) => {
   await nextTick()
   reveal()
 })
-onMounted(load)
+onMounted(() => {
+  load()
+  // A dialog takes focus, so Escape reaches it and the page behind it does not.
+  root.value?.focus()
+})
 
 function blobUrl(name: string, path: string) {
   return store.fileUrl(name, path)
@@ -140,6 +144,8 @@ function blobUrl(name: string, path: string) {
       role="dialog"
       aria-modal="true"
       aria-label="Calibration file against the vendor original"
+      tabindex="-1"
+      @keydown.esc="emit('close')"
     >
       <header class="border-b border-gray-200 flex gap-3 items-center px-5 py-3.5">
         <h3 class="font-semibold text-[15px]">Calibration against the vendor original</h3>

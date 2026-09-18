@@ -6,29 +6,19 @@ is a serialization step rather than a rewrite.
 """
 
 import datetime
+import itertools
 import os
 
 import numpy as np
 import pandas as pd
 
-from .calibrations import comparisonRule, compareCalCoefficients, isConstantsOnly
+from .calibrations import compareCalCoefficients, comparisonRule, isConstantsOnly
+from .instruments import expectsRawSerial, partialMatch
 from .loading import RCA_ASSET_PREFIXES, inForceAt
-from .serials import partialMatch
 
 ## How many trailing characters make a serial number a format match rather than
 ## a disagreement -- vendors and OOI disagree about prefixes, not about digits.
 SERIAL_TAIL = 3
-
-## Instrument types whose serial number can be read out of a raw file.
-VERIFIABLE_BY_RAW_SN = ['CTD', 'SPK', 'NUT', 'PAR', 'FLOR', 'PREST', 'TMPSFA', 'OPTAA', 'ADCP']
-
-## Deep profiler instruments whose serial number is in the engineering file.
-VERIFIABLE_BY_RAW_SN_DP = ['ENG000000', 'VEL3DA105', 'FLCDRA103', 'FLNTUA103', 'DOSTAD105',
-                           'VEL3DA103', 'FLCDRA102', 'FLNTUA102', 'DOSTAD104',
-                           'VEL3DA303', 'FLCDRA302', 'FLNTUA302', 'DOSTAD304']
-
-## The MARUM PI sensor has no raw data in the archive, so it is never a finding.
-EXCLUDE_SENSORS = ['CTDPFA110']
 
 ## A calibration older than this at deployment is worth a second look.
 CAL_AGE_LIMIT = datetime.timedelta(days=450)
@@ -180,12 +170,14 @@ def _loadGithubCal(path):
     parse is tried before the file is called unreadable. Only that looser parse
     can hold a sheet reference -- the float converter would have rejected one.
     """
+    ## The serial is an identifier, not a number: read as one, 1234 becomes
+    ## 1234.0 and never matches the record's '1234'.
     try:
-        return pd.read_csv(path, converters={'value': np.float64},
+        return pd.read_csv(path, converters={'value': np.float64}, dtype={'serial': str},
                            float_precision='round_trip'), 'SUCCESS_TYPE1'
     except ValueError:
         try:
-            cal = pd.read_csv(path, float_precision='round_trip')
+            cal = pd.read_csv(path, dtype={'serial': str}, float_precision='round_trip')
             return _resolveSheets(cal, path), 'SUCCESS_TYPE2'
         except ValueError:
             return None, 'FAIL'
@@ -195,9 +187,12 @@ def _serialVerdict(githubCal, stem, serialByAsset):
     """Does the serial inside the file agree with the asset ID in its name?"""
     if 'serial' not in githubCal.columns:
         return 'NOTFOUND_FILE'
-    serials = np.unique(githubCal['serial'])
+    ## A blank cell is not a second serial number.
+    serials = githubCal['serial'].dropna().astype(str).str.strip().unique()
     if len(serials) > 1:
         return 'MULTIPLE'
+    if len(serials) == 0:
+        return 'NOTFOUND_FILE'
     assetID = stem.split('__')[0]
     if assetID not in serialByAsset:
         return 'PARSING_ERROR'
@@ -301,9 +296,7 @@ def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
             continue
 
         row['serialNumber'] = _serialVerdict(githubCal, stem, serialByAsset)
-        ## OPTAA .ext sheets carry no column headers, so duplicates cannot be read
-        if not fileName.endswith('.ext'):
-            row['duplicateCoeff'] = _duplicateVerdict(githubCal)
+        row['duplicateCoeff'] = _duplicateVerdict(githubCal)
 
         ## A file with no vendor original is still worth reading: some
         ## instruments carry fixed values that no vendor ever measures, and
@@ -377,41 +370,51 @@ def checkDeploymentSheets(deployments, bulk):
         if value not in cruises:
             record(index, value, 'CRUISE_NOT_IN_CRUISE_LIST')
 
-    ## The same instrument cannot be in two places in one deployment.
-    for (year, deployNum), group in deployments.groupby([years, 'deploymentNumber']):
-        repeated = group[group['sensor.uid'].duplicated(keep=False)]
-        for asset, shared in repeated.groupby('sensor.uid'):
+    ## The same instrument cannot be in two places at once. Compared by the
+    ## time it was in the water, not by deployment number: numbers count per
+    ## designator, so one asset can be deployment 3 on one and 7 on another in
+    ## the same season, and two unrelated designators can share a number. A
+    ## deployment still in the water runs to the end of time here.
+    starts = pd.to_datetime(deployments['startDateTime'])
+    stops = pd.to_datetime(deployments['stopDateTime']).fillna(pd.Timestamp.max)
+    designator = deployments['Reference Designator']
+    for asset, group in deployments.groupby('sensor.uid'):
+        if len(group) < 2 or not str(asset).strip():
+            continue
+        for first, second in itertools.combinations(group.index, 2):
+            ## The same designator again is a redeployment, not a second place.
+            if designator[first] == designator[second]:
+                continue
+            if not (starts[first] < stops[second] and starts[second] < stops[first]):
+                continue
             ## Unless the two names are one instrument, which the RAS and its
             ## D1000 are: one asset, two data streams, named once under each.
-            if frozenset(_instrumentOf(r['Reference Designator'])
-                         for _, r in shared.iterrows()) in ONE_INSTRUMENT_TWO_STREAMS:
+            if frozenset(_instrumentOf(designator[k]) for k in (first, second)) in ONE_INSTRUMENT_TWO_STREAMS:
                 continue
-            rows += [{'refDes': r['Reference Designator'], 'deployNum': deployNum,
-                      'deployYear': int(year), 'value': asset,
-                      'verdict': 'DUPLICATE_ASSET_IN_DEPLOYMENT'} for _, r in shared.iterrows()]
+            for here, there in ((first, second), (second, first)):
+                record(here, asset, 'DUPLICATE_ASSET_IN_DEPLOYMENT: also '
+                       f"{designator[there]} deployment {deployments.at[there, 'deploymentNumber']}")
     return rows
 
 
-def _lookupRow(table, refDes, deployNum, year):
+def _lookupRow(table, refDes, deployNum, year, singleThatYear=True):
     """The parameter row for one deployment.
 
-    Keyed on the deployment, falling back to the year only where that year holds
-    a single deployment. An instrument deployed twice in a season has two rows,
-    and picking the first of them is how the wrong serial number gets attributed.
+    Keyed on the deployment, falling back to the year only where the instrument
+    had a single deployment that year *and* the table holds a single row for it.
+    An instrument deployed twice in a season has two rows, and handing one
+    unkeyed row to both deployments is how the wrong serial number gets
+    attributed -- one would read as confirmed and the other as a mismatch, on
+    the strength of a row that names neither.
     """
     rows = table[table.referenceDesignator == refDes]
     exact = rows[rows.deployNum == deployNum]
     if len(exact) == 1:
         return exact.iloc[0]
+    if not singleThatYear:
+        return None
     byYear = rows[rows.deployYear == year]
     return byYear.iloc[0] if len(byYear) == 1 else None
-
-
-def _expectsRawSerial(refDes):
-    instrument = refDes[18:27]
-    if any(sensor in instrument for sensor in EXCLUDE_SENSORS):
-        return False
-    return any(sensor in instrument for sensor in VERIFIABLE_BY_RAW_SN + VERIFIABLE_BY_RAW_SN_DP)
 
 
 def _assignCalFile(deployment, calHistory):
@@ -445,7 +448,7 @@ def _rawVerdict(deployment, serialByAsset, aliases=None):
     if deployment['firstRawFile'] == 'undef':
         return 'NAN'
     if deployment['firstRawFile'] == 'none':
-        return 'NO_FILE' if _expectsRawSerial(deployment['refDes']) else 'NAN'
+        return 'NO_FILE' if expectsRawSerial(deployment['refDes']) else 'NAN'
     rawSN = str(deployment['rawSN'])
     if '-99999' in rawSN:
         return 'NO_SN'
@@ -473,7 +476,7 @@ def _rawVerdict(deployment, serialByAsset, aliases=None):
     ## a swapped pair is the common cause and the answer is more useful than the finding.
     found = 'unknown'
     for assetID, serial in serialByAsset.items():
-        if deployment['AssetID'][0:11] in assetID and (rawSN in str(serial) or rawSN == aliases.get(assetID)):
+        if str(deployment['AssetID'])[0:11] in assetID and (rawSN in str(serial) or rawSN == aliases.get(assetID)):
             found = assetID
     return f'MISMATCH: raw: {rawSN}: {found}'
 
@@ -519,19 +522,30 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             if not row['calibrationRequired'] and row['calFile_verify'] == 'none':
                 row['calFile_verify'] = 'EXCLUDED'
 
-            rawRow = _lookupRow(params['rawSN'], refDes, deployment['deployNum'], year)
+            ## Whether a row keyed on the year alone could belong to this deployment.
+            single = sum(1 for each in deployments if each['deployDate'].year == year) == 1
+            rawRow = _lookupRow(params['rawSN'], refDes, deployment['deployNum'], year, single)
             if rawRow is not None:
                 row['rawSN'], row['firstRawFile'] = rawRow.rawSerialNumber, rawRow.rawFile
-            elif _expectsRawSerial(refDes):
+            elif expectsRawSerial(refDes):
                 row['rawSN'], row['firstRawFile'] = '-99999', 'none'
             else:
                 row['rawSN'], row['firstRawFile'] = 'undef', 'undef'
             row['rawFile_verify'] = _rawVerdict(row, serialByAsset, params.get('serialAliases'))
 
-            imageRow = _lookupRow(images, refDes, deployment['deployNum'], year)
-            row['imageAssetID'] = imageRow.imageAssetID if imageRow is not None else 'undef'
-            row['image_verify'] = 'NAN' if imageRow is None else (
-                'MATCH' if str(row['imageAssetID']) in str(deployment['AssetID']) else 'MISMATCH')
+            imageRow = _lookupRow(images, refDes, deployment['deployNum'], year, single)
+            imageAsset = (None if imageRow is None or pd.isna(imageRow.imageAssetID)
+                          else str(imageRow.imageAssetID).strip())
+            row['imageAssetID'] = imageAsset or 'undef'
+            ## A photograph nobody could read an asset from contradicts nothing.
+            ## The blank used to become the string 'nan', which is in no asset ID,
+            ## and 48 deployments carried a warning no photograph ever raised.
+            if imageRow is None:
+                row['image_verify'] = 'NAN'
+            elif not imageAsset:
+                row['image_verify'] = 'NO_IMAGE_ASSET'
+            else:
+                row['image_verify'] = 'MATCH' if imageAsset in str(deployment['AssetID']) else 'MISMATCH'
 
             ## Two things confirm a deployment, and either alone is enough: the
             ## serial number recovered from the first raw file, or a reviewer's
@@ -542,7 +556,7 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             ## deployments were reading as confirmed on that alone.
             if row['rawFile_verify'] == 'MATCH' or row['HITLstatus'] == 'Clear':
                 row['verificationStatus'] = 'VERIFIED'
-            elif _expectsRawSerial(refDes):
+            elif expectsRawSerial(refDes):
                 row['verificationStatus'] = 'RAW_SN_POSSIBLE'
             else:
                 row['verificationStatus'] = 'NOT_VERIFIED'

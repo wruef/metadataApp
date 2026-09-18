@@ -315,7 +315,8 @@ def _tabulated(rows, names):
         if [cell for cell in row if cell in names] == list(names):
             values = [cell for cell in rows[index + 1] if NUMBER.match(cell)]
             if len(values) >= len(names):
-                return {name: float(value) for name, value in zip(names, values)}
+                ## the row can carry more numbers than names, and the leading ones are the coefficients
+                return {name: float(value) for name, value in zip(names, values)}  # noqa: B905
     return {}
 
 

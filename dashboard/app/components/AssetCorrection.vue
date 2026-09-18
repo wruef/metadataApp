@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAuth } from '~/auth'
+import { FORKS, useAuth } from '~/auth'
 import { sheetKey, useBatch } from '~/batch'
 import { ASSET_FIELD, deploymentPath } from '~/deployfile'
 import { assetNamedByRawSerial } from '~/display'
@@ -51,14 +51,6 @@ function take() {
   typed.value = fromRaw.value
 }
 
-/** Asked once the reviewer could act on the answer, as the difference table does. */
-watchEffect(() => {
-  if (auth.canSignOff) batch.checkSync('assetManagement')
-})
-
-const blocked = computed(() => batch.refusalFor('assetManagement'))
-const editing = computed(() => auth.canSignOff && !blocked.value)
-
 function add() {
   batch.queueAsset(
     refDes.value, deployNum.value, held.value, wanted.value,
@@ -71,9 +63,8 @@ function add() {
 
 const editUrl = computed(() => {
   const fork = auth.forkFor('assetManagement')
-  return fork
-    ? `https://github.com/${fork}/edit/master/${deploymentPath(refDes.value)}`
-    : ''
+  const base = FORKS.find((each) => each.key === 'assetManagement')!.base
+  return fork ? `https://github.com/${fork}/edit/${base}/${deploymentPath(refDes.value)}` : ''
 })
 </script>
 
@@ -83,33 +74,7 @@ const editUrl = computed(() => {
       The instrument on the sheet
     </h4>
 
-    <p v-if="batch.checkingFor('assetManagement') && auth.canSignOff" class="mt-2 text-gray-500 text-[12.5px]">
-      Checking your fork against oceanobservatories/asset-management…
-    </p>
-
-    <!-- A fork that is not exactly upstream is a fork this dashboard has never
-         read, so this is a refusal rather than a warning. -->
-    <u-alert
-      v-else-if="blocked && auth.canSignOff"
-      class="mt-2"
-      color="error"
-      variant="subtle"
-      title="Cannot correct the sheet: your fork is not in sync"
-      :description="blocked"
-    >
-      <template #actions>
-        <u-button size="xs" color="neutral" variant="subtle" @click="batch.checkSync('assetManagement', true)">
-          Check again
-        </u-button>
-      </template>
-    </u-alert>
-
-    <div v-else-if="!auth.canSignOff" class="mt-2 text-gray-500 text-[12.5px]">
-      <nuxt-link to="/settings" class="text-primary-700 underline">Sign in</nuxt-link>
-      with your initials to change which asset this deployment names.
-    </div>
-
-    <template v-else>
+    <fork-guard fork="assetManagement" action="change which asset this deployment names" class="mt-2">
       <div class="flex flex-wrap gap-x-6 gap-y-2 items-end mt-2">
         <div>
           <div class="text-[11px] text-gray-500">On the sheet</div>
@@ -163,7 +128,7 @@ const editUrl = computed(() => {
           <nuxt-link to="/queue" class="underline">Open the queue</nuxt-link> to propose them.
         </template>
       </u-alert>
-    </template>
+    </fork-guard>
   </div>
 </template>
 

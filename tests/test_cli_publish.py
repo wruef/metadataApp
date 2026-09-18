@@ -162,3 +162,17 @@ def test_keepingNothingIsRefused(tmp_path):
     reports = published(tmp_path)
     with pytest.raises(SystemExit):
         pruneMain(['--reports', str(reports), '--keep', '0'])
+
+
+def test_theIndexCanBeRebuiltFromWhatIsOnDisk(tmp_path):
+    """Two runs publishing at once both rewrite the index and conflict on it.
+    Rebuilt from the files after the rebase, it needs no merging."""
+    from rca_metadata.cli import rebuildIndex
+
+    reports = tmp_path / 'reports'
+    reports.mkdir()
+    older = {**REPORT, 'runAt': '2026-01-01T00:00:00'}
+    (reports / 'report_a.json').write_text(json.dumps(older))
+    (reports / 'report_b.json').write_text(json.dumps(REPORT))
+    (reports / 'latest.json').write_text(json.dumps(REPORT))   # not a run of its own
+    assert [entry['name'] for entry in rebuildIndex(str(reports))] == ['report_b.json', 'report_a.json']

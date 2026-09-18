@@ -114,6 +114,7 @@ function decide(status: 'Clear' | 'NotClear') {
         </select>
         <u-input
           v-model="notes"
+          aria-label="Reason for the decision"
           placeholder="Why — what you checked, and what convinced you"
           size="sm"
           @blur="queued && decide(queued.status)"

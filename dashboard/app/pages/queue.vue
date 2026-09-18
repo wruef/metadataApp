@@ -101,10 +101,19 @@ const anyBusy = computed(() => Object.values(batch.submitting).some(Boolean))
               Touching
               <span class="font-mono">{{ paths(entries).join(', ') }}</span>.
             </p>
+            <!-- Known before the click: the write would be refused at the moment
+                 of writing anyway, so the button says so rather than running
+                 five requests' worth of nothing first. -->
+            <p
+              v-if="definition.guarded && batch.refusalFor(definition.fork)"
+              class="text-red-700 text-sm"
+            >
+              {{ batch.refusalFor(definition.fork) }}
+            </p>
             <div v-if="entries.length" class="flex flex-wrap gap-2">
               <u-button
                 :loading="busy(definition.key)"
-                :disabled="!auth.canSignOff || anyBusy"
+                :disabled="!auth.canSignOff || anyBusy || Boolean(definition.guarded && batch.refusalFor(definition.fork))"
                 @click="batch.submit(definition.key)"
               >
                 Open pull request

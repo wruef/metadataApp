@@ -3,7 +3,6 @@
 import datetime
 
 import pandas as pd
-import pytest
 
 from rca_metadata.checks import _lookupRow, checkDeploymentSheets, checkSensorBulk
 
@@ -82,8 +81,9 @@ def test_assetsMissingFromEitherSideAreReported():
 
 ## --- the same asset deployed twice at once ---
 
-def sheets(pairs, year='2014-06-01T00:00:00', deployNum=1):
-    """Deployment sheet rows: (reference designator, asset ID)."""
+def sheets(pairs, year='2014-06-01T00:00:00', deployNum=1, stop=None):
+    """Deployment sheet rows: (reference designator, asset ID). No stop means
+    still in the water."""
     return pd.DataFrame({
         'Reference Designator': [refDes for refDes, _ in pairs],
         'sensor.uid': [asset for _, asset in pairs],
@@ -93,6 +93,7 @@ def sheets(pairs, year='2014-06-01T00:00:00', deployNum=1):
         'CUID_Deploy': ['CRUISE'] * len(pairs),
         'deploymentNumber': [deployNum] * len(pairs),
         'startDateTime': [year] * len(pairs),
+        'stopDateTime': [stop] * len(pairs),
     })
 
 
@@ -103,7 +104,7 @@ BULK = {'assetIDs': {'sensors': {'ATAPL-1', 'ATAPL-58340-00003'},
 
 
 def duplicates(rows):
-    return [r for r in rows if r['verdict'] == 'DUPLICATE_ASSET_IN_DEPLOYMENT']
+    return [r for r in rows if r['verdict'].startswith('DUPLICATE_ASSET_IN_DEPLOYMENT')]
 
 
 def test_theSameAssetInTwoPlacesAtOnceIsAFinding():
@@ -131,6 +132,45 @@ def test_theExceptionIsThePairAndNotEitherAlone():
         ('RS03INT1-MJ03C-07-RASFLA301', 'ATAPL-1'),
         ('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')]), BULK)
     assert len(duplicates(rows)) == 2
+
+
+def test_anAssetRecoveredAndRedeployedElsewhereWasNotInTwoPlaces():
+    """The one finding the old rule left standing: a DOSTA on the deep profiler
+    until 22 September 2014 and on the platform from the 27th. Same year, same
+    deployment number, never in the water twice at once."""
+    frame = pd.concat([
+        sheets([('RS01SBPD-DP01A-06-DOSTAD104', 'ATAPL-1')],
+               year='2014-08-23T05:55:50', stop='2014-09-22T00:00:00'),
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')],
+               year='2014-09-27T13:29:00', stop='2015-07-09T00:00:00'),
+    ], ignore_index=True)
+    assert duplicates(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_overlappingDeploymentsAreFoundWhateverTheirNumbers():
+    """Numbers count per designator, so one asset can be deployment 3 on one
+    and 7 on another. The old rule compared only rows sharing a number, so this
+    was never seen."""
+    frame = pd.concat([
+        sheets([('RS01SBPD-DP01A-06-DOSTAD104', 'ATAPL-1')], year='2020-08-01T00:00:00', deployNum=3),
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2020-09-01T00:00:00', deployNum=7),
+    ], ignore_index=True)
+    found = duplicates(checkDeploymentSheets(frame, BULK))
+    assert len(found) == 2
+    ## each row names the other place
+    assert {r['verdict'] for r in found} == {
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: also RS03AXPS-PC03A-4A-DOSTAD303 deployment 7',
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: also RS01SBPD-DP01A-06-DOSTAD104 deployment 3'}
+
+
+def test_aRedeploymentOnTheSameDesignatorIsNotASecondPlace():
+    """Two deployments of one slot whose dates overlap is a sheet error of a
+    different kind, not the same instrument in two places."""
+    frame = pd.concat([
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2020-08-01T00:00:00', deployNum=6),
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2021-07-01T00:00:00', deployNum=7),
+    ], ignore_index=True)
+    assert duplicates(checkDeploymentSheets(frame, BULK)) == []
 
 
 def test_everyRowSaysWhichYearItWasDeployed():
@@ -220,8 +260,9 @@ def test_anAssetTheRcaListNeverHeardOfHasNoType():
 def test_aVendorFileWithNoRepositoryFileCarriesItsInstrument():
     """The vendor directory is the only thing on record that says what kind of
     instrument these are, so it travels with the name."""
-    from rca_metadata.checks import signOff
     import pandas as pd
+
+    from rca_metadata.checks import signOff
 
     sheet = pd.DataFrame({'Status': ['Clear'], 'HITLnotes': ['ingested by hand in 2019']},
                          index=pd.Index(['ATAPL-1__20140101.csv'], name='githubFile'))
@@ -277,7 +318,7 @@ def test_anotherModelEntirelyDoesNotMakeASerialAmbiguous():
 def test_anAmbiguousSerialIsNotAMismatch():
     """Nothing disagrees, so it is not a mismatch; nothing was established
     either, so it is not a match."""
-    from rca_metadata.report import severityOf, reasonOf
+    from rca_metadata.report import reasonOf, severityOf
 
     row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'AMBIGUOUS_SN: raw: 0: also X',
            'image_verify': 'NAN', 'calFile_verify': 'VALID_FILE', 'cleared': False}
@@ -376,3 +417,66 @@ def test_anAliasedSerialConfirmsTheAsset():
     assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk, aliases) == 'MATCH'
     assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk) .startswith('MISMATCH')
     assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00003'), bulk, aliases) == 'MISMATCH: raw: 21829: ATAPL-58345-00004'
+
+
+## --- review fixes, each caught by one row ---
+
+def test_aPhotographWithNoAssetReadFromItContradictsNothing():
+    """params/imageSN.csv holds 48 rows with a photo but a blank imageAssetID.
+    The blank became the string 'nan', which is in no asset ID, and every one of
+    those deployments carried a warning no photograph ever raised."""
+    import datetime
+
+    import pandas as pd
+
+    from rca_metadata.checks import checkDeployments
+
+    byRefDes = {'RS01SLBS-LJ01A-12-CTDPFB101': [{
+        'refDes': 'RS01SLBS-LJ01A-12-CTDPFB101', 'deployNum': 3,
+        'deployDate': datetime.datetime(2020, 8, 1), 'deployEnd': '', 'AssetID': 'ATAPL-1'}]}
+    images = pd.DataFrame([{'referenceDesignator': 'RS01SLBS-LJ01A-12-CTDPFB101', 'deployNum': 3,
+                            'deployYear': 2020, 'imageFile': 'x.jpg', 'imageSerialNumber': '7',
+                            'imageAssetID': None, 'notes': ''}])
+    params = {'serialByAsset': {'ATAPL-1': '123'}, 'imageSN': images,
+              'rawSN': pd.DataFrame(columns=['referenceDesignator', 'deployNum', 'deployYear',
+                                             'rawFile', 'rawSerialNumber'])}
+    hitl = {'deployments': pd.DataFrame(columns=['Status', 'HITLnotes']).set_index(
+        pd.Index([], name='referenceDesignatorYearDeployNum'))}
+    [row] = checkDeployments(byRefDes, params, hitl, {}, [])
+    assert row['image_verify'] == 'NO_IMAGE_ASSET'
+    assert row['imageAssetID'] == 'undef'
+
+
+def test_aBlankSerialCellIsNotASecondSerialAndANumberStillMatches():
+    import numpy as np
+    import pandas as pd
+
+    from rca_metadata.checks import _serialVerdict
+
+    ## as _loadGithubCal now reads it: the serial column is text
+    cal = pd.DataFrame({'serial': ['1234', '1234', np.nan], 'name': ['a', 'b', 'c'], 'value': [1, 2, 3]})
+    assert _serialVerdict(cal, 'ATAPL-1__20200101', {'ATAPL-1': '1234'}) == 'MATCH_SENSORBULK'
+    blank = pd.DataFrame({'serial': [np.nan], 'name': ['a'], 'value': [1]})
+    assert _serialVerdict(blank, 'ATAPL-1__20200101', {'ATAPL-1': '1234'}) == 'NOTFOUND_FILE'
+
+
+def test_theYearFallbackNeedsASingleDeploymentThatYear():
+    """One unkeyed row for a year with two deployments must not be handed to
+    both -- one would read confirmed and the other a mismatch, on a row that
+    names neither."""
+    import pandas as pd
+
+    from rca_metadata.checks import _lookupRow
+
+    table = pd.DataFrame([{'referenceDesignator': 'X', 'deployNum': None, 'deployYear': 2020,
+                           'rawFile': 'f', 'rawSerialNumber': '7'}])
+    assert _lookupRow(table, 'X', 5, 2020, singleThatYear=True) is not None
+    assert _lookupRow(table, 'X', 5, 2020, singleThatYear=False) is None
+
+
+def test_aBlankAssetOnTheSheetDoesNotCrashTheRawVerdict():
+    from rca_metadata.checks import _rawVerdict
+
+    row = {'firstRawFile': 'x.dat', 'rawSN': '999', 'AssetID': float('nan'),
+           'refDes': 'RS01SBPS-SF01A-2A-CTDPFA102'}
+    assert _rawVerdict(row, {'ATAPL-1': '123'}).startswith('MISMATCH')

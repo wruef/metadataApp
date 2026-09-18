@@ -67,6 +67,12 @@ describe('what a run is dispatched with', () => {
     expect(dispatchInputs(testing()).baseline_ref).toBe('')
   })
 
+  it('drops a baseline chosen in testing once the bar says production', () => {
+    // The select is only shown in testing, but its value outlives the switch.
+    const source = { ...newSource(), baseline: 'master' }
+    expect(dispatchInputs(source).baseline_ref).toBe('')
+  })
+
   it('will not start a testing run that names nothing', () => {
     expect(ready(newSource())).toBe(true)
     expect(ready(testing({ ref: '' }))).toBe(false)

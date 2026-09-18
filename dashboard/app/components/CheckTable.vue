@@ -89,6 +89,24 @@ const REVIEW_STATUS = 'severity'
 const sortColumn = ref(asked('sort'))
 const sortAsc = ref(asked('dir') !== 'desc')
 
+/** The filters, back into the address bar. A filtered table is a URL only if
+ *  narrowing one writes the URL; reading the query on open was half of that,
+ *  and the half that let a link in but never produced one. Only what differs
+ *  from how the check opens is written, so a fresh page has a clean address. */
+const router = useRouter()
+watch([severity, picked, clearedOnly, search, sortColumn, sortAsc], () => {
+  const query: Record<string, string> = {}
+  if (severity.value !== fallback) query.severity = severity.value
+  for (const [key, value] of Object.entries(picked)) if (value) query[key] = value
+  if (clearedOnly.value !== 'all') query.cleared = clearedOnly.value
+  if (search.value) query.q = search.value
+  if (sortColumn.value) {
+    query.sort = sortColumn.value
+    if (!sortAsc.value) query.dir = 'desc'
+  }
+  router.replace({ query })
+}, { deep: true })
+
 function sortBy(column: string) {
   if (sortColumn.value !== column) {
     sortColumn.value = column
@@ -349,7 +367,12 @@ function label(column: string) {
             <tr
               class="border-t border-gray-100 cursor-pointer hover:bg-primary-50"
               :class="{ 'bg-primary-50': opened === index }"
+              tabindex="0"
+              role="button"
+              :aria-expanded="opened === index"
               @click="toggle(index)"
+              @keydown.enter.prevent="toggle(index)"
+              @keydown.space.prevent="toggle(index)"
             >
               <!-- The severity, readable down the edge of the table without
                    reading a single word. -->

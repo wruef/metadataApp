@@ -51,7 +51,7 @@ def serialAliases(path):
     if not os.path.exists(path):
         return {}
     aliases = pd.read_csv(path, comment='#', dtype=str)
-    return dict(zip(aliases.assetID.str.strip(), aliases.rawSerial.str.strip()))
+    return dict(zip(aliases.assetID.str.strip(), aliases.rawSerial.str.strip(), strict=True))
 
 
 ## The sheet each signed-off check records in, and the column that identifies a
@@ -91,7 +91,7 @@ def hitlNotes(hitl):
             vocabulary[sheet] = []
             continue
         ## One note in the sheet today is a single space, which is not a reason.
-        written = frame['HITLnotes'].dropna().str.strip()
+        written = frame['HITLnotes'].dropna().astype(str).str.strip()
         counts = written[written != ''].value_counts()
         ## Ties resolve on the wording, so the list is the same every run and a
         ## report does not churn between two orderings of the same notes.

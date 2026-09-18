@@ -19,6 +19,7 @@ import struct
 import pandas as pd
 import requests
 
+from .instruments import expectsRawSerial
 from .rawarchive import createFileList, createFileList_DP
 
 MISSING = '-99999'
@@ -221,17 +222,6 @@ def SNfromRawBinary(rawFileName):
 
 ## --- which files to read, and the run over deployments ---
 
-def partialMatch(str1, str2, minCharacters):
-    """True when the strings share a tail of at least ``minCharacters``.
-
-    Vendors and the sensor bulk record disagree about serial number prefixes, so
-    a trailing-digit match is often all there is to go on.
-    """
-    if len(str1) < minCharacters or len(str2) <= minCharacters:
-        return False
-    return str1 in str2 or str2 in str1 or str1[-minCharacters:] in str2
-
-
 def _extractors(refDes):
     """(the extractor to try first, the one to fall back to) for an instrument.
 
@@ -374,12 +364,10 @@ def openDeployments(byRefDes, table, refDes=None, everything=False):
     ``everything`` -- that have no serial in the parameter file yet, whether
     because they were never attempted or because an attempt found nothing.
     """
-    from .checks import _expectsRawSerial
-
     have = {(row.referenceDesignator, row.deployNum) for row in table.itertuples()
             if MISSING not in str(row.rawSerialNumber)}
     return {(rd, d['deployNum']) for rd, deployments in byRefDes.items()
-            if _expectsRawSerial(rd) and (not refDes or rd in refDes)
+            if expectsRawSerial(rd) and (not refDes or rd in refDes)
             for d in deployments if everything or (rd, d['deployNum']) not in have}
 
 

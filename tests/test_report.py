@@ -6,8 +6,15 @@ import subprocess
 
 import pytest
 
-from rca_metadata.report import (SCHEMA_VERSION, asDifference, buildReport, scoreRows,
-                                 severityOf, summarise, writeReport)
+from rca_metadata.report import (
+    SCHEMA_VERSION,
+    asDifference,
+    buildReport,
+    scoreRows,
+    severityOf,
+    summarise,
+    writeReport,
+)
 
 
 def test_agreeingRowIsOk():
@@ -478,7 +485,7 @@ def test_noReasonIsGivenToBothASettledRowAndAnOpenOne():
 
     for check, fields in SEVERITY.items():
         names = list(fields)
-        rows = [dict(zip(names, values), HITLstatus=hitl)
+        rows = [dict(zip(names, values, strict=True), HITLstatus=hitl)
                 for values in itertools.product(*(list(fields[name]) for name in names))
                 for hitl in ('NA', 'Clear', 'NotClear')]
         settled, open_ = set(), set()

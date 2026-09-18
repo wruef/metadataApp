@@ -1,6 +1,5 @@
 """Tests for how a run is asked for on the command line."""
 
-import pytest
 
 from rca_metadata.cli import latestPositionFile, parseSource
 

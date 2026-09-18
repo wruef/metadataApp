@@ -5,9 +5,8 @@ because the data changed or because the check changed, and a comparison that
 cannot tell them apart is worse than none.
 """
 
-import pytest
 
-from rca_metadata.compare import compareCheck, compareReports, comparability, rowKey
+from rca_metadata.compare import comparability, compareCheck, compareReports, rowKey
 
 
 def row(severity='ok', **fields):
@@ -142,3 +141,11 @@ def test_sourcesAtDifferentCommitsAreTheWholePointOfComparing():
     before = report([], sources={'assetManagement': {'repo': 'o/am', 'ref': 'master', 'commit': 'a' * 40}})
     after = report([], sources={'assetManagement': {'repo': 'o/am', 'ref': 'branch', 'commit': 'b' * 40}})
     assert comparability(before, after)['comparable'] is True
+
+
+def test_aSeverityThisCodeNeverWroteRanksAsNeedingAPersonRatherThanCrashing():
+    from rca_metadata.compare import compareCheck
+
+    result = compareCheck('deployments', [{'refDes': 'X', 'deployNum': 1, 'severity': 'bogus'}],
+                          [{'refDes': 'X', 'deployNum': 1, 'severity': 'ok'}])
+    assert [entry['key'] for entry in result['newlyPassing']] == [('X', '1')]

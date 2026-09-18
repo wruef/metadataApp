@@ -44,7 +44,12 @@ const differences = computed(() =>
 
 const isCalibration = computed(() => check === 'calibrations')
 const isPosition = computed(() => check === 'positions')
-const correctable = computed(() => isCalibration.value || isPosition.value)
+/** A node is named SITE-NODE, fourteen characters; an instrument adds a port
+ *  and an instrument code. Node deployments live in NODE_deployments.csv in the
+ *  deployments repository, not on the asset-management sheets this corrects, so
+ *  offering to correct one here wrote to a sheet with no such row. */
+const isNode = computed(() => isPosition.value && String(row.refDes ?? '').length <= 14)
+const correctable = computed(() => (isCalibration.value || isPosition.value) && !isNode.value)
 
 /** What names a line, and what identifies the whole correction. */
 const nameOf = (entry: Difference) => String(entry.coefficient ?? entry.field ?? '')
@@ -266,35 +271,16 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
       <span class="from">asset-management note</span>{{ sharedNote }}
     </p>
 
+    <!-- A node's position is not on these sheets at all. -->
+    <p v-if="isNode" class="mt-2 text-gray-500 text-[12.5px]">
+      A node's position lives in <span class="font-mono">NODE_deployments.csv</span> in the
+      deployments repository, which this dashboard does not write.
+      <span class="font-mono">publish-metadata positions --node-fork</span> proposes it.
+    </p>
+
     <!-- Correcting the file, under the numbers it is about. -->
-    <template v-if="correctable && anyEditable">
-      <p v-if="batch.checkingFor('assetManagement')" class="mt-2 text-gray-500 text-[12.5px]">
-        Checking your fork against oceanobservatories/asset-management…
-      </p>
-
-      <!-- A fork that is not exactly upstream is a fork this dashboard has
-           never read, so this is a refusal rather than a warning. -->
-      <u-alert
-        v-else-if="blocked && auth.canSignOff"
-        class="mt-2"
-        color="error"
-        variant="subtle"
-        title="Cannot correct the file: your fork is not in sync"
-        :description="blocked"
-      >
-        <template #actions>
-          <u-button size="xs" color="neutral" variant="subtle" @click="batch.checkSync('assetManagement', true)">
-            Check again
-          </u-button>
-        </template>
-      </u-alert>
-
-      <p v-else-if="!auth.canSignOff" class="mt-2 text-gray-500 text-[12.5px]">
-        <nuxt-link to="/settings" class="text-primary-700 underline">Sign in</nuxt-link>
-        with your initials to correct these values.
-      </p>
-
-      <template v-else>
+    <fork-guard v-if="correctable && anyEditable" fork="assetManagement" action="correct these values" class="mt-2">
+      <template #default>
         <p v-if="unreadable.length" class="mt-2 text-red-700 text-[12.5px]">
           Cannot be read as the value this coefficient holds: {{ unreadable.join(', ') }}.
         </p>
@@ -326,7 +312,9 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
           separately, and nothing anyone computes changes until you raise that request upstream.
         </p>
       </template>
+    </fork-guard>
 
+    <template v-if="correctable && anyEditable">
       <u-alert
         v-if="queuedAlready"
         class="mt-2"

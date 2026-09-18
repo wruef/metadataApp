@@ -256,9 +256,26 @@ export const useStore = defineStore('report', () => {
   const status = ref<'loading' | 'ready' | 'error'>('loading')
   const error = ref('')
 
+  /** A run being fetched to replace the one on screen, and why the last such
+   *  switch failed. A failed switch keeps the report that was already loaded:
+   *  a run pruned from reports/ but still in a cached index is not a reason
+   *  to take the whole dashboard down. */
+  const switching = ref(false)
+  const switchError = ref('')
+
+  /** Which load is the latest. Two runs picked in quick succession resolve in
+   *  whatever order the network decides, and only the last one asked for may
+   *  land on screen. */
+  let sequence = 0
+
   async function load(name?: string) {
-    status.value = 'loading'
+    const mine = ++sequence
+    const previous = selected.value
+    const replacing = Boolean(report.value)
     selected.value = name ?? null
+    switchError.value = ''
+    if (replacing) switching.value = true
+    else status.value = 'loading'
     try {
       const config = useRuntimeConfig()
       const base = config.app.baseURL
@@ -266,6 +283,7 @@ export const useStore = defineStore('report', () => {
       // Runs sit beside the current one, so a name replaces the last segment.
       const url = name ? latest.replace(/[^/]+$/, name) : latest
       const fetched = await $fetch<Report>(url)
+      if (mine !== sequence) return
       // A report that is not a report must say so. Fetching the wrong url
       // returns the page itself, and a truthy non-report renders as a blank
       // screen with an error only the console sees.
@@ -277,7 +295,11 @@ export const useStore = defineStore('report', () => {
         throw new Error(`${url} did not return a run report — got ${got}`)
       }
       report.value = fetched
+      // The old run's comparison must not sit under the new run's report for
+      // the round trip it takes to fetch the new one.
+      comparison.value = null
       status.value = 'ready'
+      switching.value = false
       // The comparison that belongs to the run being read, not whichever one
       // was newest. Published runs are named report_<stamp> and their
       // comparisons comparison_<stamp>, so one follows from the other; the
@@ -288,19 +310,30 @@ export const useStore = defineStore('report', () => {
       // Absent unless a run was given a baseline, so a failure here is normal
       // and must not take the rest of the dashboard down with it.
       try {
-        comparison.value = comparisonFor(fetched, await $fetch<Comparison>(comparisonUrl))
+        const found = await $fetch<Comparison>(comparisonUrl)
+        if (mine === sequence) comparison.value = comparisonFor(fetched, found)
       } catch {
-        comparison.value = null
+        if (mine === sequence) comparison.value = null
       }
       // Absent until a run has been published, and never fatal.
       try {
-        runs.value = await $fetch<RunEntry[]>(withBase(base, config.public.indexUrl as string))
+        const index = await $fetch<RunEntry[]>(withBase(base, config.public.indexUrl as string))
+        if (mine === sequence) runs.value = index
       } catch {
-        runs.value = []
+        if (mine === sequence) runs.value = []
       }
     } catch (caught) {
-      error.value = caught instanceof Error ? caught.message : String(caught)
-      status.value = 'error'
+      if (mine !== sequence) return
+      const message = caught instanceof Error ? caught.message : String(caught)
+      switching.value = false
+      if (replacing) {
+        // Keep what was on screen, and say why the other run did not open.
+        selected.value = previous
+        switchError.value = message
+      } else {
+        error.value = message
+        status.value = 'error'
+      }
     }
   }
 
@@ -324,5 +357,6 @@ export const useStore = defineStore('report', () => {
     return `https://github.com/${source.repo}/blob/${at}/${path}`
   }
 
-  return { report, comparison, runs, selected, status, error, load, checks, ageInDays, isStale, fileUrl }
+  return { report, comparison, runs, selected, status, error, switching, switchError,
+           load, checks, ageInDays, isStale, fileUrl }
 })

@@ -116,7 +116,7 @@ pressure offset was added deliberately. On a coefficient that disagrees, that is
 exactly the context a reviewer would otherwise go and open the file for, so it
 travels with the difference and is shown under it.
 
-Of the 86 differences the current run records, **77 carry a note**. Most are the
+Of the 90 differences the current run records, **81 carry a note**. Most are the
 same sentence the reviewer later wrote into the HITL sheet, which is the point:
 the explanation was in the file all along.
 

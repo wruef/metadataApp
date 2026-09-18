@@ -3,7 +3,10 @@
 Three things this package produces are changes to shared records rather than
 findings of its own: the deployment history published to the ``deployments``
 repository, the position corrections that rewrite asset-management's deployment
-sheets, and 2i-HITL sign-offs.
+sheets, and 2i-HITL sign-offs. Everything about proposing them -- which branch a
+fork's requests target, what each request says, writing the files to disk first
+-- is here and only here. It used to be spread across cli.py, positions.py and
+history.py, each building its own body.
 
 None of them go to the upstream repository. Each author works from their own
 fork or clone, and that is what this opens a pull request against -- the author
@@ -19,6 +22,8 @@ import datetime
 import os
 
 import requests
+
+from . import history, positions
 
 API = 'https://api.github.com/repos/'
 
@@ -81,3 +86,90 @@ class PullRequest:
         self._post('git/refs', {'ref': f'refs/heads/{branch}', 'sha': commit['sha']})
         return self._post('pulls', {
             'title': title, 'body': body, 'head': branch, 'base': self.base})['html_url']
+
+
+## ---- the products, and what each one's pull request says ----
+
+## The branch each repository's pull requests target, by repository name. The
+## fork is the reviewer's own, so the owner varies and the name does not.
+## Inferred from the fork's name before, which made a fork called anything else
+## -- deployments-2026, or a rename -- propose against a branch that is not
+## there, and the failure arrives from the GitHub API rather than from here.
+BASE_BRANCH = {'deployments': 'main', 'metadataApp': 'main',
+               'asset-management': 'master', 'calibrationFiles': 'master'}
+DEFAULT_BASE = 'master'
+
+## What every pull request ends with: it is proposed to a fork and raised
+## upstream by a person, and that has to be said where the reviewer reads it.
+BY_HAND = 'Review here, then raise the pull request to the upstream {upstream} repository by hand.'
+
+HISTORY_BODY = ('Regenerated from the asset-management deployment sheets and the calibration '
+                'files in both repositories.\n\n' + BY_HAND.format(upstream='deployments'))
+
+
+def positionsBody(upstream):
+    return ('Latitude, longitude and depths taken from the RCA position spreadsheet.\n\n'
+            + BY_HAND.format(upstream=upstream))
+
+
+def baseBranchOf(fork):
+    """The branch a fork's pull requests target."""
+    return BASE_BRANCH.get(fork.split('/')[-1], DEFAULT_BASE)
+
+
+def writeFiles(files, outDir):
+    """The generated files on disk, so they can be read before they are proposed."""
+    os.makedirs(outDir, exist_ok=True)
+    for name, content in files.items():
+        path = os.path.join(outDir, name)
+        os.makedirs(os.path.dirname(path) or outDir, exist_ok=True)
+        with open(path, 'w') as handle:
+            handle.write(content)
+    return len(files)
+
+
+def propose(files, fork, token, title, body, outDir):
+    """Write the files, and offer them to a fork when one is named.
+
+    Writing to disk always happens: a generated file you can look at before
+    proposing it is the point. The pull request is the optional half.
+    """
+    print(f'wrote {writeFiles(files, outDir)} files to {outDir}')
+    if not fork:
+        print('no --fork given, so nothing was proposed')
+        return None
+    url = PullRequest(fork, token=token, base=baseBranchOf(fork)).open(files, title, body)
+    print(f'opened {url}' if url else f'{fork} already matches these files -- nothing to propose')
+    return url
+
+
+def publishHistory(rows, pullRequest, title=None):
+    """Propose the deployment history to the author's fork of the deployments repo.
+
+    Returns the pull request url, or None when nothing changed -- most runs
+    between cruises change nothing, and an empty pull request is noise.
+    """
+    title = title or f'Deployment history, {datetime.date.today().isoformat()}'
+    return pullRequest.open(history.historyFiles(rows), title, body=HISTORY_BODY)
+
+
+def publishPositions(corrected, pullRequest, title=None):
+    """Propose corrected deployment sheets to the author's fork of asset-management.
+
+    Returns the pull request url, or None when the sheets already agree with the
+    spreadsheet. What changed is in the position check's own rows, so no separate
+    change log is written here.
+    """
+    return _proposePositions(pullRequest, positions.positionFiles(corrected), title, 'asset-management')
+
+
+def publishNodePositions(corrected, pullRequest, title=None):
+    """Propose corrected node deployments to the author's fork of the deployments repo."""
+    return _proposePositions(pullRequest, positions.nodePositionFile(corrected), title, 'deployments')
+
+
+def _proposePositions(pullRequest, files, title, upstream):
+    if not files:
+        return None
+    title = title or f'Deployment positions, {datetime.date.today().isoformat()}'
+    return pullRequest.open(files, title, body=positionsBody(upstream))

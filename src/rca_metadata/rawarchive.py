@@ -51,7 +51,7 @@ def listFD(url):
     soup = BeautifulSoup(requests.get(url, timeout=120).text, 'html.parser')
     base = url if url.endswith('/') else url + '/'
     links = [base + node.get('href') for node in soup.find_all('a') if node.get('href')]
-    return [l for l in links if l.endswith('t')], [l for l in links if l.endswith('/')]
+    return [link for link in links if link.endswith('t')], [link for link in links if link.endswith('/')]
 
 
 def fileDate(fileName):

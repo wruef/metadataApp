@@ -71,8 +71,12 @@ Does each calibration file in `asset-management` match the vendor original in
 | `CONFIGURATION_ONLY` | Not checked | the file holds only deployment configuration, so there was no coefficient to compare |
 | `NOTCOMPARED`, `NAN` | Not checked | no comparison is written for this instrument yet |
 
-A coefficient that disagrees can be corrected from the row, which writes to
-your own `asset-management` fork as its own pull request. See
+Runs published before DOFSTA moved to its `.cal` also carry `COMPARED_XML`, which
+ranks as agreed. Nothing produces it now.
+
+A coefficient that disagrees can be corrected from the row. It joins the
+calibration batch, which goes to your own `asset-management` fork as one pull
+request. See
 [using-the-dashboard.md](using-the-dashboard.md#correcting-a-file-in-asset-management).
 
 **Comparison is exact.** There is no tolerance. Where a vendor publishes fewer
@@ -128,7 +132,7 @@ did it have a calibration?
 ### Confirmation — `verificationStatus`
 
 **Two things confirm a deployment, and either alone is enough:** the serial
-number recovered from the first raw file, or a reviewer's sign-off.
+number read out of the deployment's raw data, or a reviewer's sign-off.
 
 | verdict | status | meaning |
 |---|---|---|
@@ -164,12 +168,17 @@ number season after season, and a raw serial equal to an asset's alias is a
 `MATCH`. A raw serial equal to *another* asset's alias names that asset in the
 `MISMATCH`, the same as a bulk serial would.
 
+The asset a `MISMATCH` names can be taken as a correction from the row, which
+rewrites `sensor.uid` on that deployment's line of its array's sheet. See
+[using-the-dashboard.md](using-the-dashboard.md#correcting-the-instrument-a-deployment-names).
+
 ### The pre-deploy photograph — `image_verify`
 
 | verdict | status | meaning |
 |---|---|---|
 | `MATCH` | Agreed | the asset read from the photograph is the one on the sheet |
 | `MISMATCH` | *warning* | it is not — noted on the row, but it does not hold the row open |
+| `NO_IMAGE_ASSET` | Excluded | a photograph is on record and no asset could be read from it, so there is nothing to compare |
 | `NAN` | Excluded | no photograph is on record |
 
 ### The calibration in force — `calFile_verify`
@@ -196,10 +205,11 @@ longitude and depth are compared for each deployment.
 | `NO_POSITION` | Needs a person | the spreadsheet holds no position for it |
 | `NO_POSITION_NAME` | Needs a person | no position name maps to this reference designator |
 | `BAD_POSITION_RECORD` | Needs a person | the spreadsheet row could not be read as a position |
+| `HITL_PIN_NOT_FOUND` | Needs a person | a reviewer pinned this deployment to a spreadsheet row that is no longer there |
 
 A `MISMATCH` can be corrected from the row, which rewrites that one deployment's
-line on its array's sheet and opens its own pull request on your
-`asset-management` fork. See
+line on its array's sheet. It joins the deployment sheet batch, one pull request
+on your `asset-management` fork. See
 [using-the-dashboard.md](using-the-dashboard.md#correcting-a-position).
 
 A profiler's deployment depth is the literal `N/A`, which is the value rather
@@ -231,13 +241,22 @@ sheet names exist in the bulk record it belongs to?
 
 | verdict | status | meaning |
 |---|---|---|
-| `DUPLICATE_ASSET_IN_DEPLOYMENT` | Problem | the same asset appears twice in one deployment |
+| `DUPLICATE_ASSET_IN_DEPLOYMENT` | Problem | the same asset was in the water in two places at the same time; the verdict names the other place |
 | `SENSOR_NOT_IN_BULK` | Problem | `sensor.uid` is not in the sensor record |
 | `MOORING_NOT_IN_PLATFORM_BULK` | Problem | `mooring.uid` is not in the platform record |
 | `NODE_NOT_IN_NODE_BULK` | Problem | `node.uid` is not in the node record |
 | `ELECTRICAL_NOT_IN_ENG_BULK` | Problem | `electrical.uid` is not in the eng record |
 | `ASSET_IN_WRONG_BULK_RECORD` | Problem | the asset is in the bulk records, but under a different one than its column calls for |
 | `CRUISE_NOT_IN_CRUISE_LIST` | Problem | the cruise is not in the cruise list |
+
+Two places at once is decided by **time in the water**, not by deployment
+number. Numbers count per reference designator, so one asset can be deployment 3
+on one designator and 7 on another in the same season, and two unrelated
+designators can share a number. The rule used to compare rows sharing a year and
+a number, which found the one and missed the other; its one remaining finding
+was a DOSTA recovered from a deep profiler on 22 September 2014 and deployed on
+a platform on the 27th, which was never in two places. A deployment still in the
+water counts as running until now.
 
 **One pair is exempt from the duplicate rule.** `RASFLA301` and `D1000A301`
 share an asset ID because they are the same hardware; two reference designators

@@ -91,7 +91,12 @@ const queuedFor = (entry: VendorOnly) => batch.decisionFor('calibrations', entry
             <tr
               class="border-t border-gray-100 cursor-pointer hover:bg-primary-50"
               :class="{ 'bg-primary-50': opened === entry.hitlKey }"
+              tabindex="0"
+              role="button"
+              :aria-expanded="opened === entry.hitlKey"
               @click="toggle(entry.hitlKey)"
+              @keydown.enter.prevent="toggle(entry.hitlKey)"
+              @keydown.space.prevent="toggle(entry.hitlKey)"
             >
               <td class="pl-3 text-gray-400">
                 <i :class="['fas', opened === entry.hitlKey ? 'fa-chevron-down' : 'fa-chevron-right', 'text-[10px]']" />

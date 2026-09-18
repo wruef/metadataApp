@@ -19,3 +19,7 @@ export function withBase(base: string, path: string) {
  */
 export const DOCS = 'https://github.com/wruef/metadataApp/blob/main/docs'
 export const GUIDE = `${DOCS}/using-the-dashboard.md`
+/** The whole season's review in order. Linked from the top of the rail rather
+ *  than the foot, because it is the first thing a reviewer needs after a cruise
+ *  and the last thing they would find under "Docs". */
+export const REVIEW_GUIDE = `${DOCS}/post-cruise-review.md`

@@ -1,0 +1,69 @@
+name: Commit the published runs
+description: >
+  Commit whatever changed under reports/ and push it, rebasing over anything
+  another workflow pushed meanwhile. Two workflows write there, a verification
+  run publishing and a prune deleting, and they can run at the same time.
+
+# The only files two runs both write are the index and the -latest copies. On a
+# rebase conflict the index is rebuilt from the reports now on disk, which needs
+# no merging, and the -latest copies are this run's, because it finished later.
+# A run that only added its own report never conflicts at all.
+#
+# This is what makes a shared concurrency group unnecessary. GitHub holds one
+# running and ONE pending run per group and cancels a third, so a busy afternoon
+# of publishes lost runs; with a rebase that resolves its own conflicts, runs
+# can overlap freely and every one lands.
+
+inputs:
+  message:
+    description: the commit message
+    required: true
+  message-file:
+    description: a file whose first 2000 bytes are appended to the message
+    required: false
+    default: ""
+  branch:
+    description: the branch to push to
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        MESSAGE: ${{ inputs.message }}
+        MESSAGE_FILE: ${{ inputs.message-file }}
+        BRANCH: ${{ inputs.branch }}
+      run: |
+        set -euo pipefail
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git add -A reports
+        if git diff --cached --quiet; then
+          echo '::notice title=Nothing to commit::reports/ is unchanged'
+          exit 0
+        fi
+        if [ -n "$MESSAGE_FILE" ] && [ -f "$MESSAGE_FILE" ]; then
+          git commit -q -m "$MESSAGE" -m "$(head -c 2000 "$MESSAGE_FILE")"
+        else
+          git commit -q -m "$MESSAGE"
+        fi
+
+        for attempt in 1 2 3 4 5; do
+          if git pull --rebase origin "$BRANCH"; then
+            if git push origin HEAD:"$BRANCH"; then exit 0; fi
+            # Somebody pushed between the pull and the push; go round again.
+          else
+            # A conflict. The -latest copies are this run's; the index is
+            # whatever reports are now on disk.
+            git checkout --theirs -- reports/latest.json reports/history-latest.json \
+              reports/comparison-latest.json 2>/dev/null || true
+            index-metadata --rebuild reports --out reports/index.json
+            git add -A reports
+            GIT_EDITOR=true git rebase --continue
+            if git push origin HEAD:"$BRANCH"; then exit 0; fi
+          fi
+          sleep $((attempt * 15))
+        done
+        echo '::error title=Could not push::five attempts, each overtaken by another push'
+        exit 1

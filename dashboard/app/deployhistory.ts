@@ -57,29 +57,34 @@ export const useDeployHistory = defineStore('deployHistory', () => {
   const sync = useForkSync()
   const definition = FORKS.find((each) => each.key === 'deployments')!
 
-  const refusal = computed(() => sync.refusal.deployments ?? null)
-  const checking = computed(() => Boolean(sync.checking.deployments))
-
   function urlFor(name: string | null) {
     const config = useRuntimeConfig()
     return historyUrlFor(withBase(config.app.baseURL, config.public.historyUrl as string), name)
   }
 
+  /** Which load is the latest, so a run picked and then another does not land
+   *  the first one's history under the second one's stamp. */
+  let sequence = 0
+
   async function load() {
+    const mine = ++sequence
     status.value = 'loading'
     error.value = ''
+    // A pull request opened for the previous run's history is not this one's.
+    result.value = null
     try {
       const fetched = await $fetch<HistoryBundle>(urlFor(useStore().selected))
+      if (mine !== sequence) return
       if (!fetched || typeof fetched !== 'object' || !fetched.files) {
         throw new Error('That run published no deployment history.')
       }
       bundle.value = fetched
       status.value = 'ready'
     } catch (caught) {
+      if (mine !== sequence) return
       error.value = caught instanceof Error ? caught.message : String(caught)
       status.value = 'error'
     }
-    if (status.value === 'ready') await sync.check('deployments')
   }
 
   const files = computed(() =>
@@ -140,6 +145,5 @@ export const useDeployHistory = defineStore('deployHistory', () => {
     }
   }
 
-  return { bundle, status, error, files, deployments, submitting, result,
-           refusal, checking, load, propose, recheck: () => sync.check('deployments', true) }
+  return { bundle, status, error, files, deployments, submitting, result, load, propose }
 })

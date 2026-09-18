@@ -8,7 +8,13 @@ found while building this was in reassembling it. That is what these cover.
 """
 
 from rca_metadata.vendor import (
-    _joinSubscripts, _labelled, _readAcross, _tabulated, _value, PHSEN_EVALUES)
+    PHSEN_EVALUES,
+    _joinSubscripts,
+    _labelled,
+    _readAcross,
+    _tabulated,
+    _value,
+)
 
 
 def word(text, x0, top, size=12.0, width=None):

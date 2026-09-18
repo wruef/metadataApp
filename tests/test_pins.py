@@ -61,6 +61,20 @@ def test_thePackageClaimsAFloorRatherThanThePin():
     assert f'"pandas=={constraintPins()["pandas"]}"' not in pyproject
 
 
+def workflowPython(name):
+    """The ``PYTHON_VERSION`` a workflow runs with."""
+    return re.search(r'PYTHON_VERSION:\s*"?([0-9.]+)"?', read(f'.github/workflows/{name}')).group(1)
+
+
+def test_theWorkflowsRunThePythonTheEnvironmentNames():
+    """environment.yml says it matches the python in verify.yaml. Three
+    workflows each spell that version out by hand, and the pinned pandas needs
+    the version they name, so nothing but this keeps the four together."""
+    conda = re.search(r'^\s*-\s+python=([0-9.]+)$', read('environment.yml'), re.MULTILINE).group(1)
+    for workflow in ('verify.yaml', 'prune-runs.yaml', 'extract-serials.yaml'):
+        assert workflowPython(workflow) == conda, workflow
+
+
 def test_theTestMatrixDoesNotInstallAgainstTheConstraints():
     """It is the early-warning system. Pinning it would silence the one signal
     that says a future library will break this code. The file is named in a

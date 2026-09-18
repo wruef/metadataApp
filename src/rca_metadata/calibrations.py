@@ -373,7 +373,7 @@ def _orderedDifference(githubCoeff, expected):
     github, vendorValues = list(_cells(githubCoeff)), list(_cells(expected))
     if len(github) != len(vendorValues):
         return f'{len(github)} values against {len(vendorValues)}'
-    differing = [i for i, (a, b) in enumerate(zip(github, vendorValues)) if a != b]
+    differing = [i for i, (a, b) in enumerate(zip(github, vendorValues, strict=True)) if a != b]
     if not differing:
         return None
     first = differing[0]
@@ -456,7 +456,10 @@ def compareConstants(githubCal, spec, sensor, constants, stem):
     ## matrix and its shape -- so the loop above compares no coefficient at all
     ## and would otherwise report a pass. A verdict of COMPARED set before
     ## anything was read is the defect this whole rewrite exists for.
-    if not compared:
+    ## Only when nothing was recorded at all: a coefficient with no constant
+    ## written for it was recorded as missing above, and that is a finding this
+    ## must not fold into "configuration only".
+    if not compared and len(calCompare) == 1:
         return ['CONFIGURATION_ONLY']
     return calCompare
 
@@ -513,7 +516,7 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=No
                 expected = constants[sensor][name]
             else:
                 coeffSource = 'vendor'
-                key = coeffMap[name][1] if source.get('keyBy') == 'map' else name
+                key = coeffMap.get(name, [None, name])[1] if source.get('keyBy') == 'map' else name
                 ## A reader also hands back None for a field its file does not
                 ## spell -- an ac-s .dev with no tcal line -- and that reached
                 ## float(None) and took the whole run down.

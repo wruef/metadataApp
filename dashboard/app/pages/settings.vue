@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FORKS, useAuth } from '~/auth'
+import { FORKS, isRepoName, useAuth } from '~/auth'
 
 const auth = useAuth()
 const candidate = ref('')
@@ -41,6 +41,7 @@ async function submit() {
         </p>
         <u-input
           id="initials"
+          aria-label="Your initials"
           :model-value="auth.initials"
           placeholder="WR"
           maxlength="4"
@@ -65,11 +66,18 @@ async function submit() {
             <div class="text-gray-500 text-sm">{{ fork.what }}</div>
             <u-input
               :id="`fork-${fork.key}`"
-              :model-value="auth.forkFor(fork.key)"
+              :model-value="auth.forks[fork.key] ?? ''"
               :placeholder="`${auth.user!.login}/${fork.repo}`"
               class="max-w-md mt-1"
               @update:model-value="(value: string) => auth.setFork(fork.key, value)"
             />
+            <p
+              v-if="auth.forks[fork.key] && !isRepoName(auth.forks[fork.key]!)"
+              class="mt-1 text-amber-700 text-sm"
+            >
+              Written as owner/repository — <span class="font-mono">{{ auth.user!.login }}/{{ fork.repo }}</span>.
+              Until it is, the default is used.
+            </p>
           </div>
         </div>
       </div>

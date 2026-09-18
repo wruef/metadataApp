@@ -90,8 +90,8 @@ happily and neither is valid JSON, which a browser refuses to parse.
 deployment sheet the one that was actually in the water? Two things answer it,
 and **either alone is enough**:
 
-- the serial number recovered from the first raw file matches the asset's serial
-  in the sensor bulk record, or
+- the serial number read out of the deployment's raw data matches the asset's
+  serial in the sensor bulk record, or
 - a reviewer signed the deployment off.
 
 A pre-deploy photograph is **not** one of them. It is still read, still reported
@@ -123,7 +123,8 @@ ranking it, and two kinds do:
 
 - **`excluded`** — there was nothing to check. `NAN` on the raw file means the
   instrument class writes no serial into its data; `NAN` on the photograph means
-  nobody took one. Neither is a check that was skipped, and counting them as
+  nobody took one, and `NO_IMAGE_ASSET` that one was taken and no asset could be
+  read from it. None is a check that was skipped, and counting them as
   unchecked held 459 confirmed deployments back from reading as confirmed.
 - **`warning`** — something worth noticing that nobody has to act on. Two
   today: a calibration more than fifteen months older than its deployment, and a
@@ -211,9 +212,13 @@ exempt: **RASFLA301 and D1000A301 share an asset ID because they are the same
 hardware.** Two reference designators exist because two data streams are
 required of it, and the sheets name the asset once under each.
 
-That pair accounted for 24 of the 26 rows this check reported. What is left is
-one real finding — a DOSTA deployed on a deep profiler and a shallow profiler
-in the same 2014 deployment.
+That pair accounted for 24 of the 26 rows this check reported. The two rows
+left were a DOSTA on a deep profiler until 22 September 2014 and on a platform
+from the 27th: the same year and the same deployment number, which is all the
+old rule compared, and never in the water twice at once. The check now compares
+the time each deployment was in the water, so a recovered-and-redeployed asset is
+not a finding and an overlap between deployment 3 of one designator and
+deployment 7 of another is. Today it reports nothing.
 
 The exemption is on the pair, not on either name alone: a RAS sharing an asset
 with anything else is still reported.

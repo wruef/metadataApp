@@ -11,7 +11,7 @@ const facetsOf = (key: string) => CHECKS.find((check) => check.key === key)?.fac
 const queue = computed(() => queueCounts(checks.value, facetsOf))
 
 const years = computed(() =>
-  byYear(checks.value.deployments?.rows ?? [], (row) => yearOf(row.deployDate)),
+  byYear(checks.value.deployments?.rows ?? [], (row) => String(row.deployYear ?? yearOf(row.deployDate))),
 )
 
 /** A link that opens the check already filtered to exactly these rows. */

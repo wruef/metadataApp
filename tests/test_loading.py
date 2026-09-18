@@ -67,3 +67,17 @@ def test_theRealSheetsAreReadable():
     for sheetNotes in notes.values():
         assert all(note.strip() for note in sheetNotes)
     assert notes['calibrations'] and notes['deployments']
+
+
+def test_hitlNotesSurvivesASheetWhoseNotesAreAllBlank():
+    """pandas reads an all-blank column as float, and .str on a float column
+    raises. The sensor sheet is empty today, so the first note-less sign-off
+    written from the dashboard would have taken every later run down."""
+    import numpy as np
+    import pandas as pd
+
+    from rca_metadata.loading import hitlNotes
+
+    sheet = pd.DataFrame({'Reviewers': ['WR'], 'DateReviewed': ['9/18/26'], 'Status': ['Clear'],
+                          'HITLnotes': [np.nan]}, index=pd.Index(['ATAPL-1'], name='assetID'))
+    assert hitlNotes({'sensorBulk': sheet}) == {'sensorBulk': []}

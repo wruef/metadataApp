@@ -9,17 +9,15 @@ them over the wire.
 """
 
 import argparse
+import datetime
 import glob
 import json
 import os
 
-import datetime
-
 import pandas as pd
 
-from . import history, loading, positions
+from . import history, loading, positions, publish
 from .compare import compareReports
-from .publish import PullRequest
 from .report import buildReport, writeReport
 from .run import AM_REPO, CAL_REPO, DEPLOY_REF, DEPLOY_REPO, NODE_DEPLOYMENTS, verify
 from .sources import RepoSource
@@ -93,9 +91,6 @@ def main(argv=None):
     return 0
 
 
-if __name__ == '__main__':
-    raise SystemExit(main())
-
 
 def compareMain(argv=None):
     """Diff two run reports into an answer about what a change did."""
@@ -135,43 +130,6 @@ def _sources(args):
             parseSource(args.deployments, args.clones, defaultRef=DEPLOY_REF))
 
 
-def _propose(files, fork, token, title, body, outDir):
-    """Write the files, and offer them to a fork when one is named.
-
-    Writing to disk always happens: a generated file you can look at before
-    proposing it is the point. The pull request is the optional half.
-    """
-    os.makedirs(outDir, exist_ok=True)
-    for name, content in files.items():
-        path = os.path.join(outDir, name)
-        os.makedirs(os.path.dirname(path) or outDir, exist_ok=True)
-        with open(path, 'w') as handle:
-            handle.write(content)
-    print(f'wrote {len(files)} files to {outDir}')
-
-    if not fork:
-        print('no --fork given, so nothing was proposed')
-        return 0
-    url = PullRequest(fork, token=token, base=baseBranchOf(fork)).open(files, title, body)
-    print(f'opened {url}' if url else f'{fork} already matches these files — nothing to propose')
-    return 0
-
-
-## The branch each repository's pull requests target, by repository name. The
-## fork is the reviewer's own, so the owner varies and the name does not.
-## Inferred from the fork's name before, which made a fork called anything else
-## -- deployments-2026, or a rename -- propose against a branch that is not
-## there, and the failure arrives from the GitHub API rather than from here.
-BASE_BRANCH = {'deployments': 'main', 'metadataApp': 'main',
-               'asset-management': 'master', 'calibrationFiles': 'master'}
-DEFAULT_BASE = 'master'
-
-
-def baseBranchOf(fork):
-    """The branch a fork's pull requests target."""
-    return BASE_BRANCH.get(fork.split('/')[-1], DEFAULT_BASE)
-
-
 def publishMain(argv=None):
     parser = argparse.ArgumentParser(description='Generate and propose the published files.')
     parser.add_argument('--asset-management', default=AM_REPO, metavar='OWNER/REPO[@REF]')
@@ -203,11 +161,10 @@ def publishMain(argv=None):
                                                 for instrument, name in loading.loadCalFileIndex(amSource)]),
             history.calibrationLinks(calSource, [(sensor, name) for sensor in calSource.listDirs('')
                                                  for name in calSource.listFiles(sensor)]))
-        return _propose(history.historyFiles(rows), args.fork, args.token,
+        publish.propose(history.historyFiles(rows), args.fork, args.token,
                         f'Deployment history, {datetime.date.today().isoformat()}',
-                        'Regenerated from the asset-management deployment sheets and the calibration '
-                        'files in both repositories.\n\nReview here, then raise the pull request to the '
-                        'upstream deployments repository by hand.', args.out_dir)
+                        publish.HISTORY_BODY, args.out_dir)
+        return 0
 
     if args.what == 'seasons':
         deployments = loading.loadDeployments(amSource)
@@ -237,12 +194,12 @@ def publishMain(argv=None):
     print(f'{len(log)} deployments corrected')
 
     title = f'Deployment positions, {datetime.date.today().isoformat()}'
-    body = ('Latitude, longitude and depths taken from the RCA position spreadsheet.\n\n'
-            'Review here, then raise the pull request upstream by hand.')
-    _propose(positions.positionFiles(corrected), args.fork, args.token, title, body, args.out_dir)
+    publish.propose(positions.positionFiles(corrected), args.fork, args.token, title,
+                    publish.positionsBody('asset-management'), args.out_dir)
     nodeFiles = positions.nodePositionFile(corrected)
     if nodeFiles:
-        _propose(nodeFiles, args.node_fork, args.token, title, body, args.out_dir)
+        publish.propose(nodeFiles, args.node_fork, args.token, title,
+                        publish.positionsBody('deployments'), args.out_dir)
     return 0
 
 
@@ -267,22 +224,42 @@ def updateIndex(index, report, name):
                   key=lambda entry: entry.get('runAt') or '', reverse=True)
 
 
+def rebuildIndex(reportsDir):
+    """The index as the published reports on disk would have it, newest first.
+
+    Two runs publishing at once both rewrite the index, and a rebase between
+    them conflicts on it every time. Built from the files instead, after the
+    rebase, it needs no merging: whatever reports are there are the index.
+    """
+    index = []
+    for path in sorted(glob.glob(os.path.join(reportsDir, 'report_*.json'))):
+        with open(path) as handle:
+            index = updateIndex(index, json.load(handle), os.path.basename(path))
+    return index
+
+
 def indexMain(argv=None):
     parser = argparse.ArgumentParser(description='Maintain the index of published runs.')
-    parser.add_argument('--report', required=True)
-    parser.add_argument('--name', required=True, help='the name the report was published under')
+    parser.add_argument('--report', help='a report to add')
+    parser.add_argument('--name', help='the name the report was published under')
     parser.add_argument('--index', help='the existing index, if there is one')
+    parser.add_argument('--rebuild', metavar='DIR',
+                        help='instead: rebuild the whole index from the report_*.json files in DIR')
     parser.add_argument('--out', default='reports/index.json')
     args = parser.parse_args(argv)
+    if not args.rebuild and not (args.report and args.name):
+        parser.error('either --rebuild DIR, or --report and --name')
 
-    with open(args.report) as handle:
-        report = json.load(handle)
-    index = []
-    if args.index and os.path.isfile(args.index):
-        with open(args.index) as handle:
-            index = json.load(handle)
-
-    updated = updateIndex(index, report, args.name)
+    if args.rebuild:
+        updated = rebuildIndex(args.rebuild)
+    else:
+        with open(args.report) as handle:
+            report = json.load(handle)
+        index = []
+        if args.index and os.path.isfile(args.index):
+            with open(args.index) as handle:
+                index = json.load(handle)
+        updated = updateIndex(index, report, args.name)
     os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
     with open(args.out, 'w') as handle:
         json.dump(updated, handle, indent=1)
@@ -439,3 +416,5 @@ def extractMain(argv=None):
         print(f"  {row['referenceDesignator']} deploy {row['deployNum']} ({row['deployYear']}): {row['rawSerialNumber']}")
     print('wrote ' + (args.out or path))
     return 0
+if __name__ == '__main__':
+    raise SystemExit(main())

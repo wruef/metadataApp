@@ -138,7 +138,10 @@ SEVERITY = {
         ## one either: it shows an instrument, not which instrument went in the
         ## water. A disagreement is worth noticing and worth reconciling, and it
         ## is said on the row, but it does not rank it.
-        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'warning', 'NAN': 'excluded'},
+        ## NO_IMAGE_ASSET: a photograph is on record and no asset could be read
+        ## from it, so there is nothing to compare -- excluded, like no photograph.
+        'image_verify': {'MATCH': 'ok', 'MISMATCH': 'warning', 'NAN': 'excluded',
+                         'NO_IMAGE_ASSET': 'excluded'},
         'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'problem',
                            ## Worth noticing, not worth holding a row for: a
                            ## deployment the raw archive or a reviewer has
@@ -157,7 +160,7 @@ SEVERITY = {
     'positions': {'verdict': {
         'MATCH': 'ok', 'MISMATCH': 'problem', 'NEEDS_HITL': 'review',
         'NO_POSITION': 'review', 'NO_POSITION_NAME': 'review',
-        'BAD_POSITION_RECORD': 'review'}},
+        'BAD_POSITION_RECORD': 'review', 'HITL_PIN_NOT_FOUND': 'review'}},
 }
 
 
@@ -315,6 +318,7 @@ def _positionReason(row):
         'MISMATCH': 'The position on the deployment sheet differs from the RCA spreadsheet',
         'NEEDS_HITL': 'More than one spreadsheet row could be this deployment',
         'NO_POSITION': 'The spreadsheet holds no position for this deployment',
+        'HITL_PIN_NOT_FOUND': 'A reviewer pinned this deployment to a spreadsheet row that is no longer there',
         'NO_POSITION_NAME': 'No position name maps to this reference designator',
         'BAD_POSITION_RECORD': 'The spreadsheet row could not be read as a position',
     }.get(_verdict(row, 'verdict'), 'Latitude, longitude and depth match the spreadsheet')
@@ -332,16 +336,19 @@ def _sensorBulkReason(row):
 
 def _sheetReason(row):
     verdict = _verdict(row, 'verdict')
+    where = str(row.get('verdict', '')).partition(':')[2].strip()
     if verdict == 'ASSET_IN_WRONG_BULK_RECORD':
-        where = str(row.get('verdict', '')).partition(':')[2].strip()
         return f'The asset is in the bulk records, but under {where} rather than its own'
+    if verdict == 'DUPLICATE_ASSET_IN_DEPLOYMENT':
+        ## Runs published before the verdict named the other place carry no detail.
+        return (f'The same asset was in the water somewhere else at the same time, {where}'
+                if where else 'The same asset appears twice in one deployment')
     return {
         'SENSOR_NOT_IN_BULK': 'The sheet names an asset the sensor bulk record does not have',
         'MOORING_NOT_IN_PLATFORM_BULK': 'The sheet names a mooring the platform record does not have',
         'NODE_NOT_IN_NODE_BULK': 'The sheet names a node the node record does not have',
         'ELECTRICAL_NOT_IN_ENG_BULK': 'The sheet names an electrical asset the eng record does not have',
         'CRUISE_NOT_IN_CRUISE_LIST': 'The sheet names a cruise the cruise list does not have',
-        'DUPLICATE_ASSET_IN_DEPLOYMENT': 'The same asset appears twice in one deployment',
     }.get(verdict, 'Every entry names something another record knows')
 
 
@@ -378,7 +385,9 @@ DIFFERENCE_FIELDS = ['file', 'coefficient', 'github', 'expected', 'difference', 
 
 def asDifference(recorded):
     """One calibration difference, named rather than positional."""
-    return dict(zip(DIFFERENCE_FIELDS, recorded))
+    ## Not strict: a difference recorded before the note field existed has six
+    ## values, and it still has to read.
+    return dict(zip(DIFFERENCE_FIELDS, recorded))  # noqa: B905
 
 
 def scoreRows(check, rows):

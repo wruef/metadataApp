@@ -53,7 +53,9 @@ export function dispatchInputs(source: Source) {
     asset_management_repo: (testing && source.repo.trim()) || PRODUCTION.repo,
     asset_management_ref: (testing && source.ref.trim()) || PRODUCTION.ref,
     calibration_files_ref: (testing && source.calRef.trim()) || PRODUCTION.calRef,
-    baseline_ref: source.baseline.trim(),
+    // The baseline is chosen in testing mode and the choice outlives the mode
+    // switch, so a production run would otherwise compare master with master.
+    baseline_ref: testing ? source.baseline.trim() : '',
     // Publishing commits the run under its own name and puts it in the run
     // picker. Only a production run also becomes latest.json, so a branch run
     // publishing moves nothing that anyone else reads — which is why it is

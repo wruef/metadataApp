@@ -109,7 +109,7 @@ def test_scoringTheRowsBackProducesTheSameCategories(report):
         raw = [{key: value for key, value in row.items()
                 if key not in ('severity', 'finding', 'cleared', 'reason')}
                for row in check['rows']]
-        for before, after in zip(check['rows'], scoreRows(name, raw)):
+        for before, after in zip(check['rows'], scoreRows(name, raw), strict=True):
             assert after['severity'] == before['severity'], name
             assert after['finding'] == before['finding'], name
             assert after['cleared'] == before['cleared'], name
