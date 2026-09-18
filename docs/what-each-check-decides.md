@@ -71,6 +71,10 @@ Does each calibration file in `asset-management` match the vendor original in
 | `CONFIGURATION_ONLY` | Not checked | the file holds only deployment configuration, so there was no coefficient to compare |
 | `NOTCOMPARED`, `NAN` | Not checked | no comparison is written for this instrument yet |
 
+A coefficient that disagrees can be corrected from the row, which writes to
+your own `asset-management` fork as its own pull request. See
+[using-the-dashboard.md](using-the-dashboard.md#correcting-a-file-in-asset-management).
+
 **Comparison is exact.** There is no tolerance. Where a vendor publishes fewer
 significant figures than the repository file carries, that gap is a
 transcription to fix in the data rather than noise to absorb in code.
@@ -184,6 +188,11 @@ longitude and depth are compared for each deployment.
 | `NO_POSITION` | Needs a person | the spreadsheet holds no position for it |
 | `NO_POSITION_NAME` | Needs a person | no position name maps to this reference designator |
 | `BAD_POSITION_RECORD` | Needs a person | the spreadsheet row could not be read as a position |
+
+A `MISMATCH` can be corrected from the row, which rewrites that one deployment's
+line on its array's sheet and opens its own pull request on your
+`asset-management` fork. See
+[using-the-dashboard.md](using-the-dashboard.md#correcting-a-position).
 
 A profiler's deployment depth is the literal `N/A`, which is the value rather
 than a missing one. Reading it as missing once made 644 already-correct rows

@@ -214,8 +214,8 @@ export interface Comparison {
 export const MOVEMENTS = [
   { key: 'newlyFailing', title: 'Newly failing', hint: 'what this change broke', tone: 'error' },
   { key: 'newlyPassing', title: 'Newly passing', hint: 'what it fixed', tone: 'success' },
-  { key: 'new', title: 'New rows', hint: 'not present in the baseline', tone: 'neutral' },
-  { key: 'gone', title: 'Gone', hint: 'in the baseline, not in this run', tone: 'neutral' },
+  { key: 'new', title: 'New rows', hint: 'not in the earlier run', tone: 'neutral' },
+  { key: 'gone', title: 'Gone', hint: 'in the earlier run, not in this one', tone: 'neutral' },
   { key: 'changed', title: 'Changed otherwise', hint: 'same severity, different finding', tone: 'neutral' },
 ] as const
 

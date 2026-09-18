@@ -10,7 +10,7 @@ import os
 
 import pandas as pd
 
-from . import checks, loading, positions, report
+from . import checks, history, loading, positions, report
 from .sources import RepoSource, VendorFiles
 
 AM_REPO = 'oceanobservatories/asset-management'
@@ -59,6 +59,16 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
         ## Not a check -- the inventory of what the run covered, which the
         ## dashboard offers as a view of its own.
         'referenceDesignators': sorted(set(deployments['Reference Designator'].dropna())),
+        ## Not a check either -- the published deployment history, which is a
+        ## product rather than a finding. Built here because a run already holds
+        ## everything it needs: the deployment sheets, and both repositories'
+        ## calibration indexes. Building it costs no further reads.
+        'history': history.deploymentHistory(
+            deployments, params['assets'],
+            history.calibrationLinks(amSource, [(f'calibration/{instrument}', fileName)
+                                                for instrument, fileName in calFiles]),
+            history.calibrationLinks(calSource, [pair for pairs in vendorFiles.stems.values()
+                                                 for pair in pairs])),
         ## Not a check either -- the reasons a reviewer picks from when signing
         ## a row off, which are whatever the team has already written.
         'hitlNotes': loading.hitlNotes(hitl),

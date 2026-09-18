@@ -11,3 +11,11 @@ export function withBase(base: string, path: string) {
   if (/^[a-z]+:\/\//i.test(path)) return path
   return `${(base || '/').replace(/\/$/, '')}/${path.replace(/^\//, '')}`
 }
+
+/**
+ * The written guides, which are Markdown in this repository rather than pages
+ * in the app: a reviewer has to be able to read how to get a token before they
+ * have a dashboard they can sign in to, and GitHub renders them as they are.
+ */
+export const DOCS = 'https://github.com/wruef/metadataApp/blob/main/docs'
+export const GUIDE = `${DOCS}/using-the-dashboard.md`

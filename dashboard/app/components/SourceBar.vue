@@ -52,7 +52,7 @@ const shown = computed(() => {
           size="20"
         >
         <span class="lbl">Compare with</span>
-        <select v-model="runs.source.baseline" aria-label="Comparison baseline">
+        <select v-model="runs.source.baseline" aria-label="Compare with">
           <option value="">No comparison</option>
           <option :value="PRODUCTION.ref">Production · {{ PRODUCTION.ref }}</option>
         </select>

@@ -196,5 +196,9 @@ const comparing = ref(false)
 
     <side-by-side v-if="comparing" :row="row" @close="comparing = false" />
     <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
+    <!-- Below the sign-off deliberately. Recording a judgement is the common
+         case and the safe one; changing the file is neither. -->
+    <correct-file v-if="check === 'calibrations'" :row="row" />
+    <correct-position v-if="check === 'positions'" :row="row" />
   </div>
 </template>

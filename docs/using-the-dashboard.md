@@ -14,11 +14,14 @@ pull request under your own name.
 - [Working the queue](#working-the-queue)
 - [Clearing and flagging a row](#clearing-and-flagging-a-row)
 - [Submitting your decisions](#submitting-your-decisions)
+- [Correcting a file in asset-management](#correcting-a-file-in-asset-management)
+- [Publishing the deployment history](#publishing-the-deployment-history)
 - [Reading an earlier run](#reading-an-earlier-run)
 - [Starting a run](#starting-a-run)
 - [Checking a branch before it merges](#checking-a-branch-before-it-merges)
 - [What the review statuses mean](#what-the-review-statuses-mean)
 - [When something goes wrong](#when-something-goes-wrong)
+- [The other guides](#the-other-guides)
 
 ## Before you start
 
@@ -55,7 +58,7 @@ Then open **Permissions → Repository permissions** and set:
 
 | permission | level | why |
 |---|---|---|
-| Contents | Read and write | to write your decisions into the sheets |
+| Contents | Read and write | to write your decisions into the sheets, corrections into calibration files, and the deployment history |
 | Pull requests | Read and write | to open the pull request carrying them |
 | Actions | Read and write | to start a verification run from the dashboard |
 
@@ -96,7 +99,8 @@ rows waiting for a person, and a red dot when any of them is a problem.
 
 **This run**: the Changes view, which compares two runs; the reference
 designators the run covered; the vendor calibrations that have no repository
-file; and your queue of sign-offs waiting to be submitted.
+file; the deployment history the run built; and your queue of sign-offs waiting
+to be submitted.
 
 **Settings**, at the foot, showing who you are signed in as.
 
@@ -180,6 +184,101 @@ verification run, and the report on screen was produced before you made them.
 Start a production run when the merged decisions are worth folding in; cleared
 rows leave the queue on the next run, not before.
 
+## Correcting a file in asset-management
+
+A sign-off records a judgement about a file. This changes the file itself, and
+every data product computed from it changes too. It is therefore a separate
+thing, with separate rules, and it works the same way on two checks.
+
+| check | the button | what it changes |
+|---|---|---|
+| Calibrations | **Correct this file** | the coefficients in `calibration/<instrument>/<file>.csv` |
+| Positions | **Correct the deployment sheet** | one deployment's row in `deployment/<array>_Deploy.csv` |
+
+Both sit below the sign-off buttons in the expanded row. Both give you one line
+per thing that disagrees, with what the file says, what it should say, and a box
+to type a value in. Clicking the value on the right takes it. A box left blank
+is left alone.
+
+### Rules both of them follow
+
+**Your fork has to be exactly `oceanobservatories/asset-management`.** Not
+behind it, not ahead of it. The dashboard checks before the editor opens and
+again before it writes, and refuses rather than warns.
+
+| your fork | why it is refused |
+|---|---|
+| behind upstream | your pull request would revert whatever landed upstream meanwhile |
+| ahead of upstream | the onward pull request would carry your other commits along with the correction |
+
+Press **Sync fork** on your fork's GitHub page, then start a run and correct the
+file from that run. A correction has to start from the file the finding came
+from. For the same reason it refuses if the value no longer reads what the run
+read, which means upstream moved and the report on screen is out of date.
+
+**One pull request per record, on your fork only.** One calibration file, or one
+deployment. Neither is batched with your sign-offs, and neither is batched with
+the other. Raise the onward pull request to
+`oceanobservatories/asset-management` by hand, and nothing anyone computes
+changes until that one is reviewed and merged.
+
+### Correcting a calibration
+
+Each coefficient also takes a note, which is written into the file's own `notes`
+column — the same column the row detail reads back to you. The number is written
+in the notation the line already uses, so the diff is a changed digit rather
+than a reformatted file.
+
+An array coefficient cannot be corrected here. An OPTAA's `CC_acwo` is
+eighty-three numbers in one field, and a single text box would be guessing.
+Those are edited on GitHub.
+
+### Correcting a position
+
+The RCA position spreadsheet is the authority on where anything was put, so
+**Take every spreadsheet value** is usually the whole answer. The four fields a
+position governs are latitude, longitude, water depth and deployment depth.
+
+A deployment sheet holds every deployment on its array, around two hundred rows,
+so what identifies the row is the reference designator *and* the deployment
+number. An instrument deployed twice in one season has two rows, and only the
+one you opened is touched.
+
+If the row's notes say the parameters are preliminary, correcting the position
+clears that note as well. Once the position comes from the spreadsheet it is no
+longer provisional, and a sheet that kept the claim would contradict itself.
+The pull request says when it did this.
+
+## Publishing the deployment history
+
+Everything else in the dashboard answers "what is wrong". This answers "what was
+where, and when", and its output is a product rather than a queue: one CSV per
+instrument type, each row a deployment with the calibration that was in force
+for it. It is what `OOI-CabledArray/deployments` holds.
+
+Open **Deployment history** in the rail. Every run builds it, so what you see
+was built by the run you are reading, and choosing a different run in the picker
+shows that run's version. The page says how many deployments and instrument
+types it covers, and lists every file it would commit. Click a file to see its
+first few lines.
+
+**Propose this history** opens one pull request on your own fork of the
+deployments repository, carrying all the files at once. The history describes one
+state of the deployment sheets, so half of it from one run and half from another
+would describe no state at all.
+
+Anything the repository holds that the history does not name is left alone. The
+node deployments are the case that matters: they come from a different source and
+are not rebuilt here.
+
+The fork rule is the same as for a correction. Your `deployments` fork has to be
+exactly `OOI-CabledArray/deployments`, and the page refuses rather than warns.
+Press **Sync fork** on GitHub and check again.
+
+You are not expected to do this often. Between cruises nothing changes, and a
+pull request with no changes in it is not created at all — the page says your
+fork already matches.
+
 ## Reading an earlier run
 
 The **Run** dropdown in the stamp lists every published run, newest first. A run
@@ -213,6 +312,12 @@ appears in the run dropdown, and the production figures do not move. Either way
 the site rebuilds itself a couple of minutes later; choose the run in the
 dropdown to read it.
 
+If you start a run from the Actions tab rather than the dashboard you will see a
+third box, `replace_production`. Leave it off. It applies only to a run that is
+*not* production, where it promotes that run to the report everyone opens on —
+useful when a branch result should stand in before the branch is merged, and
+wrong every other time. A production run becomes that report anyway.
+
 Serial extraction is deliberately not here. It cannot finish without a person in
 the middle, so a button implying otherwise would be a lie.
 
@@ -245,6 +350,9 @@ the commit it read, or when either ran from a modified working tree.
 | **Agreed** | the records agree |
 | **Excluded** | there was nothing to check, and nothing was missed |
 
+Every verdict each check can return, and which status it carries, is in
+[what-each-check-decides.md](what-each-check-decides.md).
+
 *Excluded* is counted in no other number. An instrument that asset-management
 holds no calibration for cannot have one compared, so it is not a gap.
 
@@ -255,6 +363,11 @@ sentence. A photograph does not confirm a deployment, so it does not condemn one
 either.
 
 ## When something goes wrong
+
+**It says my fork is not in sync.** It is refusing on purpose. Open your
+`asset-management` fork on GitHub, press **Sync fork**, and if it says your
+branch is ahead as well, delete the extra commits or re-fork. Then run the
+checks again and correct the file from that run.
 
 **GitHub refused the sign-off.** Your token is missing a permission. The reads
 before the write all succeed, so a failure at the first write means **Contents**
@@ -274,3 +387,12 @@ publish unticked keeps its report as a build artifact only.
 
 **A row I signed off is still in the queue.** Sign-offs are read at the start of
 a run. Merge the pull request, then run again.
+
+## The other guides
+
+| guide | what it covers |
+|---|---|
+| [What each check decides](what-each-check-decides.md) | every verdict a check can return, what it means, and whether it passes |
+| [Calibration comparison](calibration-comparison.md) | which vendor format each instrument is compared against, and why |
+| [The report contract](report-contract.md) | the shape of the file a run produces, for anyone reading it directly |
+| [README](../README.md) | running the checks yourself, and how the pieces fit together |

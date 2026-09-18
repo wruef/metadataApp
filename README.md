@@ -155,6 +155,60 @@ against **your own fork**. You raise the onward pull request to the shared
 repository by hand — a person decides when a batch is worth proposing to
 everyone else.
 
+### Correcting the asset-management file itself
+
+A sign-off records a judgement about a file. Correcting one changes the file,
+and every data product computed from it changes too, so it is kept separate:
+its own pull request, one per record, never batched with sign-offs. Two checks
+offer it — a calibration file's coefficients, and one deployment's position on
+its array's sheet.
+
+It refuses rather than warns. The reviewer's `asset-management` fork has to be
+exactly `oceanobservatories/asset-management` — behind, and the request reverts
+whatever landed upstream meanwhile; ahead, and the onward request carries
+unrelated commits along with the correction. It refuses again if the value no
+longer reads what the run read, which means upstream moved and the report is out
+of date. Between them, a correction can only start from the file the finding
+came from.
+
+Everything the edit did not touch comes back byte for byte, because both files
+are hand-maintained records and reformatting one while fixing a digit in it
+buries the fix in the diff. A calibration value is written in the notation its
+line already uses — the repository files write `-5.064574e-001` where a vendor
+publishes `-0.4839777`. A position correction rewrites one row of a
+two-hundred-row sheet, found by reference designator *and* deployment number,
+because an instrument can be deployed twice in a season. Where that row's notes
+say the parameters are preliminary, they are cleared along with the position,
+which is what `applyPositions` does to the same column.
+
+Array coefficients are not editable here; an OPTAA's `CC_acwo` is eighty-three
+numbers in one quoted field, and a single text box would be guessing.
+
+### Publishing the deployment history
+
+Not a finding but a product: one csv per instrument type saying what was where
+and when, each row carrying the calibration that was in force for that
+deployment. It is what the `deployments` repository holds.
+
+Every run builds it, because a run already has everything it needs -- the
+deployment sheets and both repositories' calibration indexes -- so building it
+costs no further reads. It is published beside the report as
+`reports/history_<stamp>.json` rather than inside it, because it is 600 KB of
+csv that every other page of the dashboard would otherwise carry, and as
+`history-latest.json` for whichever run became the current one.
+
+The dashboard proposes it as one pull request on the reviewer's own fork, all
+58 files at once: the history describes one state of the deployment sheets, and
+half of it from one run and half from another would describe no state at all.
+The commit is built on the fork's own tree, so files the repository holds that
+the history does not name -- `NODE_deployments.csv` -- are left untouched. The
+same fork-sync rule applies, for the same reason.
+
+The reviewer commits the bytes the run wrote. Nothing regenerates the files in
+the browser, so this module's quoting rules exist in one place: `instrumentSN`
+is a list and is always quoted whether or not it contains a comma, so a diff
+against the previous publication shows only real changes.
+
 ## Starting a run from the dashboard
 
 The bar across the top says what a run would verify. **Production** is what has
@@ -212,8 +266,11 @@ and added to `reports/index.json`, which is what the run picker reads. Only a
 production run is also copied to `reports/latest.json` — the run the site opens
 on, and the baseline later comparisons are measured against. A branch run
 therefore publishes without moving anything, which is why publishing one is
-offered rather than refused. `replace_production` overrides that, for a branch
-you mean to promote. A 2.1 MB report is roughly 75 KB as a git object, so
+offered rather than refused.
+
+`replace_production` is the one exception, and it applies only to a run that is
+not production: it promotes that run to `latest.json`. A production run becomes
+that anyway, so the input does nothing there. A 2.1 MB report is roughly 75 KB as a git object, so
 a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
 
@@ -263,7 +320,7 @@ The reasoning behind the answers, kept out of this file so it stays a guide to
 running the thing:
 
 - [docs/using-the-dashboard.md](docs/using-the-dashboard.md) — the reviewer's
-  walkthrough: token, navigation, sign-offs, runs, and what to do when GitHub
+  walkthrough: token, navigation, sign-offs, corrections, runs, and what to do when GitHub
   refuses something.
 - [docs/what-each-check-decides.md](docs/what-each-check-decides.md) — every
   verdict each check can return, and whether it counts as passing.

@@ -12,6 +12,7 @@ tmp/
 reports/report.json
 reports/comparison.json
 reports/baseline.json
+reports/history.json
 
 # The repositories a run reads, cloned here by --clones and by the workflow.
 # They are inputs, not output: each is recorded in the report under `sources`

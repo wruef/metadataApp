@@ -24,7 +24,7 @@ on:
         type: boolean
         default: false
       replace_production:
-        description: "also make this run latest.json — the figures every reader sees. Only for a production run, or a branch you mean to promote."
+        description: "make this run the one the dashboard opens on. Ignored for a production run, which always becomes that. Tick it only to promote a branch result to the figures everyone reads."
         type: boolean
         default: false
 
@@ -32,6 +32,9 @@ env:
   PYTHON_VERSION: 3.11
   REPORT: reports/report.json
   COMPARISON: reports/comparison.json
+  # The published deployment history, beside the report rather than inside it:
+  # the dashboard fetches it only when a reviewer opens the history view.
+  HISTORY: reports/history.json
 
 # A published run commits to the default branch, which starts the Pages deploy.
 # Two runs publishing at once would race over that commit.
@@ -95,7 +98,8 @@ jobs:
             --calibration-files 'OOI-CabledArray/calibrationFiles@${{ inputs.calibration_files_ref }}' \
             --deployments 'OOI-CabledArray/deployments@main' \
             --clones repos \
-            --out "$REPORT"
+            --out "$REPORT" \
+            --history-out "$HISTORY"
 
       # Verifying a branch in isolation produces a report; verifying it against
       # a baseline produces an answer about whether the change is safe. Both runs
@@ -167,14 +171,29 @@ jobs:
             files="$files reports/comparison_$stamp.json"
           fi
 
+          # The same, for the deployment history the run built. A reviewer
+          # proposes it to their own fork of the deployments repository from the
+          # dashboard, so it has to be reachable per run.
+          if [ -f "$HISTORY" ]; then
+            cp "$HISTORY" "reports/history_$stamp.json"
+            files="$files reports/history_$stamp.json"
+          fi
+
           production=false
           if [ "$REPO" = 'oceanobservatories/asset-management' ] \
              && [ "$REF" = master ] && [ "$CAL_REF" = master ]; then
             production=true
           fi
+          # A production run always becomes latest.json, so replace_production
+          # does nothing here and everything on a run that is not production,
+          # where it promotes a branch result to the figures everyone reads.
           if [ "$production" = true ] || [ "$REPLACE" = true ]; then
             cp "$REPORT" reports/latest.json
             files="$files reports/latest.json"
+            if [ -f "$HISTORY" ]; then
+              cp "$HISTORY" reports/history-latest.json
+              files="$files reports/history-latest.json"
+            fi
           else
             echo "::notice title=Published under its own name::report_$stamp.json is in the run" \
               "picker. latest.json is unchanged, because $REPO@$REF is not production."

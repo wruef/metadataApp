@@ -60,6 +60,10 @@ def main(argv=None):
     parser.add_argument('--params', default='params')
     parser.add_argument('--hitl', default='2i_HITL')
     parser.add_argument('--out', default='reports/report.json')
+    ## Published beside the report rather than inside it: the dashboard fetches
+    ## it only when a reviewer opens the history, and it is half a megabyte.
+    parser.add_argument('--history-out', default='reports/history.json',
+                        help='the published deployment history, for the dashboard to propose')
     args = parser.parse_args(argv)
 
     result = verify(
@@ -73,6 +77,11 @@ def main(argv=None):
     os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)
     writeReport(report, args.out)
 
+    bundle = history.historyBundle(result)
+    os.makedirs(os.path.dirname(args.history_out) or '.', exist_ok=True)
+    with open(args.history_out, 'w') as handle:
+        json.dump(bundle, handle, indent=1)
+
     for name, check in report['checks'].items():
         summary = check['summary']
         print(f"{name:18} {summary['total']:5} rows  "
@@ -80,6 +89,7 @@ def main(argv=None):
               f"{summary['unchecked']:4} unchecked  {summary['cleared']:5} cleared  "
               f"{summary['ok']:5} ok")
     print('wrote ' + args.out)
+    print(f"wrote {args.history_out} ({len(bundle['files'])} history files)")
     return 0
 
 

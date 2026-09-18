@@ -7,7 +7,8 @@ import datetime
 import pandas as pd
 import pytest
 
-from rca_metadata.positions import checkPositions, expectedValues, resolvePosition
+from rca_metadata.positions import (applyPositions, checkPositions, expectedValues,
+                                    resolvePosition)
 
 LJ01D = 'CE02SHBP-LJ01D-06-CTDBPN106'
 PROFILER = 'RS01SBPS-SF01A-2A-CTDPFA102'
@@ -137,3 +138,41 @@ def test_profilerIsReadFromTheNodeFieldNotTheWholeDesignator():
     """An instrument code carrying the prefix must not be taken for a profiler."""
     assert expectedValues('RS01SLBS-LJ01A-05-SF0XXX101',
                           record(T2014, water=2900.0, mooring=195.0))['deploymentDepth'] == 195
+
+
+## --- correcting the sheets ---
+
+def test_aDisagreeingSheetIsCorrectedToTheSpreadsheet():
+    corrected, log = applyPositions(deployment(lat=44.0), POSITIONS, NAME_MAP, {})
+    assert corrected.loc[0, 'lat'] == 44.7
+    assert log[0]['changed'] == ['lat']
+
+
+def test_anAgreeingSheetIsNotLogged():
+    _, log = applyPositions(deployment(), POSITIONS, NAME_MAP, {})
+    assert log == []
+
+
+def test_correctingThePositionClearsThePreliminaryNote():
+    """The note says the position is provisional. Correcting it is what makes it
+    not, so a sheet that kept the claim would contradict itself."""
+    sheet = deployment(lat=44.0, notes='The following parameters are preliminary and will be '
+                                       'verified after deployment: lat; lon.')
+    corrected, _ = applyPositions(sheet, POSITIONS, NAME_MAP, {})
+    assert corrected.loc[0, 'notes'] == ''
+
+
+def test_anUnusablePositionRecordLeavesTheSheetAlone():
+    """The check reports BAD_POSITION_RECORD for these, so they are visible
+    rather than silently skipped -- but nothing here can say what the sheet
+    should read, so nothing is written. This used to raise a NameError."""
+    positions = {'LJ01D': {T2020: record(T2020, water=float('nan'))}}
+    corrected, log = applyPositions(deployment(lat=44.0), positions, NAME_MAP, {})
+    assert corrected.loc[0, 'lat'] == 44.0
+    assert log == []
+
+
+def test_anUnresolvedPositionLeavesTheSheetAlone():
+    corrected, log = applyPositions(deployment(lat=44.0), POSITIONS, {}, {})
+    assert corrected.loc[0, 'lat'] == 44.0
+    assert log == []

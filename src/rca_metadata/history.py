@@ -143,6 +143,25 @@ def historyFiles(rows):
     return files
 
 
+def historyBundle(result):
+    """The published history as the dashboard reads it: the finished files.
+
+    The files rather than the rows, deliberately. A reviewer proposing the
+    history is committing exactly these bytes, and a dashboard that rebuilt
+    them from rows would have to reproduce this module's quoting rules in
+    another language -- where the first divergence shows up as a diff against
+    the previous publication full of lines that did not really change.
+
+    Kept out of the run report and published beside it. It is half a megabyte
+    of csv that every other page would otherwise carry.
+    """
+    return {
+        'runAt': result['runAt'],
+        'sources': result['sources'],
+        'files': historyFiles(result['history']),
+    }
+
+
 def writeHistory(rows, outDir):
     """The published files, on disk."""
     os.makedirs(outDir, exist_ok=True)

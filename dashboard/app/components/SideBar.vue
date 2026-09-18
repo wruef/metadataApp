@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
+import { GUIDE } from '~/paths'
 import { useSignoff } from '~/signoff'
 import { useStore } from '~/store'
 
@@ -103,6 +104,13 @@ const LINK =
         <span class="grow">Not in asset-management</span>
         <span class="n">{{ vendorOnly }}</span>
       </nuxt-link>
+      <!-- A product rather than a queue: what was where and when, which the
+           deployments repository holds. Its own action because it is proposed
+           as one whole file set, not row by row. -->
+      <nuxt-link to="/deployment-history" :class="LINK" active-class="on">
+        <i class="fa-clock-rotate-left fas w-4" />
+        <span class="grow">Deployment history</span>
+      </nuxt-link>
       <nuxt-link v-if="signoff.count" to="/queue" :class="LINK" active-class="on">
         <i class="fa-pen-to-square fas w-4" />
         <span class="grow">Sign-offs</span>
@@ -124,9 +132,23 @@ const LINK =
       </template>
     </div>
 
+    <!-- The guide is Markdown on GitHub rather than a page here, so this leaves
+         the app. Opened in a tab of its own: a reviewer reads it while working
+         the queue, and losing the queue to read about it would be perverse. -->
+    <a
+      :href="GUIDE"
+      target="_blank"
+      rel="noopener"
+      :class="[LINK, store.report ? 'mt-4' : 'mt-auto']"
+    >
+      <i class="fa-book-open fas w-4" />
+      <span class="grow">Docs</span>
+      <i class="fa-arrow-up-right-from-square fas text-[10px] text-white/40" />
+    </a>
+
     <!-- Who a sign-off would be attributed to, kept in sight rather than buried
          in a settings page. -->
-    <nuxt-link to="/settings" :class="[LINK, 'mt-4']" active-class="on">
+    <nuxt-link to="/settings" :class="LINK" active-class="on">
       <img v-if="auth.user" :src="auth.user.avatarUrl" alt="" class="h-5 rounded-full w-5" >
       <i v-else class="fa-right-to-bracket fas w-4" />
       <span class="truncate">{{ auth.user?.login ?? 'Sign in' }}</span>

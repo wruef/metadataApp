@@ -5,10 +5,13 @@ import { defineStore } from 'pinia'
  *  shared repository, and the onward pull request is raised by hand. */
 export const FORKS = [
   { key: 'hitl', repo: 'metadataApp', base: 'main',
+    upstream: 'OOI-CabledArray/metadataApp',
     what: 'HITL sign-offs, and the workflows a run is started from' },
   { key: 'assetManagement', repo: 'asset-management', base: 'master',
-    what: 'position corrections to the deployment sheets' },
+    upstream: 'oceanobservatories/asset-management',
+    what: 'calibration corrections and positions on the deployment sheets' },
   { key: 'deployments', repo: 'deployments', base: 'main',
+    upstream: 'OOI-CabledArray/deployments',
     what: 'deployment history and node positions' },
 ] as const
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { authHeaders, isMissing } from '../app/github'
+import { authHeaders, isMissing, syncRefusal } from '../app/github'
 
 /**
  * The sign-off path reads a sheet in order to add a line to it, so what a
@@ -35,5 +35,41 @@ describe('the token is sent to github and nowhere else', () => {
       Authorization: 'Bearer abc',
       Accept: 'application/vnd.github+json',
     })
+  })
+})
+
+/**
+ * A calibration correction is written to a fork and justified by a finding
+ * produced against upstream, so the fork has to be exactly upstream.
+ */
+describe('whether a fork may be corrected', () => {
+  const UPSTREAM = 'oceanobservatories/asset-management'
+
+  it('allows a fork that is exactly upstream', () => {
+    expect(syncRefusal({ status: 'identical', ahead_by: 0, behind_by: 0 }, UPSTREAM)).toBeNull()
+  })
+
+  it('refuses a fork that is behind, which would revert what landed meanwhile', () => {
+    const refusal = syncRefusal({ status: 'behind', ahead_by: 0, behind_by: 12 }, UPSTREAM)
+    expect(refusal).toContain('12 commits behind')
+    expect(refusal).toContain(UPSTREAM)
+  })
+
+  /** An onward pull request from an ahead fork carries its extra commits too,
+   *  so the correction would not arrive upstream on its own. */
+  it('refuses a fork that is ahead', () => {
+    expect(syncRefusal({ status: 'ahead', ahead_by: 1, behind_by: 0 }, UPSTREAM))
+      .toContain('1 commit ahead of')
+  })
+
+  it('says both numbers when the fork has diverged', () => {
+    const refusal = syncRefusal({ status: 'diverged', ahead_by: 2, behind_by: 5 }, UPSTREAM)
+    expect(refusal).toContain('5 commits behind')
+    expect(refusal).toContain('2 commits ahead of')
+  })
+
+  it('says what to do about it', () => {
+    expect(syncRefusal({ status: 'behind', ahead_by: 0, behind_by: 1 }, UPSTREAM))
+      .toContain('Sync it on GitHub, run the checks again')
   })
 })

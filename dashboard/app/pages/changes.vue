@@ -26,8 +26,9 @@ const moved = computed(() =>
     <div>
       <h1 class="font-semibold text-2xl">Changes</h1>
       <p class="max-w-prose mt-1 text-gray-600">
-        Verifying a branch on its own produces a report. Verifying it against a baseline produces an
-        answer about whether the change is safe.
+        Every row whose status is different between this run and an earlier one: what the change
+        broke, what it fixed, and what appeared or disappeared. A run fills this page in only if it
+        was told to compare itself with another run.
       </p>
     </div>
 
@@ -35,8 +36,8 @@ const moved = computed(() =>
       v-if="!comparison"
       color="neutral"
       variant="subtle"
-      title="This run had no baseline"
-      description="Run the verify workflow with a baseline ref — master, usually — and it will compare the two and publish the result here."
+      title="This run was not compared with anything"
+      description="To get one, set the bar at the top of the page to Testing, name the branch, set Compare with to Production, and run the checks. This page fills in when that run publishes."
     />
 
     <template v-else>
@@ -62,7 +63,7 @@ const moved = computed(() =>
 
       <div class="bg-white border border-gray-200 gap-x-10 gap-y-3 grid px-5 py-4 rounded-lg sm:grid-cols-2">
         <div>
-          <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">Baseline</div>
+          <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">Compared with</div>
           <div>{{ when(comparison.baselineRunAt) }}</div>
         </div>
         <div>

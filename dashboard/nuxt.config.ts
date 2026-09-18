@@ -36,6 +36,9 @@ export default defineNuxtConfig({
       reportUrl: 'reports/latest.json',
       // Written only when a run is given a baseline to compare against.
       comparisonUrl: 'reports/comparison.json',
+      // The deployment history a run built, fetched only when that view is
+      // opened -- it is a couple of hundred kilobytes of csv.
+      historyUrl: 'reports/history-latest.json',
       // Every run that has been published, so an earlier one can be opened.
       indexUrl: 'reports/index.json',
     },

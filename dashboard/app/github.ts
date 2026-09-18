@@ -59,6 +59,9 @@ export async function openPullRequest(
   files: Record<string, string>,
   title: string,
   body: string,
+  /** Names the branch, so a calibration correction is told apart from a batch
+   *  of sign-offs in the fork's branch list at a glance. */
+  prefix = 'hitl',
 ) {
   const auth = useAuth()
   const options = { headers: headers(auth.token) }
@@ -88,7 +91,7 @@ export async function openPullRequest(
     tree: tree.sha,
     parents: [baseSha],
   })
-  const branch = `hitl-${new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15)}Z`
+  const branch = `${prefix}-${new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15)}Z`
   await post('git/refs', { ref: `refs/heads/${branch}`, sha: commit.sha })
   const pull = await post<{ html_url: string }>('pulls', {
     title,
@@ -97,4 +100,53 @@ export async function openPullRequest(
     base,
   })
   return pull.html_url
+}
+
+/** What GitHub says about two branches in the same network. */
+export interface Comparison {
+  status: 'identical' | 'behind' | 'ahead' | 'diverged'
+  ahead_by: number
+  behind_by: number
+}
+
+/**
+ * Why a fork may not be written to, or null when it may.
+ *
+ * A correction is proposed against a fork, but the finding that justifies it
+ * was produced against upstream -- so a fork that is not exactly upstream is a
+ * fork whose files this dashboard has never read.
+ *
+ * Behind, and the pull request silently reverts whatever landed upstream
+ * meanwhile. Ahead, and the onward pull request to upstream carries those extra
+ * commits along with the correction, so what arrives for review is not what was
+ * reviewed here. Both are refused. Syncing a fork is one button on GitHub;
+ * unpicking a calibration record from an unrelated commit is not.
+ */
+export function syncRefusal(comparison: Comparison, upstream: string) {
+  if (comparison.status === 'identical') return null
+  const commits = (count: number) => `${count} commit${count === 1 ? '' : 's'}`
+  const how = {
+    behind: `${commits(comparison.behind_by)} behind`,
+    ahead: `${commits(comparison.ahead_by)} ahead of`,
+    diverged: `${commits(comparison.behind_by)} behind and ${commits(comparison.ahead_by)} ahead of`,
+  }[comparison.status]
+  return `Your fork is ${how} ${upstream}. Sync it on GitHub, run the checks again, `
+    + 'then correct the file — a correction has to start from what the run read.'
+}
+
+/**
+ * How the reviewer's fork stands against upstream.
+ *
+ * Asked of the fork rather than of upstream, with the base spelled
+ * ``owner:branch``: the token is scoped to the reviewer's own repositories, and
+ * a request to the shared repository would be the one call that needs access
+ * they were never asked for.
+ */
+export async function compareWithUpstream(fork: string, upstream: string, base: string) {
+  const auth = useAuth()
+  const owner = upstream.split('/')[0]
+  return await $fetch<Comparison>(
+    `${API}/${fork}/compare/${owner}:${base}...${base}`,
+    { headers: headers(auth.token) },
+  )
 }

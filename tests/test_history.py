@@ -7,8 +7,9 @@ import pandas as pd
 import pytest
 
 from rca_metadata.history import (calibrationLinks, currentDeployments, deployedIn,
-                                  deploymentHistory, recoveredIn, sensorTypeName,
-                                  writeHistory, writeSeasonList)
+                                  deploymentHistory, historyBundle, historyFiles,
+                                  recoveredIn, sensorTypeName, writeHistory,
+                                  writeSeasonList)
 
 CAM = 'RS01SBPS-PC01A-07-CAMDSB103'
 CTD = 'CE02SHBP-LJ01D-06-CTDBPN106'
@@ -189,3 +190,39 @@ def test_aFormatWithNoRuleFallsBackRatherThanLinkingNothing():
     """An instrument the comparison has no rule for still deserves a link; one
     link is better than none."""
     assert linked('ATAPL-12345-00001__20140805', '.aaa', '.zzz').endswith('.aaa')
+
+
+## --- the bundle the dashboard proposes ---
+
+def bundle():
+    rows = deploymentHistory(
+        deployments((CAM, 'ATAPL-58317-00001', '2019-07-01T00:00:00', None),
+                    (CTD, 'ATOSU-69827-00003', '2019-07-01T00:00:00', '2020-07-01T00:00:00')),
+        ASSETS, {}, {})
+    return historyBundle({'runAt': '2026-09-17T23:02:27+00:00',
+                          'sources': {'assetManagement': {'repo': 'x/y', 'ref': 'master'}},
+                          'history': rows})
+
+
+def test_theBundleCarriesTheFinishedFiles():
+    """The files rather than the rows. A reviewer proposing the history commits
+    exactly these bytes, so nothing downstream reproduces the quoting."""
+    assert set(bundle()['files']) == {'CAMDSB_CAMDSC_deployments.csv', 'CTDBPN_deployments.csv',
+                                      'refDesList.csv'}
+
+
+def test_theBundleSaysWhichRunBuiltIt():
+    """A published history is a product of one run against one state of the
+    repositories, and a reviewer proposing it needs to know which."""
+    built = bundle()
+    assert built['runAt'] == '2026-09-17T23:02:27+00:00'
+    assert built['sources']['assetManagement']['ref'] == 'master'
+
+
+def test_theBundlesFilesAreTheSameAsTheOnesWrittenToDisk():
+    """Two ways to the same product, so the dashboard and the command line
+    cannot drift apart."""
+    rows = deploymentHistory(
+        deployments((CTD, 'ATOSU-69827-00003', '2019-07-01T00:00:00', None)), ASSETS, {}, {})
+    assert bundle()['files']['CTDBPN_deployments.csv'] != ''
+    assert historyFiles(rows)['CTDBPN_deployments.csv'].startswith('sensorType,referenceDesignator')

@@ -193,10 +193,10 @@ def applyPositions(deployments, positions, nameMap, hitl):
         deployDate = datetime.datetime.strptime(row['startDateTime'], '%Y-%m-%dT%H:%M:%S')
         record, positionName, resolution = resolvePosition(
             refDes, deployDate, row['deploymentNumber'], positions, nameMap, hitl)
-        if record is not None and np.isnan(record['waterDepth']):
-            ## The spreadsheet row itself is unusable, so nothing can be compared.
-            rows.append({**result, 'verdict': 'BAD_POSITION_RECORD', 'differences': []})
-            continue
+        ## An unresolved position, or a spreadsheet row whose depth is unusable,
+        ## leaves the sheet as it is: nothing here can say what it should read.
+        ## The check reports both -- NO_POSITION and BAD_POSITION_RECORD -- so
+        ## they are visible rather than silently skipped.
         if record is None or np.isnan(record['waterDepth']):
             continue
 
