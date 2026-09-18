@@ -200,6 +200,20 @@ jobs:
               cp "$HISTORY" reports/history-latest.json
               files="$files reports/history-latest.json"
             fi
+            # The run the site opens on asks for a fixed name, as it does for
+            # the report and the history. Without this the dashboard asked for
+            # reports/comparison.json, which is gitignored and never committed,
+            # so the Changes view was empty on the default run however many
+            # baselines were run.
+            if [ -f "$COMPARISON" ]; then
+              cp "$COMPARISON" reports/comparison-latest.json
+              files="$files reports/comparison-latest.json"
+            else
+              # This run had no baseline, so it has no changes to show. The
+              # previous run's must not be left behind pretending to be this
+              # one's.
+              git rm -q --ignore-unmatch reports/comparison-latest.json
+            fi
           else
             echo "::notice title=Published under its own name::report_$stamp.json is in the run" \
               "picker. latest.json is unchanged, because $REPO@$REF is not production."

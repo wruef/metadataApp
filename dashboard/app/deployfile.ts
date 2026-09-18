@@ -1,5 +1,5 @@
 /**
- * Correcting a position on an asset-management deployment sheet.
+ * Correcting one deployment's row on an asset-management deployment sheet.
  *
  * One sheet per array, around two hundred rows each, one row per deployment.
  * So unlike a calibration file this is a shared file: the row has to be found
@@ -19,6 +19,11 @@ export function deploymentPath(refDes: string) {
 
 /** The columns a position governs, matching `POSITION_FIELDS` in positions.py. */
 export const POSITION_FIELDS = ['lat', 'lon', 'water_depth', 'deployment_depth']
+
+/** The column naming the instrument that was deployed. It is what the raw
+ *  serial number is checked against, so a serial belonging to a different asset
+ *  is a finding about this column and nothing else on the row. */
+export const ASSET_FIELD = 'sensor.uid'
 
 /** A deployment sheet carries this until a position is confirmed. Once it is,
  *  the note is no longer true, so correcting a position clears it -- which is
@@ -49,14 +54,18 @@ export interface Applied {
 }
 
 /**
- * The sheet with one deployment's position corrected.
+ * The sheet with one deployment's row corrected.
+ *
+ * Any column the sheet carries, which in practice is a position or the asset
+ * that was deployed. Both are corrections to the same row of the same file, and
+ * the rules for writing one are the rules for writing the other.
  *
  * Throws rather than guessing. No such deployment, a column the sheet does not
  * carry, or a value that is no longer what the run read all mean the sheet has
  * moved on since the report -- and writing anyway would revert somebody else's
  * work or correct the wrong deployment.
  */
-export function applyPositionCorrections(
+export function applyDeploymentCorrections(
   text: string,
   refDes: string,
   deployNum: string | number,
@@ -88,11 +97,13 @@ export function applyPositionCorrections(
     fields[at] = asField(correction.to)
   }
 
-  // The note claims the position is provisional. Correcting it to the
+  // The note claims the *position* is provisional. Correcting it to the
   // spreadsheet is what makes it not, so leaving the claim behind would be a
-  // sheet that contradicts itself.
+  // sheet that contradicts itself. Correcting which instrument was deployed
+  // says nothing about where it sat, so it leaves the note alone.
+  const correctsPosition = corrections.some((each) => POSITION_FIELDS.includes(each.field))
   const notesAt = column.notes
-  const clearedNote = notesAt !== undefined
+  const clearedNote = correctsPosition && notesAt !== undefined
     && (fields[notesAt] ?? '').includes(PRELIMINARY_NOTE)
   if (clearedNote) fields[notesAt!] = ''
 
@@ -100,9 +111,9 @@ export function applyPositionCorrections(
   return { text: lines.join('\n'), clearedNote }
 }
 
-/** What the pull request is called. */
-export function positionTitle(refDes: string, deployNum: string | number,
-                              corrections: FieldCorrection[]) {
+/** What the pull request is called when it carries one deployment. */
+export function deploymentTitle(refDes: string, deployNum: string | number,
+                                corrections: FieldCorrection[]) {
   const named = corrections.length === 1
     ? corrections[0]!.field
     : `${corrections.length} fields`
@@ -116,10 +127,13 @@ export function positionTitle(refDes: string, deployNum: string | number,
  * array, so a batch can carry several of them against the same file, and each
  * still has to be readable on its own.
  */
-export function positionSection(
+export function deploymentSection(
   refDes: string,
   deployNum: string | number,
-  positionName: string,
+  /** One sentence saying where the new values came from. It is the whole
+   *  justification a reviewer of the pull request is given, so it is written
+   *  where the correction is made rather than guessed at here. */
+  source: string,
   corrections: FieldCorrection[],
   clearedNote: boolean,
 ) {
@@ -130,8 +144,7 @@ export function positionSection(
     '| field | was | now |',
     '|---|---|---|',
     ...rows,
-    '',
-    `Taken from the RCA position spreadsheet${positionName ? `, position \`${positionName}\`` : ''}.`,
+    ...(source ? ['', source] : []),
     ...(clearedNote
       ? ['', `The \`notes\` column said "${PRELIMINARY_NOTE}", which this correction makes untrue,`
          + ' so it has been cleared.']

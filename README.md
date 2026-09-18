@@ -163,13 +163,16 @@ A batch is keyed by the repository it writes to *and* by what the change is:
 |---|---|---|
 | Sign-offs | `metadataApp` | the 2i-HITL sheets, all three in one request |
 | Calibration coefficients | `asset-management` | `calibration/<instrument>/*.csv` |
-| Deployment sheet positions | `asset-management` | `deployment/<array>_Deploy.csv` |
+| Deployment sheets | `asset-management` | `deployment/<array>_Deploy.csv` |
 
 Both halves of that key matter. The repository is a hard boundary, because a
 pull request cannot span two of them. The kind is a boundary of review:
-coefficients and positions share a fork, and somebody approving a page of
-numbers has not agreed to move an instrument on the seabed, so the two travel
-separately. Opening them all runs one request after another rather than
+coefficients and deployment sheets share a fork, and somebody approving a page
+of numbers has not agreed to move an instrument on the seabed, so the two travel
+separately. What shares a *file* does not get split further, though — where a
+deployment sat and which instrument it was are both corrections to one row of
+one sheet, so they ride together. Two requests editing `RS03AXPS_Deploy.csv` on
+branches cut from the same base would conflict the moment the first merged. Opening them all runs one request after another rather than
 together — two branches cut from the same base at once is how the second lands
 empty.
 
@@ -187,9 +190,17 @@ The refusal names the records that failed.
 
 A sign-off records a judgement about a file. Correcting one changes the file,
 and every data product computed from it changes too, so it never rides with
-sign-offs — a different repository, and a batch of its own. Two checks offer it:
-a calibration file's coefficients, and one deployment's position on its array's
-sheet.
+sign-offs — a different repository, and a batch of its own. Three things are
+offered: a calibration file's coefficients, one deployment's position on its
+array's sheet, and the asset ID that names which instrument was in the water.
+
+The asset ID is corrected from the deployments view, under the row. It is the
+answer to the check's commonest finding: a serial number read out of the raw
+archive that belongs to a different asset of the same model. That asset is
+offered to take with a click, and anything else is typed. The pre-deploy
+photograph names an asset too and is deliberately **not** offered, for the same
+reason it does not confirm a deployment: a photograph of an instrument is not
+evidence of which instrument went in the water.
 
 It happens on the line. The table of what disagrees gains a **Correct to**
 column, and for a calibration a note column, so the value being copied and the
@@ -330,6 +341,16 @@ production run is also copied to `reports/latest.json` — the run the site open
 on, and the baseline later comparisons are measured against. A branch run
 therefore publishes without moving anything, which is why publishing one is
 offered rather than refused.
+
+The history and the comparison follow the report under both names: per run as
+`history_<stamp>.json` and `comparison_<stamp>.json`, and for a production run
+as `history-latest.json` and `comparison-latest.json`. The dashboard asks for
+the fixed names when it opens on the current run and for the per-run names when
+a reviewer picks an earlier one. A production run given no baseline has no
+comparison, so publishing it **deletes** `comparison-latest.json` rather than
+leaving the previous run's behind. The dashboard refuses one whose
+`currentRunAt` is not the report's anyway, because a page of somebody else's
+movements is worse than an empty one.
 
 `replace_production` is the one exception, and it applies only to a run that is
 not production: it promotes that run to `latest.json`. A production run becomes

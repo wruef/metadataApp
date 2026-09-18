@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { compareValues, identity, readDifference, siteOf, splitVerdict, toneOf, VERDICTS, yearOf } from '../app/display'
+import { VERDICTS, assetNamedByRawSerial, compareValues, identity, readDifference, siteOf, splitVerdict, toneOf, yearOf } from '../app/display'
 
 describe('verdict tone', () => {
   it('colours a verdict by the severity the run gives it', () => {
@@ -166,5 +166,34 @@ describe('derived facets', () => {
   it('takes the year from a deployment date', () => {
     expect(yearOf('2016-07-14T00:00:00')).toBe('2016')
     expect(yearOf(null)).toBe('')
+  })
+})
+
+
+/**
+ * A serial number read out of the raw archive that belongs to a different asset
+ * is the commonest thing the deployments check finds. The verdict carries the
+ * asset it belongs to, which is what the correction offers to take.
+ */
+describe('the asset a raw serial number belongs to', () => {
+  it('is the asset named at the end of a mismatch', () => {
+    expect(assetNamedByRawSerial('MISMATCH: raw: 23443: ATAPL-68073-00005'))
+      .toBe('ATAPL-68073-00005')
+  })
+
+  it('is nothing when the run could not place the serial', () => {
+    expect(assetNamedByRawSerial('MISMATCH: raw: 243: unknown')).toBeNull()
+  })
+
+  it('is nothing for an ambiguous serial', () => {
+    // AMBIGUOUS_SN names an asset the serial *also* fits. That is the reason the
+    // row cannot be settled, not a correction to offer.
+    expect(assetNamedByRawSerial('AMBIGUOUS_SN: raw: 8: also ATAPL-67639-00002')).toBeNull()
+  })
+
+  it('is nothing for the verdicts that name no asset', () => {
+    for (const verdict of ['MATCH', 'NO_FILE', 'NO_SN', 'NAN', '']) {
+      expect(assetNamedByRawSerial(verdict)).toBeNull()
+    }
   })
 })

@@ -128,6 +128,10 @@ const comparing = ref(false)
     </div>
 
     <side-by-side v-if="comparing" :row="row" @close="comparing = false" />
+    <!-- Correcting the record comes before signing off on it: a serial number
+         that belongs to another asset is a sheet to fix, not a judgement to
+         write down. -->
+    <asset-correction v-if="check === 'deployments'" :row="row" class="mt-4" />
     <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
   </div>
 </template>

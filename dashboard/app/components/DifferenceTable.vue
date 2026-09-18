@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth, FORKS } from '~/auth'
-import { deploymentKey, useBatch } from '~/batch'
+import { sheetKey, useBatch } from '~/batch'
 import { calibrationPath, type Correction } from '~/calfile'
 import { parseList, scalar } from '~/csv'
 import { deploymentPath, POSITION_FIELDS, type FieldCorrection } from '~/deployfile'
@@ -55,14 +55,14 @@ const path = computed(() => (isCalibration.value
   : deploymentPath(String(row.refDes))))
 
 /** Which batch this row's correction belongs in. */
-const batchKey = computed<'calibrations' | 'positions'>(
-  () => (isCalibration.value ? 'calibrations' : 'positions'))
+const batchKey = computed<'calibrations' | 'sheets'>(
+  () => (isCalibration.value ? 'calibrations' : 'sheets'))
 
 /** What identifies the record within that batch -- the file for a calibration,
  *  the deployment for a position, because one sheet holds a whole array. */
 const id = computed(() => (isCalibration.value
   ? path.value
-  : deploymentKey(String(row.refDes), row.deployNum as string | number)))
+  : sheetKey('position', String(row.refDes), row.deployNum as string | number)))
 
 /** Queueing the same record twice replaces the earlier entry, so a row already
  *  in the queue says so rather than silently taking a second copy. */

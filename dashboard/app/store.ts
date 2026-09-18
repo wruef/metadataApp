@@ -232,6 +232,21 @@ export interface RunEntry {
   summary: Record<string, Check['summary']>
 }
 
+/**
+ * The comparison to show for a report, or null.
+ *
+ * A run and its comparison are separate files, so the pair can come apart: a
+ * production run given no baseline leaves the previous run's comparison in
+ * place, and it would be read as this run's changes. The comparison names the
+ * run it was produced for, so the pair can say whether it belongs together —
+ * and refusing it is cheaper than explaining a page of movements that happened
+ * to somebody else's run.
+ */
+export function comparisonFor(report: Report | null, comparison: Comparison | null) {
+  if (!report || !comparison) return null
+  return comparison.currentRunAt === report.runAt ? comparison : null
+}
+
 export const useStore = defineStore('report', () => {
   const report = shallowRef<Report | null>(null)
   const comparison = shallowRef<Comparison | null>(null)
@@ -273,7 +288,7 @@ export const useStore = defineStore('report', () => {
       // Absent unless a run was given a baseline, so a failure here is normal
       // and must not take the rest of the dashboard down with it.
       try {
-        comparison.value = await $fetch<Comparison>(comparisonUrl)
+        comparison.value = comparisonFor(fetched, await $fetch<Comparison>(comparisonUrl))
       } catch {
         comparison.value = null
       }

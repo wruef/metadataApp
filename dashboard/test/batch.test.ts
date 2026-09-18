@@ -6,12 +6,12 @@ import {
   batchesFor,
   buildBatch,
   describe as describeEntry,
-  deploymentKey,
   pathOf,
+  sheetKey,
   signoffKey,
   type CalibrationEntry,
   type Entry,
-  type PositionEntry,
+  type SheetEntry,
   type SignoffEntry,
 } from '../app/batch'
 import { PRELIMINARY_NOTE } from '../app/deployfile'
@@ -61,13 +61,24 @@ const calibration = (instrument: string, fileName: string, coefficient: string,
   corrections: [{ coefficient, from, to }],
 })
 
-const position = (refDes: string, deployNum: number, to: string): PositionEntry => ({
-  batch: 'positions',
-  key: deploymentKey(refDes, deployNum),
+const position = (refDes: string, deployNum: number, to: string): SheetEntry => ({
+  batch: 'sheets',
+  key: sheetKey('position', refDes, deployNum),
+  kind: 'position',
   refDes,
   deployNum,
-  positionName: 'PC03A',
+  source: 'Taken from the RCA position spreadsheet, position `PC03A`.',
   corrections: [{ field: 'lat', from: '45.830481', to }],
+})
+
+const assetId = (refDes: string, deployNum: number, to: string): SheetEntry => ({
+  batch: 'sheets',
+  key: sheetKey('asset', refDes, deployNum),
+  kind: 'asset',
+  refDes,
+  deployNum,
+  source: 'The serial number in this deployment\'s raw file belongs to this asset.',
+  corrections: [{ field: 'sensor.uid', from: 'ATAPL-58315-00002', to }],
 })
 
 const signoff = (sheet: SignoffEntry['sheet'], line: string, notes = 'checked'): SignoffEntry => ({
@@ -87,7 +98,7 @@ describe('which pull request a change belongs to', () => {
     // Both land in asset-management and still travel separately: approving a
     // page of coefficients is not agreeing to move an instrument on the seabed.
     const forAssetManagement = batchesFor('assetManagement').map((batch) => batch.key)
-    expect(forAssetManagement).toEqual(['calibrations', 'positions'])
+    expect(forAssetManagement).toEqual(['calibrations', 'sheets'])
     expect(batchesFor('hitl').map((batch) => batch.key)).toEqual(['signoffs'])
   })
 
@@ -100,7 +111,7 @@ describe('which pull request a change belongs to', () => {
 
   it('guards the batches that change a file, and not the one that records a judgement', () => {
     expect(BATCHES.filter((batch) => batch.guarded).map((batch) => batch.key))
-      .toEqual(['calibrations', 'positions'])
+      .toEqual(['calibrations', 'sheets'])
   })
 
   it('sends each entry to the file it writes', () => {
@@ -112,6 +123,12 @@ describe('which pull request a change belongs to', () => {
 
   it('tells the same identifier in two sheets apart', () => {
     expect(signoffKey('calibrations', 'ATAPL-1')).not.toBe(signoffKey('sensorBulk', 'ATAPL-1'))
+  })
+
+  it('tells a position correction apart from an asset one on the same deployment', () => {
+    // Both write the same row. Queueing one must not replace the other.
+    expect(sheetKey('position', 'RS03AXPS-PC03A-05-ADCPTD302', 1))
+      .not.toBe(sheetKey('asset', 'RS03AXPS-PC03A-05-ADCPTD302', 1))
   })
 })
 
@@ -148,14 +165,14 @@ describe('gathering calibration corrections', () => {
   })
 })
 
-describe('gathering position corrections', () => {
+describe('gathering deployment sheet corrections', () => {
   const two: Entry[] = [
     position('RS03AXPS-PC03A-05-ADCPTD302', 1, '45.830512'),
     position('RS03AXPS-PC03A-06-VADCPA301', 1, '45.830599'),
   ]
 
   it('folds two deployments of one sheet into a single file', () => {
-    const built = buildBatch('positions', two, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
+    const built = buildBatch('sheets', two, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
     expect(Object.keys(built.files)).toEqual([SHEET_PATH])
     // Both corrections are in it — the second was applied to the first's output
     // rather than to the file as the fork holds it.
@@ -164,7 +181,7 @@ describe('gathering position corrections', () => {
   })
 
   it('names each deployment in the body and says which note it cleared', () => {
-    const { body } = buildBatch('positions', two, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
+    const { body } = buildBatch('sheets', two, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
     expect(body).toContain('**RS03AXPS-PC03A-05-ADCPTD302** deployment **1**')
     expect(body).toContain('**RS03AXPS-PC03A-06-VADCPA301** deployment **1**')
     // Only the second row carried the preliminary note.
@@ -172,9 +189,31 @@ describe('gathering position corrections', () => {
   })
 
   it('counts the deployments in the title', () => {
-    expect(batchTitle('positions', two)).toBe('Correct positions for 2 deployments')
-    expect(batchTitle('positions', [two[0]!]))
+    expect(batchTitle('sheets', two)).toBe('Correct 2 deployment sheet rows')
+    expect(batchTitle('sheets', [two[0]!]))
       .toBe('Correct lat for RS03AXPS-PC03A-05-ADCPTD302 deployment 1')
+  })
+
+  it('carries a position and an asset for one deployment in the same request', () => {
+    // Two claims about one row. They are one file, so they are one pull
+    // request: two branches editing RS03AXPS_Deploy.csv conflict on merge.
+    const both: Entry[] = [
+      position('RS03AXPS-PC03A-05-ADCPTD302', 1, '45.830512'),
+      assetId('RS03AXPS-PC03A-05-ADCPTD302', 1, 'ATAPL-58315-00005'),
+    ]
+    const built = buildBatch('sheets', both, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
+    expect(Object.keys(built.files)).toEqual([SHEET_PATH])
+    expect(built.files[SHEET_PATH]).toContain('45.830512')
+    expect(built.files[SHEET_PATH]).toContain('ATAPL-58315-00005')
+    expect(built.body).toContain('| `lat` | 45.830481 | 45.830512 |')
+    expect(built.body).toContain('| `sensor.uid` | ATAPL-58315-00002 | ATAPL-58315-00005 |')
+  })
+
+  it('says what each correction was taken from, once per record', () => {
+    const built = buildBatch('sheets', [assetId('RS03AXPS-PC03A-05-ADCPTD302', 1, 'ATAPL-58315-00005')],
+                             { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
+    expect(built.body).toContain('raw file belongs to this asset')
+    expect(built.body).toContain(BY)
   })
 })
 
@@ -183,12 +222,12 @@ describe('a batch that cannot be applied', () => {
     // A value that no longer reads what the run read means the file has moved
     // since the report on screen, which casts the same doubt over every other
     // record in the batch.
-    const stale: PositionEntry = {
+    const stale: SheetEntry = {
       ...position('RS03AXPS-PC03A-05-ADCPTD302', 1, '45.9'),
       corrections: [{ field: 'lat', from: '0.000000', to: '45.9' }],
     }
     const entries: Entry[] = [position('RS03AXPS-PC03A-06-VADCPA301', 1, '45.830599'), stale]
-    expect(() => buildBatch('positions', entries, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN))
+    expect(() => buildBatch('sheets', entries, { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN))
       .toThrow(/1 of 2 could not be applied, so nothing was proposed/)
   })
 

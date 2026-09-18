@@ -138,6 +138,22 @@ export function splitVerdict(value: string) {
 }
 
 /**
+ * The asset a raw serial number turned out to belong to, or null.
+ *
+ * `rawFile_verify` reads `MISMATCH: raw: 23443: ATAPL-68073-00005` when the
+ * serial in the raw file belongs to a different asset of the same model, and
+ * ends `: unknown` when the run could not place it at all.
+ *
+ * Only a MISMATCH names one. `AMBIGUOUS_SN` names an asset the serial *also*
+ * fits, which is the opposite of evidence — it is the reason that row cannot be
+ * settled — so nothing is offered from it.
+ */
+export function assetNamedByRawSerial(verdict: string) {
+  const named = /^MISMATCH: raw: [^:]*: *(\S+)$/.exec(verdict.trim())?.[1]
+  return named && named !== 'unknown' ? named : null
+}
+
+/**
  * The tone for a cell, or null when the column does not hold a verdict and the
  * value should be left as plain text.
  */

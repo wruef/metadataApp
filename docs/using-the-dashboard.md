@@ -180,11 +180,13 @@ Each group is **one pull request** on **one of your own forks**. The groups are:
 |---|---|---|
 | Sign-offs | your `metadataApp` | all three 2i-HITL sheets |
 | Calibration coefficients | your `asset-management` | every calibration file you corrected |
-| Deployment sheet positions | your `asset-management` | every deployment you repositioned |
+| Deployment sheets | your `asset-management` | every deployment you repositioned or reassigned |
 
-Coefficients and positions go to the same fork and still travel separately.
-Somebody approving a page of numbers has not agreed to move an instrument on the
-seabed, so the two are never in the same request.
+Coefficients and deployment sheets go to the same fork and still travel
+separately. Somebody approving a page of numbers has not agreed to move an
+instrument on the seabed, so the two are never in the same request. Positions
+and asset IDs *do* share a request, because they share a file: two requests
+editing one array's sheet would conflict the moment the first was merged.
 
 Press **Open pull request** under a group to send that one, or **Open all** to
 send every group. Opening all does them one after another rather than at once:
@@ -210,12 +212,13 @@ rows leave the queue on the next run, not before.
 
 A sign-off records a judgement about a file. This changes the file itself, and
 every data product computed from it changes too. It is therefore a separate
-thing, with separate rules, and it works the same way on two checks.
+thing, with separate rules, and it works the same way on three checks.
 
 | check | the button | what it changes |
 |---|---|---|
 | Calibrations | **Add to batch** | the coefficients in `calibration/<instrument>/<file>.csv` |
-| Positions | **Add to batch** | one deployment's row in `deployment/<array>_Deploy.csv` |
+| Positions | **Add to batch** | the position on one deployment's row in `deployment/<array>_Deploy.csv` |
+| Deployments | **Add to batch** | `sensor.uid` on that row — which instrument the sheet says was deployed |
 
 Adding does not open anything. The correction joins the batch for its kind and
 waits under **Queued changes** with the rest. Correct as many files as a sitting
@@ -231,6 +234,26 @@ into are side by side.
   or the spreadsheet's position, and on most rows it is the whole answer.
 - **Or type your own** in the box.
 - **A box left blank is left alone.** Only lines you changed are proposed.
+
+### Correcting the instrument a deployment names
+
+On a deployment row the panel is called **The instrument on the sheet**, and it
+has one box. The finding it answers is the check's commonest: the serial number
+read out of the raw archive belongs to a different asset of the same model, so
+the sheet names the wrong instrument.
+
+Where the run could say which asset that serial belongs to, it is shown beside
+the current one and clicking it takes it. Where it could not, type the asset ID
+yourself.
+
+The pre-deploy photograph names an asset too, and is deliberately not offered
+here. A photograph of an instrument is not evidence of which instrument went in
+the water, which is why it does not confirm a deployment either. Use it as a
+prompt to go and find out, not as the answer.
+
+Correcting the asset does **not** clear the preliminary-parameters note the way
+correcting a position does. That note is about where the instrument sat, and
+this says nothing about that.
 - **Take every vendor value** fills the column in one go.
 - **Edit the whole file on GitHub** opens your fork's editor, for the cases a
   text box cannot do.

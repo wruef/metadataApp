@@ -9,10 +9,11 @@ import {
   type Correction,
 } from '~/calfile'
 import {
-  applyPositionCorrections,
+  applyDeploymentCorrections,
+  ASSET_FIELD,
   deploymentPath,
-  positionSection,
-  positionTitle,
+  deploymentSection,
+  deploymentTitle,
   type FieldCorrection,
 } from '~/deployfile'
 import { useForkSync } from '~/forksync'
@@ -40,7 +41,7 @@ import { HITL_SHEETS, type SheetKey } from '~/signoff'
  * shared repository, with the onward request raised by hand.
  */
 
-export type BatchKey = 'signoffs' | 'calibrations' | 'positions'
+export type BatchKey = 'signoffs' | 'calibrations' | 'sheets'
 
 export const BATCHES = [
   {
@@ -64,12 +65,12 @@ export const BATCHES = [
     guarded: true,
   },
   {
-    key: 'positions',
+    key: 'sheets',
     fork: 'assetManagement',
-    title: 'Deployment sheet positions',
+    title: 'Deployment sheets',
     unit: 'deployment',
-    what: 'where the deployment sheets say an instrument sat',
-    prefix: 'position',
+    what: 'what the deployment sheets say was in the water, and where',
+    prefix: 'deployment',
     guarded: true,
   },
 ] as const satisfies readonly {
@@ -117,21 +118,34 @@ export interface CalibrationEntry {
   corrections: Correction[]
 }
 
-export interface PositionEntry {
-  batch: 'positions'
+/**
+ * One correction to one deployment's row on its array's sheet.
+ *
+ * Where it sat and which instrument it was are two different claims about the
+ * same row, and a reviewer can make both. They are one batch because they are
+ * one file: two pull requests editing `RS03AXPS_Deploy.csv` on branches cut
+ * from the same base conflict the moment the first of them merges.
+ */
+export interface SheetEntry {
+  batch: 'sheets'
+  /** Kind and deployment together, so correcting where a deployment sat does
+   *  not replace the correction of which instrument it was. */
   key: string
+  kind: 'position' | 'asset'
   refDes: string
   deployNum: string | number
-  positionName: string
+  /** One sentence saying what the new values were taken from, which is the
+   *  whole justification the pull request offers for this row. */
+  source: string
   corrections: FieldCorrection[]
 }
 
-export type Entry = SignoffEntry | CalibrationEntry | PositionEntry
+export type Entry = SignoffEntry | CalibrationEntry | SheetEntry
 
-/** One deployment of one instrument, which is what a position correction is
- *  about — not the sheet, which holds every deployment on its array. */
-export function deploymentKey(refDes: string, deployNum: string | number) {
-  return `${refDes}#${deployNum}`
+/** What identifies one correction to one deployment. Not the sheet, which holds
+ *  every deployment on its array, and not the deployment on its own. */
+export function sheetKey(kind: SheetEntry['kind'], refDes: string, deployNum: string | number) {
+  return `${kind}:${refDes}#${deployNum}`
 }
 
 /** The file in the fork an entry writes to. Several entries can share one: a
@@ -221,12 +235,12 @@ export function buildBatch(
         if (entry.batch === 'calibrations') {
           text = applyCorrections(text, entry.corrections)
           sections.push(correctionSection(path, entry.corrections))
-        } else if (entry.batch === 'positions') {
-          const applied = applyPositionCorrections(
+        } else if (entry.batch === 'sheets') {
+          const applied = applyDeploymentCorrections(
             text, entry.refDes, entry.deployNum, entry.corrections)
           text = applied.text
-          sections.push(positionSection(entry.refDes, entry.deployNum, entry.positionName,
-                                        entry.corrections, applied.clearedNote))
+          sections.push(deploymentSection(entry.refDes, entry.deployNum, entry.source,
+                                          entry.corrections, applied.clearedNote))
         }
       } catch (caught) {
         failed.push(`${name}: ${message(caught)}`)
@@ -292,11 +306,10 @@ export function batchTitle(batch: BatchKey, entries: Entry[]) {
       ? correctionTitle(only.fileName, only.corrections)
       : `Correct coefficients in ${calibrations.length} calibration files`
   }
-  if (batch === 'positions') {
-    const positions = entries as PositionEntry[]
-    return only && only.batch === 'positions'
-      ? positionTitle(only.refDes, only.deployNum, only.corrections)
-      : `Correct positions for ${positions.length} deployments`
+  if (batch === 'sheets') {
+    return only && only.batch === 'sheets'
+      ? deploymentTitle(only.refDes, only.deployNum, only.corrections)
+      : `Correct ${entries.length} deployment sheet rows`
   }
   return `HITL sign-offs, ${hitlDate()}`
 }
@@ -395,10 +408,24 @@ export const useBatch = defineStore('batch', () => {
             instrument, fileName, corrections })
   }
 
+  function queueSheet(kind: SheetEntry['kind'], refDes: string, deployNum: string | number,
+                     source: string, corrections: FieldCorrection[]) {
+    queue({ batch: 'sheets', key: sheetKey(kind, refDes, deployNum),
+            kind, refDes, deployNum, source, corrections })
+  }
+
   function queuePosition(refDes: string, deployNum: string | number, positionName: string,
                          corrections: FieldCorrection[]) {
-    queue({ batch: 'positions', key: deploymentKey(refDes, deployNum),
-            refDes, deployNum, positionName, corrections })
+    queueSheet('position', refDes, deployNum,
+               `Taken from the RCA position spreadsheet${
+                 positionName ? `, position \`${positionName}\`` : ''}.`,
+               corrections)
+  }
+
+  /** Which instrument the sheet says was in the water. */
+  function queueAsset(refDes: string, deployNum: string | number,
+                      from: string, to: string, source: string) {
+    queueSheet('asset', refDes, deployNum, source, [{ field: ASSET_FIELD, from, to }])
   }
 
   /** --- the fork guard, asked before a reviewer types rather than after --- */
@@ -464,6 +491,6 @@ export const useBatch = defineStore('batch', () => {
 
   return { entries, count, pending, shown, byFork, submitting, results,
            forBatch, entryFor, queue, unqueue, discard,
-           queueSignoff, unqueueSignoff, decisionFor, queueCalibration, queuePosition,
+           queueSignoff, unqueueSignoff, decisionFor, queueCalibration, queuePosition, queueAsset,
            refusalFor, checkingFor, checkSync, submit, submitAll }
 })
