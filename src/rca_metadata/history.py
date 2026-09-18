@@ -13,7 +13,7 @@ import os
 import pandas as pd
 
 from .calibrations import comparisonRule
-from .loading import calFileBits, readDeploymentSheet
+from .loading import calFileBits, inForceAt, readDeploymentSheet
 
 HISTORY_COLUMNS = ['sensorType', 'referenceDesignator', 'startTime', 'endTime', 'assetID',
                    'instrumentSN', 'lat', 'lon', 'githubCalibrationFile', 'vendorCalibrationFile']
@@ -74,11 +74,15 @@ def comparedFile(urls, assets=None):
 
 
 def _inForceAt(links, assetID, deployDate, assets=None):
-    """The calibration in force at deployment: the most recent one before it."""
+    """The calibration in force at deployment: the most recent one up to it.
+
+    The same rule the deployments check applies, from the same function, so the
+    history and the check cannot disagree about which calibration was in force.
+    """
     history = links.get(assetID)
     if history is None:
         return 'none'
-    earlier = [entry for entry in history if entry[0] < deployDate]
+    earlier = inForceAt(history, deployDate)
     if not earlier:
         return 'noValidCalFile'
     latest = max(date for date, _ in earlier)

@@ -226,3 +226,26 @@ def test_theBundlesFilesAreTheSameAsTheOnesWrittenToDisk():
         deployments((CTD, 'ATOSU-69827-00003', '2019-07-01T00:00:00', None)), ASSETS, {}, {})
     assert bundle()['files']['CTDBPN_deployments.csv'] != ''
     assert historyFiles(rows)['CTDBPN_deployments.csv'].startswith('sensorType,referenceDesignator')
+
+
+## --- a calibration taken the day of the deployment ---
+
+def test_aCalibrationDatedTheDeploymentDayIsInForce():
+    """A calibration's date carries no time of day, so it sits at midnight. 76
+    of the 1,413 deployments also start at exactly midnight, and comparing
+    timestamps then discarded a calibration taken that very morning."""
+    links = calibrationLinks(FakeSource(), [
+        ('calibration/CTDBPN', 'ATOSU-69827-00003__20160712.csv')])
+    rows = deploymentHistory(
+        deployments((CTD, 'ATOSU-69827-00003', '2016-07-12T00:00:00', None)),
+        ASSETS, links, {})
+    assert rows[0]['githubCalibrationFile'].endswith('ATOSU-69827-00003__20160712.csv')
+
+
+def test_aCalibrationDatedAfterTheDeploymentIsNotInForce():
+    links = calibrationLinks(FakeSource(), [
+        ('calibration/CTDBPN', 'ATOSU-69827-00003__20160713.csv')])
+    rows = deploymentHistory(
+        deployments((CTD, 'ATOSU-69827-00003', '2016-07-12T00:00:00', None)),
+        ASSETS, links, {})
+    assert rows[0]['githubCalibrationFile'] == 'noValidCalFile'

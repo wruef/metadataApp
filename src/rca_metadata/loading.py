@@ -174,6 +174,25 @@ def calFileBits(fileName):
     return bits.group(1), datetime.datetime.strptime(bits.group(2), '%Y%m%d')
 
 
+def inForceAt(entries, deployDate):
+    """Of ``(calibration date, anything)`` entries, those in force at a deployment.
+
+    Compared by date rather than by timestamp. A calibration's date comes from
+    its file name and so carries no time of day, which puts it at midnight; 76
+    of the 1,413 deployments also start at exactly midnight, and a strict
+    comparison then discarded a calibration dated the very day the instrument
+    went in the water. It did so for two of them: RS03AXBS-LJ03A-09-HYDBBA302
+    deployment 3 read as having no valid calibration when one was taken that
+    morning, and RS03AXBS-LJ03A-10-ADCPTE303 deployment 3 fell back to a
+    calibration two years older and picked up a stale-calibration warning for it.
+
+    A calibration taken the day an instrument was deployed was in force for that
+    deployment, whatever the clock said.
+    """
+    day = deployDate.date()
+    return [entry for entry in entries if entry[0].date() <= day]
+
+
 def calibrationHistory(calFiles):
     """Asset ID -> its calibration files, as (date, file name)."""
     history = {}

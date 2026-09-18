@@ -163,6 +163,14 @@ its own pull request, one per record, never batched with sign-offs. Two checks
 offer it — a calibration file's coefficients, and one deployment's position on
 its array's sheet.
 
+It happens on the line. The table of what disagrees gains a **Correct to**
+column, and for a calibration a note column, so the value being copied and the
+box it goes into are side by side; clicking the vendor's own number takes it.
+There used to be a read-only table and an editable copy of it behind a button,
+which showed every number twice and invited reading one pair while typing at the
+other. A line whose value is not one number says so rather than offering a box,
+and a link to the file's GitHub editor covers those.
+
 It refuses rather than warns. The reviewer's `asset-management` fork has to be
 exactly `oceanobservatories/asset-management` — behind, and the request reverts
 whatever landed upstream meanwhile; ahead, and the onward request carries

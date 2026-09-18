@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from .calibrations import comparisonRule, compareCalCoefficients, isConstantsOnly
-from .loading import RCA_ASSET_PREFIXES
+from .loading import RCA_ASSET_PREFIXES, inForceAt
 from .serials import partialMatch
 
 ## How many trailing characters make a serial number a format match rather than
@@ -401,11 +401,15 @@ def _expectsRawSerial(refDes):
 
 
 def _assignCalFile(deployment, calHistory):
-    """The calibration in force at deployment: the most recent one before it."""
+    """The calibration in force at deployment: the most recent one up to it.
+
+    The same rule the published history applies, from the same function, so a
+    row's verdict and its published calibration link cannot disagree.
+    """
     history = calHistory.get(deployment['AssetID'])
     if not history:
         return 'undef', 'none'
-    earlier = [entry for entry in history if entry[0] < deployment['deployDate']]
+    earlier = inForceAt(history, deployment['deployDate'])
     if not earlier:
         return 'noValidCalFile', 'NO_VALID_FILE'
     calDate, fileName = max(earlier, key=lambda entry: entry[0])

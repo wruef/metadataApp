@@ -196,10 +196,19 @@ thing, with separate rules, and it works the same way on two checks.
 | Calibrations | **Correct this file** | the coefficients in `calibration/<instrument>/<file>.csv` |
 | Positions | **Correct the deployment sheet** | one deployment's row in `deployment/<array>_Deploy.csv` |
 
-Both sit below the sign-off buttons in the expanded row. Both give you one line
-per thing that disagrees, with what the file says, what it should say, and a box
-to type a value in. Clicking the value on the right takes it. A box left blank
-is left alone.
+You correct it on the line. The table of what disagrees gains two columns when
+you are signed in and your fork is in sync: **Correct to**, and for a
+calibration **Note for the file**. Each line already shows what the file says
+and what it should say, so the number you are copying and the box you type it
+into are side by side.
+
+- **Click the value on the right to take it.** That is the vendor's coefficient,
+  or the spreadsheet's position, and on most rows it is the whole answer.
+- **Or type your own** in the box.
+- **A box left blank is left alone.** Only lines you changed are proposed.
+- **Take every vendor value** fills the column in one go.
+- **Edit the whole file on GitHub** opens your fork's editor, for the cases a
+  text box cannot do.
 
 ### Rules both of them follow
 
@@ -225,20 +234,24 @@ changes until that one is reviewed and merged.
 
 ### Correcting a calibration
 
-Each coefficient also takes a note, which is written into the file's own `notes`
-column — the same column the row detail reads back to you. The number is written
-in the notation the line already uses, so the diff is a changed digit rather
-than a reformatted file.
+The note goes into the file's own `notes` column, the same column the table
+reads back to you as *asset-management note*. The number is written in the
+notation the line already uses, so the diff is a changed digit rather than a
+reformatted file.
 
-An array coefficient cannot be corrected here. An OPTAA's `CC_acwo` is
-eighty-three numbers in one field, and a single text box would be guessing.
-Those are edited on GitHub.
+An array coefficient cannot be typed over. An OPTAA's `CC_acwo` is eighty-three
+numbers in one field, and a single text box would be guessing. Those lines say
+*not one number* instead of offering a box, and the GitHub link is how you edit
+them.
 
 ### Correcting a position
 
 The RCA position spreadsheet is the authority on where anything was put, so
 **Take every spreadsheet value** is usually the whole answer. The four fields a
 position governs are latitude, longitude, water depth and deployment depth.
+
+A profiler's deployment depth is the literal `N/A`, which is the value rather
+than a missing one, so a position field is not required to be a number.
 
 A deployment sheet holds every deployment on its array, around two hundred rows,
 so what identifies the row is the reference designator *and* the deployment

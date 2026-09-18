@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { readDifference, VERDICTS } from '~/display'
+import { VERDICTS } from '~/display'
 import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
 const { check, row } = defineProps<{ check: string; row: Row }>()
 const store = useStore()
-
-/** The coefficients or fields that actually disagree — the reason the row is in
- *  the queue, and what the old reports made you open a CSV to find. */
-const differences = computed(() => (Array.isArray(row.differences) ? row.differences : []))
 
 /**
  * What the check returned, verbatim.
@@ -51,27 +47,8 @@ const notes = computed(() => String(row.HITLnotes ?? '').trim())
 
 /** A sign-off settles a row as surely as the checks agreeing does. What the
  *  checks found stays on the row either way — under Raw check output, and in
- *  the differences table above it. */
+ *  the table of what disagrees. */
 const settled = computed(() => row.severity === 'ok' || row.severity === 'cleared')
-
-/**
- * One note, where the file says the same thing about every coefficient.
- *
- * Collapsed only when *every* difference carries a note and they are all the
- * same. With some coefficients noted and some not, showing it once would
- * attribute it to coefficients the file says nothing about.
- *
- * It fires on no file today, so it is a guard rather than a change to what you
- * see. Of the rows that disagree at all, 80 disagree about exactly one
- * coefficient; one about two, whose notes differ; one about six, none of which
- * are noted. The repeated pressure-offset note repeats across *files*, one
- * difference each, not down a single table.
- */
-const sharedNote = computed(() => {
-  const notes = differences.value.map((entry) => String(entry.note ?? '').trim())
-  if (notes.length < 2 || notes.some((note) => !note)) return ''
-  return notes.every((note) => note === notes[0]) ? notes[0]! : ''
-})
 
 /** Only two checks are signed off; the rest have no sheet to record it in. */
 const sheet = computed(() => (check in HITL_SHEETS ? (check as SheetKey) : null))
@@ -95,55 +72,11 @@ const comparing = ref(false)
         <h4>Why this row is {{ settled ? 'settled' : 'open' }}</h4>
         <p class="max-w-prose text-[13px] leading-relaxed">{{ row.reason }}.</p>
 
-        <template v-if="differences.length">
-          <h4>
-            {{ check === 'positions' ? 'Fields that differ from the spreadsheet'
-              : 'Coefficients that differ from the vendor file' }}
-          </h4>
-          <div class="coefwrap">
-            <table class="coef">
-              <thead>
-                <tr>
-                  <th>{{ check === 'positions' ? 'Field' : 'Coefficient' }}</th>
-                  <th class="text-right">asset-management</th>
-                  <th class="text-right">{{ check === 'positions' ? 'Spreadsheet' : 'Vendor' }}</th>
-                  <th v-if="check !== 'positions'" class="text-right">Difference</th>
-                  <!-- A constant carries no vendor value, so it is not a
-                       disagreement with the vendor at all. -->
-                  <th v-if="check !== 'positions'">Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-for="(entry, index) in differences" :key="index">
-                  <tr>
-                    <td>{{ entry.coefficient ?? entry.field }}</td>
-                    <!-- What each file records, exactly as it was read. -->
-                    <td class="num text-right">{{ entry.github ?? entry.current }}</td>
-                    <td class="num text-right">{{ entry.expected ?? '—' }}</td>
-                    <td v-if="check !== 'positions'" class="d num text-right">
-                      {{ readDifference(entry.difference) }}
-                    </td>
-                    <td v-if="check !== 'positions'">{{ entry.source }}</td>
-                  </tr>
-                  <!-- What the asset-management file says about this coefficient:
-                       where the value came from, which vendor file it was read
-                       out of, that it is a constant. On a coefficient that
-                       disagrees it is the context a reviewer would otherwise
-                       open the file for. Its own line, because a note runs to a
-                       sentence and a column would push the numbers off. -->
-                  <tr v-if="entry.note && !sharedNote" class="note">
-                    <td :colspan="check === 'positions' ? 3 : 5">
-                      <span class="from">asset-management note</span>{{ entry.note }}
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-          </div>
-          <p v-if="sharedNote" class="coefnote">
-            <span class="from">asset-management note</span>{{ sharedNote }}
-          </p>
-        </template>
+        <!-- The numbers that disagree, and the correction of them on the same
+             line. A read-only table beside an editable copy showed every
+             number twice, and invited reading one pair while typing at the
+             other. -->
+        <difference-table :check="check" :row="row" />
 
         <template v-if="rawOutput.length">
           <h4>Raw check output</h4>
@@ -196,9 +129,5 @@ const comparing = ref(false)
 
     <side-by-side v-if="comparing" :row="row" @close="comparing = false" />
     <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
-    <!-- Below the sign-off deliberately. Recording a judgement is the common
-         case and the safe one; changing the file is neither. -->
-    <correct-file v-if="check === 'calibrations'" :row="row" />
-    <correct-position v-if="check === 'positions'" :row="row" />
   </div>
 </template>

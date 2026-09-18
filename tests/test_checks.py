@@ -1,5 +1,7 @@
 """Tests for the check logic that the notebook got wrong, and for the verdicts."""
 
+import datetime
+
 import pandas as pd
 import pytest
 
@@ -298,3 +300,36 @@ def test_everyVerdictThisCheckEmitsIsRanked():
     row = {'verdict': 'ASSET_IN_WRONG_BULK_RECORD: unclassified', 'cleared': False}
     assert severityOf('deploymentSheets', row) == 'problem'
     assert 'unclassified' in reasonOf('deploymentSheets', row)
+
+
+## --- a calibration taken the day of the deployment ---
+
+def test_aCalibrationDatedTheDeploymentDayIsValid():
+    """Its date carries no time of day, so it sits at midnight, and 76 of the
+    1,413 deployments start at exactly midnight too. Comparing timestamps read
+    RS03AXBS-LJ03A-09-HYDBBA302 deployment 3 as having no valid calibration
+    when one was taken that morning, which made the row a problem."""
+    from rca_metadata.checks import _assignCalFile
+
+    deployment = {'AssetID': 'A', 'deployDate': datetime.datetime(2016, 7, 12)}
+    history = {'A': [(datetime.datetime(2016, 7, 12), 'A__20160712.csv')]}
+    assert _assignCalFile(deployment, history) == ('A__20160712.csv', 'VALID_FILE')
+
+
+def test_aCalibrationDatedTheDayAfterIsNotValid():
+    from rca_metadata.checks import _assignCalFile
+
+    deployment = {'AssetID': 'A', 'deployDate': datetime.datetime(2016, 7, 12)}
+    history = {'A': [(datetime.datetime(2016, 7, 13), 'A__20160713.csv')]}
+    assert _assignCalFile(deployment, history) == ('noValidCalFile', 'NO_VALID_FILE')
+
+
+def test_theDeploymentDayCalibrationIsNotAlsoCalledStale():
+    """It fell back to a calibration two years older and then warned that the
+    calibration was stale -- a warning caused entirely by the comparison."""
+    from rca_metadata.checks import _assignCalFile
+
+    deployment = {'AssetID': 'A', 'deployDate': datetime.datetime(2016, 7, 12)}
+    history = {'A': [(datetime.datetime(2014, 8, 5), 'A__20140805.csv'),
+                     (datetime.datetime(2016, 7, 12), 'A__20160712.csv')]}
+    assert _assignCalFile(deployment, history) == ('A__20160712.csv', 'VALID_FILE')
