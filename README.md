@@ -188,7 +188,8 @@ numbers in one quoted field, and a single text box would be guessing.
 
 Not a finding but a product: one csv per instrument type saying what was where
 and when, each row carrying the calibration that was in force for that
-deployment. It is what the `deployments` repository holds.
+deployment, plus `refDesList.csv` naming every reference designator that has one.
+It is what the `deployments` repository holds.
 
 Every run builds it, because a run already has everything it needs -- the
 deployment sheets and both repositories' calibration indexes -- so building it
@@ -197,9 +198,9 @@ costs no further reads. It is published beside the report as
 csv that every other page of the dashboard would otherwise carry, and as
 `history-latest.json` for whichever run became the current one.
 
-The dashboard proposes it as one pull request on the reviewer's own fork, all
-58 files at once: the history describes one state of the deployment sheets, and
-half of it from one run and half from another would describe no state at all.
+The dashboard proposes it as one pull request on the reviewer's own fork, every
+file at once: the history describes one state of the deployment sheets, and half
+of it from one run and half from another would describe no state at all.
 The commit is built on the fork's own tree, so files the repository holds that
 the history does not name -- `NODE_deployments.csv` -- are left untouched. The
 same fork-sync rule applies, for the same reason.
@@ -208,6 +209,17 @@ The reviewer commits the bytes the run wrote. Nothing regenerates the files in
 the browser, so this module's quoting rules exist in one place: `instrumentSN`
 is a list and is always quoted whether or not it contains a comma, so a diff
 against the previous publication shows only real changes.
+
+Rebuilding a history that has not been rebuilt in a while moves rows for reasons
+other than new deployments, and the diff is worth reading rather than merging on
+its size. Three have come up: an instrument still in the water has no end time,
+which is written as an empty field where the older files carry the word `nan`; a
+vendor calibration published as several files for one date now links the one the
+comparison reads, which moved every OPTAA from its air calibration to its
+pure-water one; and a row whose `sensorType` does not match the file it sits in
+moves to the file that is named for it. The last of those is why a rebuild drops
+30 rows from `CAMDS_deployments.csv` -- all 30 are `CAMDSB_CAMDSC` rows that
+`CAMDSB_CAMDSC_deployments.csv` already holds, so nothing is lost.
 
 ## Starting a run from the dashboard
 

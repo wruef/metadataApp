@@ -255,7 +255,8 @@ The pull request says when it did this.
 Everything else in the dashboard answers "what is wrong". This answers "what was
 where, and when", and its output is a product rather than a queue: one CSV per
 instrument type, each row a deployment with the calibration that was in force
-for it. It is what `OOI-CabledArray/deployments` holds.
+for it, plus `refDesList.csv` naming every reference designator that has a
+deployment. It is what `OOI-CabledArray/deployments` holds.
 
 Open **Deployment history** in the rail. Every run builds it, so what you see
 was built by the run you are reading, and choosing a different run in the picker
@@ -279,6 +280,19 @@ Press **Sync fork** on GitHub and check again.
 You are not expected to do this often. Between cruises nothing changes, and a
 pull request with no changes in it is not created at all — the page says your
 fork already matches.
+
+**Read the diff rather than trusting its size.** A history that has not been
+rebuilt in a while moves rows for reasons other than new deployments, and three
+of them are known:
+
+| what you will see | why |
+|---|---|
+| an end time changing from `nan` to empty | the instrument is still in the water, and an empty cell says that where the word `nan` did not |
+| a vendor calibration link pointing at a different file | it now names the file the comparison actually reads, which moved every OPTAA from its air calibration to its pure-water one |
+| rows disappearing from `CAMDS_deployments.csv` | 30 of its rows say `CAMDSB_CAMDSC` in their own sensor type column, and `CAMDSB_CAMDSC_deployments.csv` already holds all 30 — they move to the file named for them, and none is lost |
+
+Anything you cannot place in one of those three is worth asking about before you
+merge it.
 
 ## Reading an earlier run
 
