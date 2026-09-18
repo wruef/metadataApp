@@ -37,9 +37,11 @@ env:
   HISTORY: reports/history.json
 
 # A published run commits to the default branch, which starts the Pages deploy.
-# Two runs publishing at once would race over that commit.
+# Two runs publishing at once would race over that commit, and so would a prune
+# deleting runs -- both rewrite reports/index.json -- so everything that writes
+# there queues behind one group. A run that only looks does not.
 concurrency:
-  group: verify-${{ inputs.publish }}
+  group: ${{ inputs.publish && 'publish-reports' || 'verify-check' }}
   cancel-in-progress: false
 
 jobs:

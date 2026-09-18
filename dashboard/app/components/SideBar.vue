@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
 import { GUIDE } from '~/paths'
-import { useSignoff } from '~/signoff'
+import { useBatch } from '~/batch'
 import { useStore } from '~/store'
 
 const store = useStore()
 const auth = useAuth()
-const signoff = useSignoff()
+const batch = useBatch()
 
 /** What the check has waiting for a person — the same count as the segment the
  *  check opens on, so the rail and the table agree about how much is left. */
@@ -111,10 +111,12 @@ const LINK =
         <i class="fa-clock-rotate-left fas w-4" />
         <span class="grow">Deployment history</span>
       </nuxt-link>
-      <nuxt-link v-if="signoff.count" to="/queue" :class="LINK" active-class="on">
+      <!-- Corrections and sign-offs alike wait here, so the count is
+           everything queued rather than the sign-offs alone. -->
+      <nuxt-link v-if="batch.count" to="/queue" :class="LINK" active-class="on">
         <i class="fa-pen-to-square fas w-4" />
-        <span class="grow">Sign-offs</span>
-        <span class="n hot">{{ signoff.count }}</span>
+        <span class="grow">Queued changes</span>
+        <span class="n hot">{{ batch.count }}</span>
       </nuxt-link>
     </nav>
 

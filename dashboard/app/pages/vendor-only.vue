@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useSignoff } from '~/signoff'
+import { useBatch } from '~/batch'
 import { useStore, type Row, type VendorOnly } from '~/store'
 
 const store = useStore()
-const signoff = useSignoff()
+const batch = useBatch()
 const search = ref('')
 
 /**
@@ -49,7 +49,7 @@ const asRow = (entry: VendorOnly): Row => ({
   fileName: `${entry.file}.csv`,
 })
 
-const queuedFor = (entry: VendorOnly) => signoff.decisionFor('calibrations', entry.hitlKey)
+const queuedFor = (entry: VendorOnly) => batch.decisionFor('calibrations', entry.hitlKey)
 </script>
 
 <template>

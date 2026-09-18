@@ -99,8 +99,8 @@ rows waiting for a person, and a red dot when any of them is a problem.
 
 **This run**: the Changes view, which compares two runs; the reference
 designators the run covered; the vendor calibrations that have no repository
-file; the deployment history the run built; and your queue of sign-offs waiting
-to be submitted.
+file; the deployment history the run built; and your queue of changes waiting
+to be proposed.
 
 **Settings**, at the foot, showing who you are signed in as.
 
@@ -171,14 +171,35 @@ transcription errors, which is exactly why the finding stays visible.
 
 ## Submitting your decisions
 
-Open **Sign-offs** in the rail to see everything queued. Press submit.
+Open **Queued changes** in the rail to see everything waiting. Sign-offs and
+corrections both gather there, in groups.
 
-That opens **one** pull request on **your own fork**, carrying the whole batch.
-Review the diff — it should show one changed line per decision, not a rewritten
-file — and merge it.
+Each group is **one pull request** on **one of your own forks**. The groups are:
 
-Then raise the onward pull request from your fork to the shared repository
-yourself. A person decides when a batch is worth proposing to everyone else.
+| group | fork | what it carries |
+|---|---|---|
+| Sign-offs | your `metadataApp` | all three 2i-HITL sheets |
+| Calibration coefficients | your `asset-management` | every calibration file you corrected |
+| Deployment sheet positions | your `asset-management` | every deployment you repositioned |
+
+Coefficients and positions go to the same fork and still travel separately.
+Somebody approving a page of numbers has not agreed to move an instrument on the
+seabed, so the two are never in the same request.
+
+Press **Open pull request** under a group to send that one, or **Open all** to
+send every group. Opening all does them one after another rather than at once:
+two branches cut from the same base at the same time is how the second one lands
+empty.
+
+Review each diff — it should show one changed line per decision, not a rewritten
+file — and merge it. Then raise the onward pull request from your fork to the
+shared repository yourself. A person decides when a batch is worth proposing to
+everyone else.
+
+**If a group is refused, nothing in it was sent.** A record that no longer reads
+what the run read means the files have moved since the report on screen, so the
+whole group is held rather than written in part. The message names the records
+that failed. Start a run against the files as they are now and work from that.
 
 **Merging does not update the dashboard.** The sign-offs are inputs to a
 verification run, and the report on screen was produced before you made them.
@@ -193,8 +214,12 @@ thing, with separate rules, and it works the same way on two checks.
 
 | check | the button | what it changes |
 |---|---|---|
-| Calibrations | **Correct this file** | the coefficients in `calibration/<instrument>/<file>.csv` |
-| Positions | **Correct the deployment sheet** | one deployment's row in `deployment/<array>_Deploy.csv` |
+| Calibrations | **Add to batch** | the coefficients in `calibration/<instrument>/<file>.csv` |
+| Positions | **Add to batch** | one deployment's row in `deployment/<array>_Deploy.csv` |
+
+Adding does not open anything. The correction joins the batch for its kind and
+waits under **Queued changes** with the rest. Correct as many files as a sitting
+is worth, then send them together.
 
 You correct it on the line. The table of what disagrees gains two columns when
 you are signed in and your fork is in sync: **Correct to**, and for a
@@ -226,9 +251,12 @@ file from that run. A correction has to start from the file the finding came
 from. For the same reason it refuses if the value no longer reads what the run
 read, which means upstream moved and the report on screen is out of date.
 
-**One pull request per record, on your fork only.** One calibration file, or one
-deployment. Neither is batched with your sign-offs, and neither is batched with
-the other. Nothing anyone computes changes until it reaches
+**One pull request per kind, on your fork only.** Every calibration file you
+corrected in one request, every deployment you repositioned in another, and your
+sign-offs in a third on a different fork entirely. Each record has its own
+section of the body, with every value before and after it, so a batch is no
+harder to read than a single correction was — there are simply fewer requests to
+raise. Nothing anyone computes changes until it reaches
 `oceanobservatories/asset-management`, which you do by hand.
 
 **Do not merge it into your fork's `master`.** Open the pull request the
@@ -240,7 +268,7 @@ Merging into your own `master` instead costs you twice. GitHub adds a merge
 commit, so what should be one commit becomes two. And your fork is then ahead of
 upstream, which is exactly what the sync rule refuses, so you cannot correct
 anything else until upstream merges your work. Leaving `master` alone keeps it
-identical to upstream and keeps you able to correct the next file.
+identical to upstream and keeps you able to correct the next batch.
 
 ### Correcting a calibration
 
@@ -330,6 +358,14 @@ a colleague's branch check is not mistaken for what is merged.
 
 Choosing one reloads the whole dashboard against it, including its comparison in
 the Changes view.
+
+**When the list gets long.** Every published run stays in the dropdown until
+somebody removes it, and an afternoon of test runs will bury the ones worth
+reading. Run **Delete published runs** from the Actions tab: give it the number
+of newest runs to keep, or the names of the ones to remove. It reports what it
+would do and changes nothing until you untick `dry_run`. The run the dashboard
+opens on is never deleted. A deleted run is still in the repository's history if
+it turns out to have been needed, but it leaves the dropdown.
 
 ## Starting a run
 

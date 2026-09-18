@@ -1,0 +1,95 @@
+name: Delete published runs
+
+# Takes runs out of reports/ and out of the index the dashboard's run picker
+# reads. A published run is around 75 KB as a git object, so this is
+# housekeeping rather than a space problem: an afternoon of test runs makes the
+# picker useless long before it makes the repository large.
+#
+# Nothing is lost that git does not still hold. A deleted run is recoverable
+# from the commit that removed it — `git checkout <sha>~1 -- reports/<name>` —
+# but the site stops offering it, which is the point.
+#
+# It defaults to saying what it would do and changing nothing. Untick dry_run to
+# make it real.
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "keep this many of the newest runs and delete the rest"
+        default: "10"
+      remove:
+        description: "instead: run names to delete, space separated, e.g. report_20260917T153944Z.json"
+        default: ""
+      dry_run:
+        description: "say what would go and change nothing"
+        type: boolean
+        default: true
+
+env:
+  PYTHON_VERSION: 3.11
+
+# Publishing a run commits to the same branch, and two commits racing over
+# reports/ is how an index loses an entry it should have kept.
+concurrency:
+  group: publish-reports
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    name: Delete runs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v5
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install package
+        run: pip install . -c constraints.txt
+
+      # The run the dashboard opens on is spared by the keep rule and refused by
+      # name, so this cannot leave latest.json serving a run the picker has
+      # forgotten.
+      - name: Prune
+        env:
+          KEEP: ${{ inputs.keep }}
+          REMOVE: ${{ inputs.remove }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          args=""
+          if [ -n "$REMOVE" ]; then
+            for name in $REMOVE; do args="$args --remove $name"; done
+          else
+            args="--keep $KEEP"
+          fi
+          if [ "$DRY" = true ]; then args="$args --dry-run"; fi
+          prune-runs $args | tee prune.log
+          {
+            echo '```'
+            cat prune.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit the deletions
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if git diff --quiet -- reports; then
+            echo '::notice title=Nothing to commit::no run was deleted'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A reports
+          git commit -m "Delete published runs
+
+          $(head -c 2000 prune.log)"
+          # A verification run may have published while this one was working.
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}

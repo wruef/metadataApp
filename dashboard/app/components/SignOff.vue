@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { hitlKeyOf, useSignoff, type SheetKey } from '~/signoff'
+import { useBatch } from '~/batch'
+import { hitlKeyOf, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
 
 const { sheet, row } = defineProps<{ sheet: SheetKey; row: Row }>()
 const auth = useAuth()
-const signoff = useSignoff()
+const batch = useBatch()
 const store = useStore()
 
 const key = computed(() => hitlKeyOf(sheet, row))
-const queued = computed(() => signoff.decisionFor(sheet, key.value))
+const queued = computed(() => batch.decisionFor(sheet, key.value))
 const notes = ref('')
 
 watchEffect(() => {
@@ -47,7 +48,7 @@ const picked = computed({
 })
 
 function decide(status: 'Clear' | 'NotClear') {
-  signoff.queue({ sheet, key: key.value, status, notes: notes.value.trim() })
+  batch.queueSignoff({ sheet, key: key.value, status, notes: notes.value.trim() })
 }
 </script>
 
@@ -81,7 +82,7 @@ function decide(status: 'Clear' | 'NotClear') {
           size="sm"
           color="neutral"
           variant="ghost"
-          @click="signoff.unqueue(sheet, key)"
+          @click="batch.unqueueSignoff(sheet, key)"
         >
           Undo
         </u-button>

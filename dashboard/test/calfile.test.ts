@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyCorrections,
   calibrationPath,
-  correctionBody,
+  correctionSection,
   correctionTitle,
   valuesByCoefficient,
 } from '../app/calfile'
@@ -116,13 +116,20 @@ describe('what the pull request says', () => {
     ])).toBe('Correct 2 coefficients in x.csv')
   })
 
-  it('puts every value before and after it in the body', () => {
-    const body = correctionBody('calibration/DOFSTA/x.csv', [
+  it('puts every value before and after it in the section', () => {
+    const section = correctionSection('calibration/DOFSTA/x.csv', [
       { coefficient: 'CC_frequency_offset', from: -0.5064574, to: -0.4839777 },
-    ], 'WR (wruef)')
-    expect(body).toContain('| `CC_frequency_offset` | -0.5064574 | -0.4839777 |')
-    expect(body).toContain('WR (wruef)')
-    expect(body).toContain('raise the pull request to the upstream repository by hand')
+    ])
+    expect(section).toContain('`calibration/DOFSTA/x.csv`')
+    expect(section).toContain('| `CC_frequency_offset` | -0.5064574 | -0.4839777 |')
+  })
+
+  it('names the file, so several in one request stay apart', () => {
+    const corrections = [{ coefficient: 'a', from: 1, to: 2 }]
+    const first = correctionSection('calibration/DOFSTA/one.csv', corrections)
+    const second = correctionSection('calibration/CTDBP/two.csv', corrections)
+    expect(first).toContain('`calibration/DOFSTA/one.csv`')
+    expect(second).toContain('`calibration/CTDBP/two.csv`')
   })
 })
 

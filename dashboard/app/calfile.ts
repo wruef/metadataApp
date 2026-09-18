@@ -105,8 +105,15 @@ export function correctionTitle(fileName: string, corrections: Correction[]) {
   return `Correct ${named} in ${fileName}`
 }
 
-/** The body, which is the whole review: every value before and after it. */
-export function correctionBody(path: string, corrections: Correction[], by: string) {
+/**
+ * One file's worth of review: every value before and after it.
+ *
+ * A section rather than a whole body, because a batch carries several files and
+ * each one still has to be readable on its own. What closes the pull request --
+ * who proposed it, and what merging it would change -- is said once by the
+ * batch, not once per file.
+ */
+export function correctionSection(path: string, corrections: Correction[]) {
   const rows = corrections.map(
     (each) => `| \`${each.coefficient}\` | ${each.from} | ${each.to} | ${each.note ?? ''} |`,
   )
@@ -116,10 +123,5 @@ export function correctionBody(path: string, corrections: Correction[], by: stri
     '| coefficient | was | now | note |',
     '|---|---|---|---|',
     ...rows,
-    '',
-    `Proposed from the metadata dashboard by ${by}, against the vendor calibration on record.`,
-    '',
-    'This changes a calibration file rather than recording a judgement about one.',
-    'Review it here, then raise the pull request to the upstream repository by hand.',
   ].join('\n')
 }

@@ -37,6 +37,7 @@ compare-metadata = "rca_metadata.cli:compareMain"
 publish-metadata = "rca_metadata.cli:publishMain"
 index-metadata = "rca_metadata.cli:indexMain"
 extract-serials = "rca_metadata.cli:extractMain"
+prune-runs = "rca_metadata.cli:pruneMain"
 
 
 [tool.setuptools.packages.find]

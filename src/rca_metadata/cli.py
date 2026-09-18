@@ -290,6 +290,119 @@ def indexMain(argv=None):
     return 0
 
 
+## ---- deleting runs that are no longer needed ----
+
+## What one published run leaves in reports/, all named for the same stamp: the
+## report, the comparison against its baseline where it was given one, and the
+## deployment history it built. Only the first is always there, so a prune
+## deletes whichever of them exist and says which.
+COMPANIONS = ['comparison_{stamp}', 'history_{stamp}']
+
+
+def runFiles(name):
+    """Every file published under one run's name, existing or not."""
+    stamp = name.removeprefix('report_')
+    return [name, *(companion.format(stamp=stamp) for companion in COMPANIONS)]
+
+
+def runsToRemove(index, productionRunAt, keep=None, before=None, remove=()):
+    """Which runs a prune deletes, and which the rule spared.
+
+    ``productionRunAt`` is when the run the dashboard opens on ran, read from
+    latest.json. A rule -- ``keep`` or ``before`` -- never deletes that one:
+    latest.json would go on serving a run the picker no longer lists, and the
+    site would disagree with its own history. Naming it outright is refused
+    instead of spared, because then the person asked for that run in particular.
+
+    ``before`` is compared against the recorded stamp as text, which is exact
+    because every run records UTC.
+    """
+    ordered = sorted(index, key=lambda entry: entry.get('runAt') or '', reverse=True)
+    if remove:
+        byName = {entry['name']: entry for entry in ordered}
+        unknown = [name for name in remove if name not in byName]
+        if unknown:
+            raise ValueError('not a published run: ' + ', '.join(unknown))
+        chosen = [byName[name] for name in remove]
+    elif keep is not None:
+        chosen = ordered[keep:]
+    else:
+        chosen = [entry for entry in ordered if (entry.get('runAt') or '') < before]
+
+    spared = {entry['name'] for entry in chosen if entry.get('runAt') == productionRunAt}
+    if spared and remove:
+        raise ValueError(f"{', '.join(sorted(spared))} is the run the dashboard opens on")
+    return ([entry for entry in chosen if entry['name'] not in spared],
+            [entry for entry in chosen if entry['name'] in spared])
+
+
+def pruneMain(argv=None):
+    """Delete published runs, and take them out of the index the picker reads.
+
+    A run costs about 75 KB as a git object, so this is housekeeping rather than
+    a space problem: fifteen runs from one afternoon of testing make the run
+    picker useless long before they make the repository large. Nothing is lost
+    that git does not still hold -- a deleted run is recoverable from the commit
+    that removed it -- but the site stops offering it.
+    """
+    parser = argparse.ArgumentParser(description='Delete published runs no longer needed.')
+    parser.add_argument('--reports', default='reports', metavar='DIR')
+    rule = parser.add_mutually_exclusive_group(required=True)
+    rule.add_argument('--keep', type=int, metavar='N',
+                      help='keep the N newest runs and delete the rest')
+    rule.add_argument('--before', metavar='DATE',
+                      help='delete runs that ran before this date, e.g. 2026-01-01')
+    rule.add_argument('--remove', action='append', default=[], metavar='REPORT',
+                      help='delete this run by name (repeatable)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='say what would go, and change nothing')
+    args = parser.parse_args(argv)
+    if args.keep is not None and args.keep < 1:
+        parser.error('--keep has to leave at least one run')
+
+    indexPath = os.path.join(args.reports, 'index.json')
+    with open(indexPath) as handle:
+        index = json.load(handle)
+
+    ## Which run the site opens on, matched on when it ran: latest.json is a
+    ## copy and does not carry the name it was published under.
+    latestPath = os.path.join(args.reports, 'latest.json')
+    productionRunAt = None
+    if os.path.isfile(latestPath):
+        with open(latestPath) as handle:
+            productionRunAt = json.load(handle).get('runAt')
+
+    try:
+        removing, spared = runsToRemove(index, productionRunAt, args.keep, args.before, args.remove)
+    except ValueError as refusal:
+        parser.error(str(refusal))
+
+    for entry in spared:
+        print(f"keeping {entry['name']} -- the run the dashboard opens on")
+    if not removing:
+        print('nothing to delete')
+        return 0
+
+    verb = 'would delete' if args.dry_run else 'deleted'
+    for entry in removing:
+        files = [name for name in runFiles(entry['name'])
+                 if os.path.isfile(os.path.join(args.reports, name))]
+        print(f"{verb} {entry['name']} ({entry.get('runAt')}): {', '.join(files)}")
+        if not args.dry_run:
+            for name in files:
+                os.remove(os.path.join(args.reports, name))
+
+    gone = {entry['name'] for entry in removing}
+    kept = [entry for entry in index if entry['name'] not in gone]
+    if args.dry_run:
+        print(f'{len(kept)} runs would be left in the index; nothing was changed')
+        return 0
+    with open(indexPath, 'w') as handle:
+        json.dump(kept, handle, indent=1)
+    print(f'{len(kept)} runs left in {indexPath}')
+    return 0
+
+
 def extractMain(argv=None):
     """Read deployment serial numbers out of the raw data archive.
 

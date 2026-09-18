@@ -109,13 +109,18 @@ export function positionTitle(refDes: string, deployNum: string | number,
   return `Correct ${named} for ${refDes} deployment ${deployNum}`
 }
 
-/** The body, which is the whole review: every value before and after it. */
-export function positionBody(
+/**
+ * One deployment's worth of review: every value before and after it.
+ *
+ * A section rather than a whole body -- one sheet holds every deployment on its
+ * array, so a batch can carry several of them against the same file, and each
+ * still has to be readable on its own.
+ */
+export function positionSection(
   refDes: string,
   deployNum: string | number,
   positionName: string,
   corrections: FieldCorrection[],
-  by: string,
   clearedNote: boolean,
 ) {
   const rows = corrections.map((each) => `| \`${each.field}\` | ${each.from} | ${each.to} |`)
@@ -131,10 +136,5 @@ export function positionBody(
       ? ['', `The \`notes\` column said "${PRELIMINARY_NOTE}", which this correction makes untrue,`
          + ' so it has been cleared.']
       : []),
-    '',
-    `Proposed from the metadata dashboard by ${by}.`,
-    '',
-    'This changes a deployment sheet rather than recording a judgement about one.',
-    'Review it here, then raise the pull request to the upstream repository by hand.',
   ].join('\n')
 }

@@ -4,7 +4,7 @@ import {
   applyPositionCorrections,
   deploymentPath,
   PRELIMINARY_NOTE,
-  positionBody,
+  positionSection,
   positionTitle,
 } from '../app/deployfile'
 
@@ -155,22 +155,30 @@ describe('what the pull request says', () => {
     ])).toBe('Correct 2 fields for CE02SHBP-LJ01D-05-ADCPTB104 deployment 13')
   })
 
-  it('puts every value before and after it in the body, and names the position', () => {
-    const body = positionBody('CE02SHBP-LJ01D-05-ADCPTB104', 13, 'LJ01D', [
+  it('puts every value before and after it in the section, and names the position', () => {
+    const section = positionSection('CE02SHBP-LJ01D-05-ADCPTB104', 13, 'LJ01D', [
       { field: 'lat', from: '44.637213', to: '44.637184' },
-    ], 'WR (wruef)', false)
-    expect(body).toContain('`deployment/CE02SHBP_Deploy.csv`')
-    expect(body).toContain('deployment **13**')
-    expect(body).toContain('| `lat` | 44.637213 | 44.637184 |')
-    expect(body).toContain('position `LJ01D`')
-    expect(body).not.toContain(PRELIMINARY_NOTE)
+    ], false)
+    expect(section).toContain('`deployment/CE02SHBP_Deploy.csv`')
+    expect(section).toContain('deployment **13**')
+    expect(section).toContain('| `lat` | 44.637213 | 44.637184 |')
+    expect(section).toContain('position `LJ01D`')
+    expect(section).not.toContain(PRELIMINARY_NOTE)
   })
 
   it('says so when it cleared the preliminary note', () => {
-    const body = positionBody('CE02SHBP-LJ01D-05-ADCPTB104', 13, 'LJ01D', [
+    const section = positionSection('CE02SHBP-LJ01D-05-ADCPTB104', 13, 'LJ01D', [
       { field: 'lat', from: '44.637213', to: '44.637184' },
-    ], 'WR (wruef)', true)
-    expect(body).toContain(PRELIMINARY_NOTE)
-    expect(body).toContain('has been cleared')
+    ], true)
+    expect(section).toContain(PRELIMINARY_NOTE)
+    expect(section).toContain('has been cleared')
+  })
+
+  it('names the deployment, so two on one sheet stay apart in a batch', () => {
+    const corrections = [{ field: 'lat', from: '1', to: '2' }]
+    const first = positionSection('RS03AXPS-SF03A-2A-CTDPFA302', 10, 'SF03A', corrections, false)
+    const second = positionSection('RS03AXPS-PC03A-05-ADCPTD302', 12, 'PC03A', corrections, false)
+    expect(first).toContain('**RS03AXPS-SF03A-2A-CTDPFA302** deployment **10**')
+    expect(second).toContain('**RS03AXPS-PC03A-05-ADCPTD302** deployment **12**')
   })
 })

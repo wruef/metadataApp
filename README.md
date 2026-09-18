@@ -150,18 +150,46 @@ the wording the team works with is at the top. Where the calibration file itself
 says something about the coefficients that disagree, that is offered first.
 Anything not in either list is typed straight into the field beneath them.
 
-Submitting the queue opens **one** pull request carrying the whole batch,
-against **your own fork**. You raise the onward pull request to the shared
-repository by hand — a person decides when a batch is worth proposing to
-everyone else.
+### The queue, and what each batch becomes
+
+Everything decided waits under **Queued changes** and goes over as **one pull
+request per batch**, against **your own forks**. You raise each onward request to
+the shared repository by hand — a person decides when a batch is worth proposing
+to everyone else.
+
+A batch is keyed by the repository it writes to *and* by what the change is:
+
+| batch | fork | what it carries |
+|---|---|---|
+| Sign-offs | `metadataApp` | the 2i-HITL sheets, all three in one request |
+| Calibration coefficients | `asset-management` | `calibration/<instrument>/*.csv` |
+| Deployment sheet positions | `asset-management` | `deployment/<array>_Deploy.csv` |
+
+Both halves of that key matter. The repository is a hard boundary, because a
+pull request cannot span two of them. The kind is a boundary of review:
+coefficients and positions share a fork, and somebody approving a page of
+numbers has not agreed to move an instrument on the seabed, so the two travel
+separately. Opening them all runs one request after another rather than
+together — two branches cut from the same base at once is how the second lands
+empty.
+
+Each record keeps its own section of the body, with every value before and after
+it, so batching changes how many requests there are and not what a reviewer has
+to read. What closes the request — who proposed it, and what merging it would
+change — is said once rather than once per record.
+
+A batch is refused whole rather than proposed in part. One record that no longer
+reads what the run read means the files have moved since the report on screen,
+and writing the rest would be writing from a report already known to be stale.
+The refusal names the records that failed.
 
 ### Correcting the asset-management file itself
 
 A sign-off records a judgement about a file. Correcting one changes the file,
-and every data product computed from it changes too, so it is kept separate:
-its own pull request, one per record, never batched with sign-offs. Two checks
-offer it — a calibration file's coefficients, and one deployment's position on
-its array's sheet.
+and every data product computed from it changes too, so it never rides with
+sign-offs — a different repository, and a batch of its own. Two checks offer it:
+a calibration file's coefficients, and one deployment's position on its array's
+sheet.
 
 It happens on the line. The table of what disagrees gains a **Correct to**
 column, and for a calibration a note column, so the value being copied and the
@@ -184,7 +212,7 @@ is ahead by, which is the correction itself.
 The correction therefore travels on the branch the dashboard wrote it on. The
 reviewer retargets that pull request at upstream rather than merging it into
 their own `master`, which would add a merge commit and leave the fork ahead,
-blocking the next correction until upstream catches up. It refuses again if the value no
+blocking the next batch until upstream catches up. It refuses again if a value no
 longer reads what the run read, which means upstream moved and the report is out
 of date. Between them, a correction can only start from the file the finding
 came from.
@@ -308,6 +336,27 @@ not production: it promotes that run to `latest.json`. A production run becomes
 that anyway, so the input does nothing there. A 2.1 MB report is roughly 75 KB as a git object, so
 a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
+
+`.github/workflows/prune-runs.yaml` deletes runs that are no longer worth
+keeping, on `workflow_dispatch`. It takes either a number of newest runs to keep
+or a list of names, and it **says what it would do and changes nothing** unless
+`dry_run` is unticked. The same thing on the command line:
+
+    prune-runs --keep 10
+    prune-runs --before 2026-01-01
+    prune-runs --remove report_20260917T153944Z.json --dry-run
+
+A run is its report plus whatever was published beside it — its comparison, and
+the deployment history it built — and all of them go together, along with its
+line in `reports/index.json`. Size is not the reason: an afternoon of test runs
+makes the run picker unreadable long before it makes the repository large.
+
+The run the dashboard opens on is protected. A rule that reaches it spares it
+and says so, because deleting it would leave `latest.json` serving a run the
+picker no longer lists; naming it outright is refused instead, because then it
+is that run somebody asked for. Nothing is lost that git does not still hold —
+`git checkout <sha>~1 -- reports/<name>` brings a deleted run back — but the
+site stops offering it, which is the point.
 
 `.github/workflows/extract-serials.yaml` reads the raw archive on
 `workflow_dispatch` and proposes `params/rawFileSN.csv` as a pull request; it is

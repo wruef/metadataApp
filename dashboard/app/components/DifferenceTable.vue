@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { FORKS, useAuth } from '~/auth'
+import { useAuth, FORKS } from '~/auth'
+import { deploymentKey, useBatch } from '~/batch'
 import { calibrationPath, type Correction } from '~/calfile'
-import { deploymentKey, useCorrections } from '~/corrections'
 import { parseList, scalar } from '~/csv'
 import { deploymentPath, POSITION_FIELDS, type FieldCorrection } from '~/deployfile'
 import { readDifference } from '~/display'
@@ -18,11 +18,15 @@ import { type Row } from '~/store'
  * Correcting is offered on the two checks that have a file to correct. Where a
  * reviewer is not signed in, or their fork is not in sync, the table is the
  * plain read-only one it has always been.
+ *
+ * A correction is queued rather than proposed. It joins the batch for its kind
+ * -- coefficients with coefficients, positions with positions -- and the whole
+ * batch goes over as one pull request from the queue page.
  */
 const { check, row } = defineProps<{ check: string; row: Row }>()
 
 const auth = useAuth()
-const corrections = useCorrections()
+const batch = useBatch()
 
 interface Difference {
   coefficient?: string
@@ -50,12 +54,19 @@ const path = computed(() => (isCalibration.value
   ? calibrationPath(String(row.instrument), String(row.fileName))
   : deploymentPath(String(row.refDes))))
 
+/** Which batch this row's correction belongs in. */
+const batchKey = computed<'calibrations' | 'positions'>(
+  () => (isCalibration.value ? 'calibrations' : 'positions'))
+
+/** What identifies the record within that batch -- the file for a calibration,
+ *  the deployment for a position, because one sheet holds a whole array. */
 const id = computed(() => (isCalibration.value
   ? path.value
   : deploymentKey(String(row.refDes), row.deployNum as string | number)))
 
-const busy = computed(() => Boolean(corrections.submitting[id.value]))
-const result = computed(() => corrections.results[id.value])
+/** Queueing the same record twice replaces the earlier entry, so a row already
+ *  in the queue says so rather than silently taking a second copy. */
+const queuedAlready = computed(() => batch.entryFor(batchKey.value, id.value))
 
 /** A short list is worth a text box; a long one is not. An OPTAA's `CC_acwo`
  *  is eighty-three numbers, where typing the whole array back is guessing. A
@@ -84,10 +95,10 @@ const anyEditable = computed(() => correctable.value && differences.value.some(e
 
 /** Asked once the reviewer could actually act on the answer. */
 watchEffect(() => {
-  if (anyEditable.value && auth.canSignOff) corrections.checkSync()
+  if (anyEditable.value && auth.canSignOff) batch.checkSync('assetManagement')
 })
 
-const blocked = computed(() => corrections.refusal)
+const blocked = computed(() => batch.refusalFor('assetManagement'))
 const editing = computed(() => anyEditable.value && auth.canSignOff && !blocked.value)
 
 const values = ref<Record<string, string>>({})
@@ -125,7 +136,9 @@ const unreadable = computed(() => (isCalibration.value
       : scalar(typed) === null)).map(({ entry }) => nameOf(entry))
   : []))
 
-function propose() {
+/** Into the queue, not into a pull request. The batch is proposed from the
+ *  queue page, where a reviewer can see everything that would travel with it. */
+function add() {
   if (isCalibration.value) {
     const corrections_: Correction[] = queued.value.map(({ entry, typed }) => {
       const note = (notes.value[nameOf(entry)] ?? '').trim()
@@ -136,13 +149,13 @@ function propose() {
         ...(note ? { note } : {}),
       }
     })
-    corrections.proposeCalibration(String(row.instrument), String(row.fileName), corrections_)
+    batch.queueCalibration(String(row.instrument), String(row.fileName), corrections_)
   } else {
     const fields: FieldCorrection[] = queued.value.map(({ entry, typed }) => ({
       field: nameOf(entry), from: String(entry.current), to: typed,
     }))
-    corrections.proposePosition(String(row.refDes), row.deployNum as string | number,
-                                String(row.positionName ?? ''), fields)
+    batch.queuePosition(String(row.refDes), row.deployNum as string | number,
+                        String(row.positionName ?? ''), fields)
   }
 }
 
@@ -255,7 +268,7 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
 
     <!-- Correcting the file, under the numbers it is about. -->
     <template v-if="correctable && anyEditable">
-      <p v-if="corrections.checking" class="mt-2 text-gray-500 text-[12.5px]">
+      <p v-if="batch.checkingFor('assetManagement')" class="mt-2 text-gray-500 text-[12.5px]">
         Checking your fork against oceanobservatories/asset-management…
       </p>
 
@@ -270,7 +283,7 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
         :description="blocked"
       >
         <template #actions>
-          <u-button size="xs" color="neutral" variant="subtle" @click="corrections.checkSync(true)">
+          <u-button size="xs" color="neutral" variant="subtle" @click="batch.checkSync('assetManagement', true)">
             Check again
           </u-button>
         </template>
@@ -289,11 +302,11 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
           <u-button
             size="sm"
             color="primary"
-            :loading="busy"
             :disabled="!queued.length || unreadable.length > 0"
-            @click="propose"
+            @click="add"
           >
-            Correct {{ queued.length || '' }}
+            {{ queuedAlready ? 'Replace in batch' : 'Add to batch' }}:
+            {{ queued.length || '' }}
             {{ isPosition ? 'field' : 'coefficient' }}{{ queued.length === 1 ? '' : 's' }}
           </u-button>
           <u-button size="xs" color="neutral" variant="subtle" @click="takeAll">
@@ -308,22 +321,23 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
           >Edit the whole file on GitHub</a>
         </div>
         <p class="mt-1.5 text-gray-500 text-[12.5px]">
-          Its own pull request on <b>{{ auth.forkFor('assetManagement') }}</b>, not batched with
-          your sign-offs. Nothing anyone computes changes until you raise that one upstream.
+          Joins the {{ isPosition ? 'deployment sheet' : 'calibration' }} batch, which goes over as
+          one pull request on <b>{{ auth.forkFor('assetManagement') }}</b>. Sign-offs travel
+          separately, and nothing anyone computes changes until you raise that request upstream.
         </p>
       </template>
 
       <u-alert
-        v-if="result"
+        v-if="queuedAlready"
         class="mt-2"
-        :color="result.url ? 'success' : 'error'"
+        color="success"
         variant="subtle"
-        :title="result.message"
+        title="Queued."
       >
-        <template v-if="result.url" #description>
-          <a :href="result.url" target="_blank" rel="noopener" class="underline">
-            Review it on GitHub
-          </a>
+        <template #description>
+          Waiting with the other {{ isPosition ? 'deployment sheet' : 'calibration' }} corrections.
+          <nuxt-link to="/queue" class="underline">Open the queue</nuxt-link>
+          to propose them.
         </template>
       </u-alert>
     </template>

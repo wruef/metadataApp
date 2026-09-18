@@ -2,7 +2,8 @@
 import { useAuth } from '~/auth'
 import { compareValues, identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
 import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
-import { hitlKeyOf, HITL_SHEETS, useSignoff, type SheetKey } from '~/signoff'
+import { useBatch } from '~/batch'
+import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
 
 const { check, checkKey, columns, facets } = defineProps<{
@@ -20,7 +21,7 @@ const { check, checkKey, columns, facets } = defineProps<{
  * a sign-off with no note is a worse record than none.
  */
 const auth = useAuth()
-const signoff = useSignoff()
+const batch = useBatch()
 const sheet = computed(() => (checkKey in HITL_SHEETS ? (checkKey as SheetKey) : null))
 
 function keyOf(row: Row) {
@@ -28,12 +29,12 @@ function keyOf(row: Row) {
 }
 
 function queuedFor(row: Row) {
-  return sheet.value ? signoff.decisionFor(sheet.value, keyOf(row)) : undefined
+  return sheet.value ? batch.decisionFor(sheet.value, keyOf(row)) : undefined
 }
 
 function decide(index: number, row: Row, status: 'Clear' | 'NotClear') {
   if (!sheet.value) return
-  signoff.queue({
+  batch.queueSignoff({
     sheet: sheet.value,
     key: keyOf(row),
     status,
