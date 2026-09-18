@@ -88,8 +88,12 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
+      # Against constraints.txt, which pins the two libraries that parse and
+      # compare the numbers. A published run is what everyone reads, so it is
+      # reproducible on purpose. The Tests workflow deliberately does not do
+      # this -- see the note there.
       - name: Install package
-        run: pip install .
+        run: pip install . -c constraints.txt
 
       - name: Run all checks
         run: |

@@ -1,9 +1,17 @@
 # The environment a verification run is reproduced in.
 #
-# Matches .github/workflows/tests.yaml and the python in verify.yaml, so a
+# Matches the python in verify.yaml and the pins in constraints.txt, so a
 # reviewer's laptop and the runner parse the same files with the same library
 # and reach the same verdicts. Comparison is exact to the last digit a vendor
-# file publishes; a different pandas is a different answer.
+# file publishes, so the library that reads the csv is part of the answer.
+#
+# pandas and numpy are pinned exactly and the rest are not, because those two
+# are what parse and compare the numbers. The same two versions are in
+# constraints.txt for pip, and tests/test_pins.py fails if the two disagree.
+#
+# The floor the package itself claims is in pyproject.toml and is wider on
+# purpose: the test matrix installs unpinned, which is what caught pandas 3
+# removing a function this code used.
 #
 #     conda env create -f environment.yml
 #     conda activate rca-metadata
@@ -13,8 +21,10 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - pandas
-  - numpy
+  # numpy 2.5 requires python 3.12, so this is the newest pair that runs on the
+  # python a verification run uses.
+  - pandas=3.0.5
+  - numpy=2.4.6
   - requests
   - beautifulsoup4
   - openpyxl

@@ -1,0 +1,19 @@
+# The versions a published verification run is produced with.
+#
+# Comparison is exact to the last digit a vendor file publishes, so the library
+# that parses the csv is part of what produced the numbers. Every report records
+# the versions it ran with under `parameters`, and the dashboard's run stamp
+# shows them, so a number on screen can be traced to the library that read it.
+#
+# Used by .github/workflows/verify.yaml. `environment.yml` holds the same two
+# versions for conda, and tests/test_pins.py fails if the two files disagree.
+#
+# Why these two and nothing else: pandas and numpy are what parse and compare
+# the numbers. Everything else fetches bytes or reads a pdf, where a patch
+# release cannot change a verdict.
+#
+# Bumping them is a deliberate act. Run the checks against the previous
+# production report afterwards and read the Changes view: a row that moves with
+# nothing in the repositories moving is the library, not the data.
+pandas==3.0.5
+numpy==2.4.6

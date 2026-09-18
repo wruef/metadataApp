@@ -38,6 +38,8 @@ jobs:
         # The version a verification run uses, and the oldest the package claims
         # to support. Comparison is exact to the last digit, so a difference
         # between the two is worth knowing about before a season depends on it.
+        # The two resolve different pandas majors, which is the point: 3.11 gets
+        # pandas 3 and 3.10 gets pandas 2, and this matrix is where that shows.
         python: ["3.11", "3.10"]
     steps:
       - uses: actions/checkout@v5
@@ -47,6 +49,11 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
 
+      # Unpinned on purpose, unlike verify.yaml. This matrix is the early
+      # warning: resolving freely is what caught pandas 3 removing a function
+      # this code used, on the python that resolves pandas 3, while the other
+      # entry still passed. Installing against constraints.txt would have
+      # hidden that until a published run hit it.
       - name: Install the package and its test dependencies
         run: pip install -e '.[test]'
 

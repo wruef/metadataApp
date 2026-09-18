@@ -213,9 +213,12 @@ def applyPositions(deployments, positions, nameMap, hitl):
                         'deployNum': row['deploymentNumber'], 'positionName': positionName,
                         'sourceRow': record['sourceRow'], 'changed': changed})
 
-    ## Deployment sheets carry blanks, not NaN, and whole numbers, not 1.0
-    corrected = corrected.applymap(lambda v: '' if pd.isna(v) else v)
-    corrected = corrected.applymap(
+    ## Deployment sheets carry blanks, not NaN, and whole numbers, not 1.0.
+    ## ``DataFrame.map`` rather than ``applymap``: pandas removed applymap in
+    ## 3.0, which is what a Python 3.11 install now resolves to, and map has
+    ## been the same function under a better name since 2.1.
+    corrected = corrected.map(lambda v: '' if pd.isna(v) else v)
+    corrected = corrected.map(
         lambda v: int(v) if isinstance(v, float) and v.is_integer() else v)
     return corrected, log
 

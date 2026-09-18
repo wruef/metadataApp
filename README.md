@@ -385,11 +385,37 @@ row separates them. Those rows need a person, and are the ones to resolve first.
 version a verification run uses and the oldest the package claims to support.
 The dashboard's own tests run in the Pages workflow, where they block a deploy.
 
-The environment is pinned on both sides, because comparison is exact to the last
-digit a vendor file publishes and a different pandas is a different answer.
-`environment.yml` builds the python side and `dashboard/.nvmrc` names the node
-the dashboard is built with; every run records the versions it ran with under
-`parameters` in its report.
+Comparison is exact to the last digit a vendor file publishes, so the library
+that reads the csv is part of what produced the numbers. Three files say so, and
+they say different things on purpose:
+
+| file | what it pins | why |
+|---|---|---|
+| `constraints.txt` | pandas and numpy, exactly | what a published run is produced with, so it is reproducible |
+| `environment.yml` | the same two, plus the python | a reviewer's laptop reaching the runner's verdicts |
+| `pyproject.toml` | a floor, `pandas>=2.1` | what the package can be installed against at all |
+
+`.github/workflows/verify.yaml` installs against the constraints;
+`.github/workflows/tests.yaml` deliberately does not. That matrix resolving
+freely is the early warning, and it earned its keep: pandas 3.0 removed the
+`applymap` this code called, and the python 3.11 entry failed while 3.10, which
+resolves pandas 2, still passed. Installing against the constraints there would
+have hidden it until a published run hit it. `tests/test_pins.py` fails if the
+pip and conda pins drift apart.
+
+The floor is 2.1 because that is where `DataFrame.map` arrived and 3.0 is where
+`applymap` left, so below it no single spelling works on both.
+
+Measured before pinning, against 116 real calibration files across 91
+instrument directories: pandas 2.3.3 with numpy 1.22 and pandas 3.0.6 with numpy
+2.5 parse every coefficient to the same bits. The only divergence in 1,556
+parsed values is that `iterrows` turns a `None` into a `NaN` under pandas 3, and
+`_unresolved` in `calibrations.py` already tests for both. So the pins are
+reproducibility rather than a fix for drifting numbers.
+
+`dashboard/.nvmrc` names the node the dashboard is built with. Every run records
+the versions it ran with under `parameters`, and the dashboard's run stamp shows
+them, so a number on screen can be traced to the library that read it.
 
     conda env create -f environment.yml && conda activate rca-metadata
     pip install -e ".[test]"

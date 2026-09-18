@@ -81,7 +81,9 @@ export interface Report {
   schemaVersion: number
   runAt: string
   sources: Record<string, Source | string | null>
-  parameters: { commit: string; dirty: boolean }
+  /** `python` and `pandas` are absent from runs published before the stamp
+   *  showed them, so a reader of an old run sees the commit and no more. */
+  parameters: { commit: string; dirty: boolean; python?: string; pandas?: string }
   referenceDesignators: string[]
   /** The instruments asset-management holds no calibration for, so nothing
    *  could be compared and nothing was missed. */
@@ -222,7 +224,9 @@ export const MOVEMENTS = [
 export interface RunEntry {
   name: string
   runAt: string
-  parameters: { commit: string; dirty: boolean }
+  /** `python` and `pandas` are absent from runs published before the stamp
+   *  showed them, so a reader of an old run sees the commit and no more. */
+  parameters: { commit: string; dirty: boolean; python?: string; pandas?: string }
   sources: Record<string, Source>
   /** The same per-check summaries the run's own report carries. */
   summary: Record<string, Check['summary']>

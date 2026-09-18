@@ -110,7 +110,8 @@ already filtered to exactly those rows. Below it, deployments by the year they
 went in the water.
 
 Every page carries a **run stamp**: when the run happened, which commit of each
-repository it read, and which version of the parameter files. Nothing refreshes
+repository it read, which version of the parameter files, and which python and
+pandas read the numbers. Nothing refreshes
 on its own, so this is the first thing to read. A report older than a season is
 marked stale.
 

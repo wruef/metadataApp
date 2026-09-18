@@ -8,7 +8,13 @@ version = "0.1.0"
 description = "Verification of RCA deployment metadata and vendor calibration files"
 requires-python = ">=3.10"
 dependencies = [
-    "pandas",
+    # A floor rather than a pin: this is what the package can be installed
+    # against, not what a published run is produced with -- constraints.txt is
+    # that. 2.1 is where `DataFrame.map` arrived, and pandas 3.0 removed the
+    # `applymap` it replaced, so below this floor there is no one spelling that
+    # works on both. That gap is not hypothetical: it broke the test matrix,
+    # where python 3.11 resolves pandas 3 and 3.10 resolves pandas 2.
+    "pandas>=2.1",
     "numpy",
     "requests",
     "beautifulsoup4",
@@ -22,7 +28,8 @@ test = ["pytest"]
 
 # Comparison is exact to the last digit a vendor file publishes, so the library
 # that parses the csv is part of what produced the numbers. Every run records
-# the versions it ran with, under `parameters` in the report.
+# the versions it ran with, under `parameters` in the report, and the exact
+# versions a published run uses are in constraints.txt.
 
 [project.scripts]
 verify-metadata = "rca_metadata.cli:main"

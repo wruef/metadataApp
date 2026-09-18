@@ -19,6 +19,15 @@ const sources = computed(() =>
 const runAt = computed(() => (report.value ? new Date(report.value.runAt).toLocaleString() : ''))
 const days = computed(() => Math.round(store.ageInDays))
 
+/** What parsed the numbers. Both are recorded by every run; a run published
+ *  before they were is shown by whichever of the two it has. */
+const libraries = computed(() => {
+  const parameters = store.report?.parameters
+  return [parameters?.pandas && `pandas ${parameters.pandas}`,
+          parameters?.python && `python ${parameters.python}`]
+    .filter(Boolean).join(' · ')
+})
+
 /** Earlier runs, so a baseline can be reached rather than only the newest
  *  report. Reports predating a fix to the checks are not comparable with later
  *  ones, which is why each carries its own provenance. */
@@ -71,6 +80,14 @@ const runOptions = computed(() => [
           {{ report.parameters.commit.slice(0, 7) }}
           <span v-if="report.parameters.dirty" class="text-amber-600">· uncommitted</span>
         </div>
+      </div>
+      <!-- Comparison is exact to the last digit a vendor file publishes, so the
+           library that read the csv is part of the answer. Every run has
+           recorded this; nothing showed it, which left a reader unable to tell
+           whether two runs were even produced the same way. -->
+      <div v-if="libraries">
+        <div class="text-[11px] font-semibold text-gray-500 tracking-wider uppercase">Read with</div>
+        <div class="font-mono text-sm">{{ libraries }}</div>
       </div>
     </div>
 
