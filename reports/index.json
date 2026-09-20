@@ -1,5 +1,94 @@
 [
  {
+  "name": "report_20260920T004515Z.json",
+  "runAt": "2026-09-20T00:45:13+00:00",
+  "parameters": {
+   "commit": "4eaff039a375887e88d430006b9f19e34eac2e09",
+   "dirty": false,
+   "python": "3.11.16",
+   "pandas": "3.0.5"
+  },
+  "sources": {
+   "assetManagement": {
+    "repo": "oceanobservatories/asset-management",
+    "ref": "master",
+    "commit": "1aa7e12cc02844bdb7ca7b0cc4c3db57a30f7939"
+   },
+   "calibrationFiles": {
+    "repo": "OOI-CabledArray/calibrationFiles",
+    "ref": "master",
+    "commit": "4c55af419e7e5dd03ae54eabc5b71258fee3c849"
+   },
+   "deployments": {
+    "repo": "OOI-CabledArray/deployments",
+    "ref": "main",
+    "commit": "f26e49b358b7365a58d0ab39f9edb25842992926"
+   }
+  },
+  "summary": {
+   "sensorBulk": {
+    "problem": 30,
+    "review": 32,
+    "unchecked": 4,
+    "cleared": 0,
+    "ok": 376,
+    "excluded": 0,
+    "attention": 62,
+    "verified": 376,
+    "considered": 442,
+    "total": 442
+   },
+   "deploymentSheets": {
+    "problem": 0,
+    "review": 0,
+    "unchecked": 0,
+    "cleared": 0,
+    "ok": 0,
+    "excluded": 0,
+    "attention": 0,
+    "verified": 0,
+    "considered": 0,
+    "total": 0
+   },
+   "deployments": {
+    "problem": 47,
+    "review": 663,
+    "unchecked": 0,
+    "cleared": 152,
+    "ok": 551,
+    "excluded": 0,
+    "attention": 710,
+    "verified": 703,
+    "considered": 1413,
+    "total": 1413
+   },
+   "positions": {
+    "problem": 105,
+    "review": 0,
+    "unchecked": 0,
+    "cleared": 0,
+    "ok": 1558,
+    "excluded": 0,
+    "attention": 105,
+    "verified": 1558,
+    "considered": 1663,
+    "total": 1663
+   },
+   "calibrations": {
+    "problem": 28,
+    "review": 22,
+    "unchecked": 39,
+    "cleared": 432,
+    "ok": 653,
+    "excluded": 0,
+    "attention": 50,
+    "verified": 1085,
+    "considered": 1174,
+    "total": 1174
+   }
+  }
+ },
+ {
   "name": "report_20260920T003338Z.json",
   "runAt": "2026-09-20T00:33:36+00:00",
   "parameters": {
