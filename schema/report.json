@@ -21,6 +21,7 @@
   "report": [
     "schemaVersion",
     "runAt",
+    "comparedWith",
     "sources",
     "parameters",
     "referenceDesignators",
@@ -32,6 +33,8 @@
 
   "//unmatchedSignOffs": "Per check, the sign-offs whose key matches no row the run produced -- a calibration file asset-management no longer carries, a deployment renumbered out of a sheet. Every check has an entry, empty when nothing is orphaned.",
   "unmatchedSignOff": ["key", "status", "reviewers", "dateReviewed", "notes"],
+
+  "//comparedWith": "The ref this run was measured against, or null. A comparison is published beside the report only when a run was given a baseline, so this is what says whether there is one to fetch. Always written: null means there is none, and the field being absent means the run predates it.",
 
   "//parameters": "What produced the numbers: the commit of this repository, whether it was dirty, and the libraries that parsed the files. Comparison is exact to the last digit, so the versions are part of the answer.",
   "parameters": ["commit", "dirty", "python", "pandas"],

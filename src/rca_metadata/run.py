@@ -24,8 +24,15 @@ NODE_DEPLOYMENTS = 'NODE_deployments.csv'
 
 
 def verify(amSource, calSource, deploySource=None, positionFile=None,
-           paramsDir='params', hitlDir='2i_HITL'):
-    """Run every check and return the result, with the inputs it read."""
+           paramsDir='params', hitlDir='2i_HITL', baseline=None):
+    """Run every check and return the result, with the inputs it read.
+
+    ``baseline`` is the ref this run was dispatched to be measured against, when
+    it was. The run does not read it -- the comparison is a second run of these
+    same checks, against that ref, and a step of its own -- but the report has
+    to say whether one exists. Without that the dashboard could only find out by
+    asking for the comparison and being told 404, which is what it used to do.
+    """
     params = loading.loadParams(paramsDir)
     hitl = loading.loadHITL(hitlDir)
     params.update(loading.loadBulk(amSource))
@@ -47,6 +54,10 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
         ## and sorts against the UTC file stamp in the run index, so a laptop
         ## run and a runner run could order wrongly against each other.
         'runAt': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
+        ## The ref this run was measured against, or None. Not a source: these
+        ## checks never read it. It says a comparison was published beside this
+        ## report, and names what the movements are movements from.
+        'comparedWith': baseline or None,
         ## Every input the run read, so any row can be traced back to it.
         'sources': {
             'assetManagement': report.describeSource(amSource),

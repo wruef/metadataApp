@@ -290,6 +290,22 @@ def test_aRunWithNoSheetsCarriesNoReasons():
     assert buildReport(RESULT)['hitlNotes'] == {}
 
 
+def test_theReportSaysWhatItWasMeasuredAgainst():
+    """A comparison is published only where a run was given a baseline, so this
+    is what says whether there is one. Without it the dashboard could only find
+    out by asking for the comparison and being told 404."""
+    assert buildReport({**RESULT, 'comparedWith': 'master'})['comparedWith'] == 'master'
+
+
+def test_aRunWithNoBaselineSaysSoRatherThanStayingSilent():
+    """null is 'asked, and there is none'. The field missing altogether is 'this
+    run is too old to say', which is a different thing and reads the same way
+    only because no run that old ever had a comparison."""
+    doc = buildReport(RESULT)
+    assert 'comparedWith' in doc
+    assert doc['comparedWith'] is None
+
+
 def test_theReportCarriesTheSignOffsThatMatchedNothing():
     """No check has a row for these, so the report is the only thing that can
     carry them: the calibration file or the deployment they were written against

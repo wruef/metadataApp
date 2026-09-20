@@ -58,6 +58,12 @@ def main(argv=None):
     parser.add_argument('--params', default='params')
     parser.add_argument('--hitl', default='2i_HITL')
     parser.add_argument('--out', default='reports/report.json')
+    ## Recorded in the report rather than inferred from the files beside it. A
+    ## comparison is published only when a run was given a baseline, and until
+    ## the report said so the dashboard asked for one every time and took a 404
+    ## for an answer on every run that had none.
+    parser.add_argument('--baseline', metavar='REF',
+                        help='the ref this run is being compared against, for the report to record')
     ## Published beside the report rather than inside it: the dashboard fetches
     ## it only when a reviewer opens the history, and it is half a megabyte.
     parser.add_argument('--history-out', default='reports/history.json',
@@ -69,7 +75,7 @@ def main(argv=None):
         parseSource(args.calibration_files, args.clones),
         parseSource(args.deployments, args.clones, defaultRef=DEPLOY_REF),
         positionFile=args.positions or latestPositionFile(),
-        paramsDir=args.params, hitlDir=args.hitl)
+        paramsDir=args.params, hitlDir=args.hitl, baseline=args.baseline)
 
     report = buildReport(result)
     os.makedirs(os.path.dirname(args.out) or '.', exist_ok=True)

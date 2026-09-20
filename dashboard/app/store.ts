@@ -89,6 +89,10 @@ export interface Source {
 export interface Report {
   schemaVersion: number
   runAt: string
+  /** The ref this run was measured against, or null when it was given no
+   *  baseline. Absent on runs published before it was recorded, which reads the
+   *  same as null: no run published before then ever carried a comparison. */
+  comparedWith?: string | null
   sources: Record<string, Source | string | null>
   /** `python` and `pandas` are absent from runs published before the stamp
    *  showed them, so a reader of an old run sees the commit and no more. */
@@ -314,20 +318,33 @@ export const useStore = defineStore('report', () => {
       comparison.value = null
       status.value = 'ready'
       switching.value = false
-      // The comparison that belongs to the run being read, not whichever one
-      // was newest. Published runs are named report_<stamp> and their
-      // comparisons comparison_<stamp>, so one follows from the other; the
-      // fixed url is the fallback for the current run.
-      const comparisonUrl = name
-        ? url.replace(/[^/]+$/, name.replace('report_', 'comparison_'))
-        : withBase(base, config.public.comparisonUrl as string)
-      // Absent unless a run was given a baseline, so a failure here is normal
-      // and must not take the rest of the dashboard down with it.
-      try {
-        const found = await $fetch<Comparison>(comparisonUrl)
-        if (mine === sequence) comparison.value = comparisonFor(fetched, found)
-      } catch {
+      // A comparison exists only where the run was given a baseline, and the
+      // report says whether it was. Asking regardless is what it used to do,
+      // and the answer on every run without one was a 404 in the reader's
+      // console — a request the app expected to fail, reported the only way a
+      // browser can report it.
+      //
+      // A report with no `comparedWith` at all predates the field. That reads
+      // as no baseline here, because no run published before it existed ever
+      // carried a comparison: the repository has never held a comparison_*.json.
+      if (!fetched.comparedWith) {
         if (mine === sequence) comparison.value = null
+      } else {
+        // The comparison that belongs to the run being read, not whichever one
+        // was newest. Published runs are named report_<stamp> and their
+        // comparisons comparison_<stamp>, so one follows from the other; the
+        // fixed url is the fallback for the current run.
+        const comparisonUrl = name
+          ? url.replace(/[^/]+$/, name.replace('report_', 'comparison_'))
+          : withBase(base, config.public.comparisonUrl as string)
+        // A run that names a baseline should have one, but a publish half done
+        // is not a reason to take the rest of the dashboard down.
+        try {
+          const found = await $fetch<Comparison>(comparisonUrl)
+          if (mine === sequence) comparison.value = comparisonFor(fetched, found)
+        } catch {
+          if (mine === sequence) comparison.value = null
+        }
       }
       // Absent until a run has been published, and never fatal.
       try {

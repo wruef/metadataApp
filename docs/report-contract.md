@@ -81,6 +81,15 @@ They are read from the sheets rather than from the run's own rows, because the
 two do not hold the same set: a note written against a calibration file that
 asset-management no longer carries is still a reason worth offering.
 
+The report carries `comparedWith`: the ref this run was measured against, or
+null. A comparison is published beside a report only when the run was given a
+baseline, and this is what says whether there is one. Before it existed the
+dashboard asked for the comparison on every run and learned the answer from a
+404, which reached the reader's console on every run that had none. The field is
+always written, so null means there is no comparison and the field being absent
+means the run predates it — the dashboard treats the two the same, because no
+run published before then ever carried one.
+
 It also carries `unmatchedSignOffs` — per check, the sign-offs whose key matches
 no row the run produced. A sheet is keyed by whatever identified a row when
 somebody signed it: a calibration file name, a reference designator with its

@@ -512,6 +512,14 @@ def buildReport(result, paramsPath='.'):
     return {
         'schemaVersion': SCHEMA_VERSION,
         'runAt': result['runAt'],
+        ## The ref this run was measured against, or null. Always written, so
+        ## null means "asked and there is none" rather than "this run is too old
+        ## to say" -- which is the difference between not fetching a comparison
+        ## and not knowing whether to. Empty becomes null here rather than
+        ## travelling as an empty string: the workflow passes the flag on every
+        ## run and leaves the value empty when there is no baseline, and an
+        ## empty string is truthy enough in a browser to send it looking.
+        'comparedWith': result.get('comparedWith') or None,
         'sources': result['sources'],
         'parameters': gitProvenance(paramsPath),
         ## What the run covered, as opposed to what it found.

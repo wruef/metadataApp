@@ -49,6 +49,15 @@ describe('the committed report', () => {
     expect(missing(SCHEMA.parameters, REPORT.parameters)).toEqual([])
   })
 
+  it('says what it was measured against, even when that is nothing', () => {
+    // null is "there is no comparison". The field missing is "this run cannot
+    // say", and the dashboard treats the two the same only because no run that
+    // old ever had one. A new report leaving it out would be a silent regression
+    // back to asking for a comparison and taking a 404 for an answer.
+    expect('comparedWith' in REPORT).toBe(true)
+    expect(REPORT.comparedWith ?? null).toBeNull()
+  })
+
   it('names every sign-off that matches no row, with what was decided', () => {
     // These are the judgements no check can show, because the calibration file
     // or the deployment they were written against is gone from the records.

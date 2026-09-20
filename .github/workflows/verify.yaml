@@ -103,12 +103,17 @@ jobs:
           REPO: ${{ inputs.asset_management_repo }}
           REF: ${{ inputs.asset_management_ref }}
           CAL_REF: ${{ inputs.calibration_files_ref }}
+          # Recorded in the report, so the dashboard knows whether a comparison
+          # was published beside it. The comparison itself is produced two steps
+          # below, by a second run of these same checks against this ref.
+          BASELINE: ${{ inputs.baseline_ref }}
         run: |
           verify-metadata \
             --asset-management "$REPO@$REF" \
             --calibration-files "OOI-CabledArray/calibrationFiles@$CAL_REF" \
             --deployments 'OOI-CabledArray/deployments@main' \
             --clones repos \
+            --baseline "$BASELINE" \
             --out "$REPORT" \
             --history-out "$HISTORY"
 

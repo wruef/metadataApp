@@ -1,6 +1,7 @@
 {
  "schemaVersion": 2,
  "runAt": "2026-09-15T16:26:13+00:00",
+ "comparedWith": null,
  "sources": {
   "assetManagement": {
    "repo": "oceanobservatories/asset-management",

@@ -142,12 +142,69 @@ describe('asking whether a fork is in sync', () => {
   })
 })
 
-describe('switching the run on screen', () => {
-  const report = (runAt: string) => ({
-    schemaVersion: 2, runAt, parameters: { commit: 'abc', dirty: false },
-    sources: {}, referenceDesignators: [],
-    checks: { deployments: { rows: [], summary: { problem: 0, total: 0 } } },
+const report = (runAt: string, comparedWith: string | null = null) => ({
+  schemaVersion: 2, runAt, comparedWith, parameters: { commit: 'abc', dirty: false },
+  sources: {}, referenceDesignators: [],
+  checks: { deployments: { rows: [], summary: { problem: 0, total: 0 } } },
+})
+
+describe('the comparison a run is read with', () => {
+  /** Which urls were asked for, so a request that should not happen is visible
+   *  as an absence rather than as a caught error nobody sees. */
+  function serving(files: Record<string, unknown>) {
+    const asked: string[] = []
+    globalThis.$fetch = vi.fn((url: string) => {
+      asked.push(url)
+      // The whole file name, not a suffix: `comparison-latest.json` ends with
+      // `latest.json`, and matching loosely served the report as the comparison.
+      const name = url.split('/').pop() ?? ''
+      return name in files ? Promise.resolve(files[name]) : Promise.reject(new Error('404'))
+    }) as never
+    return asked
+  }
+
+  it('is not asked for at all when the run was given no baseline', async () => {
+    // It would 404, because a comparison is only published where there was a
+    // baseline. The browser reports that in the console, which reads as a fault
+    // in a page that is working exactly as intended.
+    const asked = serving({ 'latest.json': report('2026-09-18T00:00:00') })
+    await useStore().load()
+    expect(asked.some((url) => url.includes('comparison'))).toBe(false)
   })
+
+  it('is not asked for on a run published before the report said', async () => {
+    // No run published before `comparedWith` existed ever carried a comparison.
+    const old = report('2026-09-18T00:00:00') as Record<string, unknown>
+    delete old.comparedWith
+    const asked = serving({ 'latest.json': old })
+    await useStore().load()
+    expect(asked.some((url) => url.includes('comparison'))).toBe(false)
+  })
+
+  it('is asked for, and shown, when the run names what it was measured against', async () => {
+    const asked = serving({
+      'latest.json': report('2026-09-18T00:00:00', 'master'),
+      'comparison-latest.json': { currentRunAt: '2026-09-18T00:00:00', checks: {} },
+    })
+    const store = useStore()
+    await store.load()
+    expect(asked.some((url) => url.includes('comparison-latest.json'))).toBe(true)
+    expect(store.comparison).not.toBeNull()
+  })
+
+  it('shows none when the comparison belongs to another run', async () => {
+    // The pair are separate files and can come apart.
+    serving({
+      'latest.json': report('2026-09-18T00:00:00', 'master'),
+      'comparison-latest.json': { currentRunAt: '2026-09-01T00:00:00', checks: {} },
+    })
+    const store = useStore()
+    await store.load()
+    expect(store.comparison).toBeNull()
+  })
+})
+
+describe('switching the run on screen', () => {
 
   it('shows the run asked for last, whatever order they arrive in', async () => {
     const first = deferred<unknown>()

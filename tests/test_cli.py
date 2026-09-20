@@ -105,3 +105,44 @@ def test_aComparisonThatCannotBeTrustedSaysSoOnTheWayOut(tmp_path, capsys):
     printed = capsys.readouterr().out
     assert 'cannot be compared' in printed
     assert 'different commits' in printed
+
+
+## --- the baseline the workflow hands the run ---
+
+def test_theVerifyWorkflowTellsTheRunWhatItIsComparedAgainst():
+    """The report records the baseline so the dashboard knows whether a
+    comparison exists. Nothing else notices if the flag is renamed on one side:
+    the run still succeeds, the report says no baseline, and the Changes view is
+    quietly empty on every run that had one."""
+    import os
+
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    with open(os.path.join(root, '.github', 'workflows', 'verify.yaml')) as handle:
+        workflow = handle.read()
+    assert '--baseline "$BASELINE"' in workflow
+    assert 'BASELINE: ${{ inputs.baseline_ref }}' in workflow
+
+
+def test_theBaselineFlagIsTheOneTheWorkflowPasses():
+    import argparse
+    import contextlib
+    import io
+
+    from rca_metadata import cli
+
+    ## argparse is the only thing that knows the flag exists, and the parser is
+    ## built inside main(). --help prints it and exits, which is enough.
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed), contextlib.suppress(SystemExit):
+        cli.main(['--help'])
+    assert '--baseline' in printed.getvalue()
+
+
+def test_aRunGivenNoBaselineRecordsNoneRatherThanAnEmptyString():
+    """The workflow always passes the flag; the value is empty when there is no
+    baseline. An empty string is truthy enough in a browser to send it looking
+    for a comparison that is not there."""
+    from rca_metadata.report import buildReport
+    from tests.test_report import RESULT
+
+    assert buildReport({**RESULT, 'comparedWith': ''})['comparedWith'] is None
