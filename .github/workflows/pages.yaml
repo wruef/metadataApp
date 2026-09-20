@@ -149,7 +149,7 @@ jobs:
         run: touch dashboard/.output/public/.nojekyll
 
       - name: Upload the site
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dashboard/.output/public
 
