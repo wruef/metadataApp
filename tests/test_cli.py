@@ -143,6 +143,11 @@ def test_aRunGivenNoBaselineRecordsNoneRatherThanAnEmptyString():
     baseline. An empty string is truthy enough in a browser to send it looking
     for a comparison that is not there."""
     from rca_metadata.report import buildReport
-    from tests.test_report import RESULT
 
-    assert buildReport({**RESULT, 'comparedWith': ''})['comparedWith'] is None
+    ## Built here rather than imported from another test module: pytest puts
+    ## tests/ on the path, not the directory above it, so `tests.test_report`
+    ## resolves under `python -m pytest` and not under the `pytest` CI runs.
+    result = {'runAt': '2026-09-15T12:00:00', 'sources': {}, 'comparedWith': '',
+              'sensorBulk': [], 'calibrations': {'files': [], 'missingFromGithub': []},
+              'deploymentSheets': [], 'deployments': [], 'positions': None}
+    assert buildReport(result)['comparedWith'] is None
