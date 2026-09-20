@@ -290,6 +290,23 @@ def test_aRunWithNoSheetsCarriesNoReasons():
     assert buildReport(RESULT)['hitlNotes'] == {}
 
 
+def test_theReportCarriesTheSignOffsThatMatchedNothing():
+    """No check has a row for these, so the report is the only thing that can
+    carry them: the calibration file or the deployment they were written against
+    is gone from the records, and a judgement nobody can see is one lost."""
+    orphaned = {'calibrations': [{'key': 'ATAPL-1__20140101.csv', 'status': 'NotClear',
+                                  'reviewers': 'WR', 'dateReviewed': '5/1/19',
+                                  'notes': 'seabird sent a file for 20140415?'}],
+                'deployments': [], 'sensorBulk': []}
+    doc = buildReport({**RESULT, 'unmatchedSignOffs': orphaned})
+    assert doc['unmatchedSignOffs'] == orphaned
+
+
+def test_aRunWithNoOrphanedSignOffsCarriesAnEmptyMapping():
+    """Absent would make a reader guess whether the run looked."""
+    assert buildReport(RESULT)['unmatchedSignOffs'] == {}
+
+
 def test_aCheckThatDidNotRunIsAbsentRatherThanEmpty():
     assert 'positions' not in buildReport(RESULT)['checks']
 

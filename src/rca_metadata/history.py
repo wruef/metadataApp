@@ -13,7 +13,12 @@ import os
 import pandas as pd
 
 from .calibrations import comparisonRule
-from .loading import calFileBits, inForceAt
+from .loading import (
+    NO_CALIBRATION,
+    NO_VALID_CALIBRATION,
+    calFileBits,
+    calibrationInForce,
+)
 
 HISTORY_COLUMNS = ['sensorType', 'referenceDesignator', 'startTime', 'endTime', 'assetID',
                    'instrumentSN', 'lat', 'lon', 'githubCalibrationFile', 'vendorCalibrationFile']
@@ -74,19 +79,16 @@ def comparedFile(urls, assets=None):
 
 
 def _inForceAt(links, assetID, deployDate, assets=None):
-    """The calibration in force at deployment: the most recent one up to it.
+    """The link to the calibration in force at deployment.
 
-    The same rule the deployments check applies, from the same function, so the
-    history and the check cannot disagree about which calibration was in force.
+    Several files can carry one calibration, so which of them to name is a
+    question only the history asks; which calibration it was is the rule the
+    deployments check applies, and both read it from ``calibrationInForce``.
     """
-    history = links.get(assetID)
-    if history is None:
-        return 'none'
-    earlier = inForceAt(history, deployDate)
-    if not earlier:
-        return 'noValidCalFile'
-    latest = max(date for date, _ in earlier)
-    return comparedFile([url for date, url in earlier if date == latest], assets)
+    _, urls, problem = calibrationInForce(links.get(assetID), deployDate)
+    if problem:
+        return NO_CALIBRATION if problem == NO_CALIBRATION else NO_VALID_CALIBRATION
+    return comparedFile(urls, assets)
 
 
 def deploymentHistory(deployments, assets, githubCals, vendorCals):

@@ -100,6 +100,9 @@ describe('which pull request a change belongs to', () => {
     const forAssetManagement = batchesFor('assetManagement').map((batch) => batch.key)
     expect(forAssetManagement).toEqual(['calibrations', 'sheets'])
     expect(batchesFor('hitl').map((batch) => batch.key)).toEqual(['signoffs'])
+    // A node deployment is a deployment sheet row in a different repository,
+    // so it is a batch of its own on that repository's fork.
+    expect(batchesFor('deployments').map((batch) => batch.key)).toEqual(['nodes'])
   })
 
   it('never puts two repositories in one request', () => {
@@ -111,7 +114,7 @@ describe('which pull request a change belongs to', () => {
 
   it('guards the batches that change a file, and not the one that records a judgement', () => {
     expect(BATCHES.filter((batch) => batch.guarded).map((batch) => batch.key))
-      .toEqual(['calibrations', 'sheets'])
+      .toEqual(['calibrations', 'sheets', 'nodes'])
   })
 
   it('sends each entry to the file it writes', () => {
@@ -277,5 +280,37 @@ describe('what the queue shows for an entry', () => {
       .toBe('RS03AXPS-PC03A-05-ADCPTD302 deployment 1')
     expect(describeEntry(signoff('calibrations', 'x.csv', '')).summary)
       .toMatch(/worth saying what convinced you/)
+  })
+})
+
+
+describe('a node deployment', () => {
+  const NODE_SHEET = [
+    HEAD,
+    row('CE02SHBP-LJ01D', 1, '44.636981'),
+    '',
+  ].join('\n')
+
+  const node = (to: string): SheetEntry => ({
+    batch: 'nodes',
+    key: sheetKey('position', 'CE02SHBP-LJ01D', 1),
+    kind: 'position',
+    refDes: 'CE02SHBP-LJ01D',
+    deployNum: 1,
+    source: 'Taken from the RCA position spreadsheet.',
+    corrections: [{ field: 'lat', from: '44.636981', to }],
+  })
+
+  it('writes the node file in the deployments repository, not an array sheet', () => {
+    expect(pathOf(node('44.637000'))).toBe('NODE_deployments.csv')
+    const built = buildBatch('nodes', [node('44.637000')],
+                             { 'NODE_deployments.csv': NODE_SHEET }, BY, 'WR', WHEN)
+    expect(Object.keys(built.files)).toEqual(['NODE_deployments.csv'])
+    expect(built.files['NODE_deployments.csv']).toContain('44.637000')
+    expect(built.body).toContain('`NODE_deployments.csv`')
+  })
+
+  it('counts node deployments in its title', () => {
+    expect(batchTitle('nodes', [node('1'), node('2')])).toBe('Correct 2 node deployments')
   })
 })

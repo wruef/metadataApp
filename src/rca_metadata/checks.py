@@ -13,8 +13,13 @@ import numpy as np
 import pandas as pd
 
 from .calibrations import compareCalCoefficients, comparisonRule, isConstantsOnly
-from .instruments import expectsRawSerial, partialMatch
-from .loading import RCA_ASSET_PREFIXES, inForceAt
+from .instruments import expectsRawSerial, partialMatch, sameSerial
+from .loading import (
+    NO_CALIBRATION,
+    NO_VALID_CALIBRATION,
+    RCA_ASSET_PREFIXES,
+    calibrationInForce,
+)
 
 ## How many trailing characters make a serial number a format match rather than
 ## a disagreement -- vendors and OOI disagree about prefixes, not about digits.
@@ -251,84 +256,95 @@ def _missingVendorVerdict(githubCal, stem, vendorFiles, params):
     return f'VENDOR_DATE_NEAR_MISS: {apart}, and it could not be compared either'
 
 
+def _calibrationRow(amSource, instrument, fileName, vendorFiles, params, hitlCal):
+    """One calibration file's row: five verdicts and what is behind them."""
+    stem = os.path.splitext(fileName)[0]
+    serialByAsset = params['serialByAsset']
+
+    ## hitlKey for the same reason the deployment check carries one: the sheet's
+    ## own identifier for this row, settled by the run.
+    row = {'fileName': fileName, 'instrument': instrument, 'hitlKey': fileName}
+    row['HITLstatus'], row['HITLnotes'] = signOff(hitlCal, fileName)
+
+    if stem in vendorFiles:
+        row['calRepo_check'] = 'MATCH'
+    elif isConstantsOnly(stem, params['assets']):
+        ## Nothing is on record because nothing ever will be: these coefficients
+        ## are fixed values, not measurements. Not a finding, and not a gap --
+        ## there is simply no vendor file to expect.
+        row['calRepo_check'] = 'NOT_EXPECTED'
+    else:
+        row['calRepo_check'] = 'NOMATCH'
+
+    ## Where the vendor original lives, so a reader can open it beside the
+    ## repository file. The two repos do not always name a sensor directory the
+    ## same way, so this cannot be derived from the instrument.
+    entries = vendorFiles.stems.get(stem, [])
+    if entries:
+        row['vendorDirectory'] = entries[0][0]
+        row['vendorFiles'] = sorted(name for _, name in entries)
+
+    githubCal, row['fileParse'] = _loadGithubCal(
+        amSource.path(f'calibration/{instrument}/{fileName}'))
+    if githubCal is None:
+        return row
+
+    row['serialNumber'] = _serialVerdict(githubCal, stem, serialByAsset)
+    row['duplicateCoeff'] = _duplicateVerdict(githubCal)
+
+    ## A file with no vendor original is still worth reading: some instruments
+    ## carry fixed values that no vendor ever measures, and those are compared
+    ## against coefficientConstants.csv instead. The comparison is told there is
+    ## no vendor file, so everything that needs one is left alone rather than
+    ## reported as disagreeing with nothing.
+    vendorPresent = row['calRepo_check'] == 'MATCH'
+    verdict, *differences = compareCalCoefficients(
+        githubCal, vendorFiles.stemPath(stem) if vendorPresent else stem,
+        params['coeffMap'], params['constants'], params['assets'],
+        vendorPresent=vendorPresent)
+    if verdict == 'NAN' and not vendorPresent:
+        verdict = _missingVendorVerdict(githubCal, stem, vendorFiles, params) or verdict
+    row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
+    row['differences'] = differences
+    return row
+
+
+def _vendorOnlyRows(vendorFiles, seen, hitlCal):
+    """Vendor originals the repository holds nothing for.
+
+    Not rows in the table, because there is no repository file to be a row --
+    each carries the directory the vendor filed it under, which is the only
+    thing on record that says what kind of instrument it is.
+
+    Each is signed off in the calibration sheet under the name the repository
+    file would have if it were ingested, so a decision taken now is already
+    attached to the file on the day it arrives.
+    """
+    rows = []
+    for stem in sorted(set(vendorFiles.stems) - set(seen)):
+        key = stem + '.csv'
+        status, notes = signOff(hitlCal, key)
+        rows.append({'file': stem, 'instrument': vendorFiles.stems[stem][0][0],
+                     'hitlKey': key, 'HITLstatus': status, 'HITLnotes': notes})
+    return rows
+
+
 def checkCalibrations(amSource, calFiles, vendorFiles, params, hitl):
     """Every github calibration file against its vendor original.
 
     Returns one row per file plus the vendor files that no github file claims --
     a calibration on record for an instrument the repo does not know about.
     """
-    serialByAsset = params['serialByAsset']
     hitlCal = hitl['calibrations']
     rows, seen = [], []
-
     for instrument, fileName in calFiles:
         stem = os.path.splitext(fileName)[0]
         if '__' not in stem:
             print('invalid fileName format: ' + fileName)
             continue
         seen.append(stem)
-
-        ## hitlKey for the same reason the deployment check carries one: the
-        ## sheet's own identifier for this row, settled by the run.
-        row = {'fileName': fileName, 'instrument': instrument, 'hitlKey': fileName}
-        row['HITLstatus'], row['HITLnotes'] = signOff(hitlCal, fileName)
-        if stem in vendorFiles:
-            row['calRepo_check'] = 'MATCH'
-        elif isConstantsOnly(stem, params['assets']):
-            ## Nothing is on record because nothing ever will be: these
-            ## coefficients are fixed values, not measurements. Not a finding,
-            ## and not a gap -- there is simply no vendor file to expect.
-            row['calRepo_check'] = 'NOT_EXPECTED'
-        else:
-            row['calRepo_check'] = 'NOMATCH'
-        ## Where the vendor original lives, so a reader can open it beside the
-        ## repository file. The two repos do not always name a sensor directory
-        ## the same way, so this cannot be derived from the instrument.
-        entries = vendorFiles.stems.get(stem, [])
-        if entries:
-            row['vendorDirectory'] = entries[0][0]
-            row['vendorFiles'] = sorted(name for _, name in entries)
-
-        githubCal, row['fileParse'] = _loadGithubCal(
-            amSource.path(f'calibration/{instrument}/{fileName}'))
-        if githubCal is None:
-            rows.append(row)
-            continue
-
-        row['serialNumber'] = _serialVerdict(githubCal, stem, serialByAsset)
-        row['duplicateCoeff'] = _duplicateVerdict(githubCal)
-
-        ## A file with no vendor original is still worth reading: some
-        ## instruments carry fixed values that no vendor ever measures, and
-        ## those are compared against coefficientConstants.csv instead. The
-        ## comparison is told there is no vendor file, so everything that needs
-        ## one is left alone rather than reported as disagreeing with nothing.
-        vendorPresent = row['calRepo_check'] == 'MATCH'
-        verdict, *differences = compareCalCoefficients(
-            githubCal, vendorFiles.stemPath(stem) if vendorPresent else stem,
-            params['coeffMap'], params['constants'], params['assets'],
-            vendorPresent=vendorPresent)
-        if verdict == 'NAN' and not vendorPresent:
-            verdict = _missingVendorVerdict(githubCal, stem, vendorFiles, params) or verdict
-        row['vendorMatch'] = 'NOTCOMPARED' if verdict == 'NAN' else verdict
-        row['differences'] = differences
-        rows.append(row)
-
-    ## Vendor originals the repository holds nothing for. Not rows in the table,
-    ## because there is no repository file to be a row -- each carries the
-    ## directory the vendor filed it under, which is the only thing on record
-    ## that says what kind of instrument it is.
-    ##
-    ## Each is signed off in the calibration sheet under the name the repository
-    ## file would have if it were ingested, so a decision taken now is already
-    ## attached to the file on the day it arrives.
-    missing = []
-    for stem in sorted(set(vendorFiles.stems) - set(seen)):
-        key = stem + '.csv'
-        status, notes = signOff(hitlCal, key)
-        missing.append({'file': stem, 'instrument': vendorFiles.stems[stem][0][0],
-                        'hitlKey': key, 'HITLstatus': status, 'HITLnotes': notes})
-    return {'files': rows, 'missingFromGithub': missing}
+        rows.append(_calibrationRow(amSource, instrument, fileName, vendorFiles, params, hitlCal))
+    return {'files': rows, 'missingFromGithub': _vendorOnlyRows(vendorFiles, seen, hitlCal)}
 
 
 def _instrumentOf(refDes):
@@ -418,25 +434,26 @@ def _lookupRow(table, refDes, deployNum, year, singleThatYear=True):
 
 
 def _assignCalFile(deployment, calHistory):
-    """The calibration in force at deployment: the most recent one up to it.
-
-    The same rule the published history applies, from the same function, so a
-    row's verdict and its published calibration link cannot disagree.
-    """
-    history = calHistory.get(deployment['AssetID'])
-    if not history:
+    """The calibration file in force at deployment, and what to say about it."""
+    calDate, files, problem = calibrationInForce(
+        calHistory.get(deployment['AssetID']), deployment['deployDate'])
+    if problem == NO_CALIBRATION:
         return 'undef', 'none'
-    earlier = inForceAt(history, deployment['deployDate'])
-    if not earlier:
-        return 'noValidCalFile', 'NO_VALID_FILE'
-    calDate, fileName = max(earlier, key=lambda entry: entry[0])
+    if problem:
+        return NO_VALID_CALIBRATION, 'NO_VALID_FILE'
     if deployment['deployDate'] - calDate > CAL_AGE_LIMIT:
-        return fileName, 'VALID_FILE_CAL_OLDER_THAN_15MONTHS'
-    return fileName, 'VALID_FILE'
+        return files[0], 'VALID_FILE_CAL_OLDER_THAN_15MONTHS'
+    return files[0], 'VALID_FILE'
 
 
 def _rawVerdict(deployment, serialByAsset, aliases=None):
     """Does the serial number in the raw file match the deployed asset?
+
+    Returns ``(verdict, asset)``, where ``asset`` is the one the serial actually
+    belongs to and is None unless the verdict is a mismatch that could place it.
+    Carried as a field of its own rather than left inside the verdict string,
+    because the correction the dashboard offers is exactly "make the sheet say
+    this asset" and reading it back out of a sentence is not a contract.
 
     ``aliases`` maps an asset ID to the serial its raw data reports where that
     is a different number from the one the bulk record carries -- the five-beam
@@ -446,39 +463,40 @@ def _rawVerdict(deployment, serialByAsset, aliases=None):
     """
     aliases = aliases or {}
     if deployment['firstRawFile'] == 'undef':
-        return 'NAN'
+        return 'NAN', None
     if deployment['firstRawFile'] == 'none':
-        return 'NO_FILE' if expectsRawSerial(deployment['refDes']) else 'NAN'
+        return ('NO_FILE' if expectsRawSerial(deployment['refDes']) else 'NAN'), None
     rawSN = str(deployment['rawSN'])
     if '-99999' in rawSN:
-        return 'NO_SN'
+        return 'NO_SN', None
 
     assetID = deployment['AssetID']
     bulkSerial = str(serialByAsset.get(assetID, ''))
-    if rawSN == bulkSerial or rawSN == aliases.get(assetID):
-        return 'MATCH'
-    if rawSN in bulkSerial:
-        ## The extractor keeps only a tail of the serial, because the two
-        ## records spell one differently -- an instrument reporting 05400030
-        ## against a record carrying 5471540-0030 -- so agreement is containment
-        ## rather than equality. 265 deployments are confirmed that way and are
-        ## sound, because nothing else of the same model could answer to the
-        ## number. Four PREST deployments match on a single digit, which
-        ## identifies nothing: the same digit fits the instrument beside it.
+    if sameSerial(rawSN, bulkSerial) or rawSN == aliases.get(assetID):
+        ## Agreement is not always equality. The extractor keeps a tail of the
+        ## serial for most instrument classes, and a pressure sensor reports
+        ## 05400030 where the record carries 5471540-0030 -- the same number in
+        ## two dresses. So the serial that agrees here may also agree with the
+        ## instrument beside it, and a match that fits two assets settles
+        ## nothing. Ask the rest of the family before calling it.
         family = str(assetID)[:11]
         rival = next((other for other, serial in serialByAsset.items()
                       if other != assetID and str(other).startswith(family)
-                      and rawSN in str(serial)), None)
+                      and sameSerial(rawSN, serial)), None)
         if rival:
-            return f'AMBIGUOUS_SN: raw: {rawSN}: also {rival}'
-        return 'MATCH'
+            ## The rival is an asset the serial *also* fits, which is the reason
+            ## this row cannot be settled -- the opposite of a correction to
+            ## offer -- so it is named in the verdict and nowhere else.
+            return f'AMBIGUOUS_SN: raw: {rawSN}: also {rival}', None
+        return 'MATCH', None
     ## Name the asset the raw serial actually belongs to, where one can be found --
     ## a swapped pair is the common cause and the answer is more useful than the finding.
-    found = 'unknown'
+    found = None
     for assetID, serial in serialByAsset.items():
-        if str(deployment['AssetID'])[0:11] in assetID and (rawSN in str(serial) or rawSN == aliases.get(assetID)):
+        if str(deployment['AssetID'])[0:11] in assetID and (
+                sameSerial(rawSN, serial) or rawSN == aliases.get(assetID)):
             found = assetID
-    return f'MISMATCH: raw: {rawSN}: {found}'
+    return f'MISMATCH: raw: {rawSN}: {found or "unknown"}', found
 
 
 def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, imageSN=None):
@@ -531,7 +549,21 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
                 row['rawSN'], row['firstRawFile'] = '-99999', 'none'
             else:
                 row['rawSN'], row['firstRawFile'] = 'undef', 'undef'
-            row['rawFile_verify'] = _rawVerdict(row, serialByAsset, params.get('serialAliases'))
+            row['rawFile_verify'], named = _rawVerdict(
+                row, serialByAsset, params.get('serialAliases'))
+            ## Only where the run could place it. Absent is absent: a row that
+            ## names nothing must not read as naming something.
+            if named:
+                row['rawAssetID'] = named
+            ## What the archive was asked for, so a row holding no serial says
+            ## which files were read to conclude that rather than sending a
+            ## reviewer to the parameter file to find out.
+            if rawRow is not None:
+                for field, column in (('rawFilesTried', 'filesTried'),
+                                      ('rawAttemptedAt', 'attemptedAt')):
+                    value = getattr(rawRow, column, None)
+                    if value is not None and not pd.isna(value) and str(value).strip():
+                        row[field] = str(value).strip()
 
             imageRow = _lookupRow(images, refDes, deployment['deployNum'], year, single)
             imageAsset = (None if imageRow is None or pd.isna(imageRow.imageAssetID)

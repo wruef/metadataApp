@@ -523,6 +523,11 @@ def buildReport(result, paramsPath='.'):
         ## The reasons a sign-off picks from -- every note already in the
         ## 2i-HITL sheets, so a reviewer reuses the team's wording.
         'hitlNotes': result.get('hitlNotes', {}),
+        ## Sign-offs whose key matches no row in any check above. Carried here
+        ## rather than on a row, because there is no row to carry them: the
+        ## calibration file or the deployment they were written against is gone
+        ## from the records, and a judgement nobody can see is a judgement lost.
+        'unmatchedSignOffs': result.get('unmatchedSignOffs', {}),
         'checks': checks,
     }
 

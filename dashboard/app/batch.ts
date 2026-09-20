@@ -11,13 +11,14 @@ import {
 import {
   applyDeploymentCorrections,
   ASSET_FIELD,
-  deploymentPath,
   deploymentSection,
   deploymentTitle,
+  isNodeRefDes,
+  sheetPathFor,
   type FieldCorrection,
 } from '~/deployfile'
 import { useForkSync } from '~/forksync'
-import { openPullRequest, readFile } from '~/github'
+import { openPullRequest, readFile, type ProposalResult } from '~/github'
 import { applyDecisions, hitlDate } from '~/hitl'
 import { HITL_SHEETS, type SheetKey } from '~/signoff'
 
@@ -41,7 +42,7 @@ import { HITL_SHEETS, type SheetKey } from '~/signoff'
  * shared repository, with the onward request raised by hand.
  */
 
-export type BatchKey = 'signoffs' | 'calibrations' | 'sheets'
+export type BatchKey = 'signoffs' | 'calibrations' | 'sheets' | 'nodes'
 
 export const BATCHES = [
   {
@@ -71,6 +72,15 @@ export const BATCHES = [
     unit: 'deployment',
     what: 'what the deployment sheets say was in the water, and where',
     prefix: 'deployment',
+    guarded: true,
+  },
+  {
+    key: 'nodes',
+    fork: 'deployments',
+    title: 'Node positions',
+    unit: 'node deployment',
+    what: 'where the node deployments say a node sat',
+    prefix: 'node',
     guarded: true,
   },
 ] as const satisfies readonly {
@@ -127,7 +137,10 @@ export interface CalibrationEntry {
  * from the same base conflict the moment the first of them merges.
  */
 export interface SheetEntry {
-  batch: 'sheets'
+  /** The array sheets in asset-management, or the node file in the deployments
+   *  repository. Two repositories, so two batches; the same row shape and the
+   *  same correction, because a node deployment is a deployment sheet row. */
+  batch: 'sheets' | 'nodes'
   /** Kind and deployment together, so correcting where a deployment sat does
    *  not replace the correction of which instrument it was. */
   key: string
@@ -153,7 +166,7 @@ export function sheetKey(kind: SheetEntry['kind'], refDes: string, deployNum: st
 export function pathOf(entry: Entry) {
   if (entry.batch === 'signoffs') return HITL_SHEETS[entry.sheet].path
   if (entry.batch === 'calibrations') return calibrationPath(entry.instrument, entry.fileName)
-  return deploymentPath(entry.refDes)
+  return sheetPathFor(entry.refDes)
 }
 
 /** What the queue shows for one entry: what it is about, and what it would do. */
@@ -235,11 +248,11 @@ export function buildBatch(
         if (entry.batch === 'calibrations') {
           text = applyCorrections(text, entry.corrections)
           sections.push(correctionSection(path, entry.corrections))
-        } else if (entry.batch === 'sheets') {
+        } else if (entry.batch === 'sheets' || entry.batch === 'nodes') {
           const applied = applyDeploymentCorrections(
             text, entry.refDes, entry.deployNum, entry.corrections)
           text = applied.text
-          sections.push(deploymentSection(entry.refDes, entry.deployNum, entry.source,
+          sections.push(deploymentSection(path, entry.refDes, entry.deployNum, entry.source,
                                           entry.corrections, applied.clearedNote))
         }
       } catch (caught) {
@@ -306,17 +319,13 @@ export function batchTitle(batch: BatchKey, entries: Entry[]) {
       ? correctionTitle(only.fileName, only.corrections)
       : `Correct coefficients in ${calibrations.length} calibration files`
   }
-  if (batch === 'sheets') {
-    return only && only.batch === 'sheets'
+  if (batch === 'sheets' || batch === 'nodes') {
+    const what = batch === 'nodes' ? 'node deployments' : 'deployment sheet rows'
+    return only && (only.batch === 'sheets' || only.batch === 'nodes')
       ? deploymentTitle(only.refDes, only.deployNum, only.corrections)
-      : `Correct ${entries.length} deployment sheet rows`
+      : `Correct ${entries.length} ${what}`
   }
   return `HITL sign-offs, ${hitlDate()}`
-}
-
-export interface Result {
-  url: string | null
-  message: string
 }
 
 export const useBatch = defineStore('batch', () => {
@@ -325,7 +334,8 @@ export const useBatch = defineStore('batch', () => {
    *  surviving a reload would outlive the report it was built against. */
   const entries = ref<Entry[]>([])
   const submitting = ref<Record<string, boolean>>({})
-  const results = ref<Record<string, Result>>({})
+  /** What proposing each batch produced. The queue page writes the sentence. */
+  const results = ref<Record<string, ProposalResult>>({})
 
   const sync = useForkSync()
   const auth = useAuth()
@@ -408,15 +418,18 @@ export const useBatch = defineStore('batch', () => {
             instrument, fileName, corrections })
   }
 
-  function queueSheet(kind: SheetEntry['kind'], refDes: string, deployNum: string | number,
-                     source: string, corrections: FieldCorrection[]) {
-    queue({ batch: 'sheets', key: sheetKey(kind, refDes, deployNum),
+  function queueSheet(batch: SheetEntry['batch'], kind: SheetEntry['kind'], refDes: string,
+                     deployNum: string | number, source: string, corrections: FieldCorrection[]) {
+    queue({ batch, key: sheetKey(kind, refDes, deployNum),
             kind, refDes, deployNum, source, corrections })
   }
 
+  /** A position on a deployment sheet, or on the node file where the reference
+   *  designator names a node. The two go to different repositories, so they are
+   *  different batches; everything else about them is the same. */
   function queuePosition(refDes: string, deployNum: string | number, positionName: string,
                          corrections: FieldCorrection[]) {
-    queueSheet('position', refDes, deployNum,
+    queueSheet(isNodeRefDes(refDes) ? 'nodes' : 'sheets', 'position', refDes, deployNum,
                `Taken from the RCA position spreadsheet${
                  positionName ? `, position \`${positionName}\`` : ''}.`,
                corrections)
@@ -425,7 +438,7 @@ export const useBatch = defineStore('batch', () => {
   /** Which instrument the sheet says was in the water. */
   function queueAsset(refDes: string, deployNum: string | number,
                       from: string, to: string, source: string) {
-    queueSheet('asset', refDes, deployNum, source, [{ field: ASSET_FIELD, from, to }])
+    queueSheet('sheets', 'asset', refDes, deployNum, source, [{ field: ASSET_FIELD, from, to }])
   }
 
   /** --- the fork guard, asked before a reviewer types rather than after --- */
@@ -461,13 +474,14 @@ export const useBatch = defineStore('batch', () => {
         fork, forkDefinition.base, built.files, built.title, built.body, definition.prefix)
       results.value = {
         ...results.value,
-        [batch]: url
-          ? { url, message: `Pull request opened on ${fork}.` }
-          : { url: null, message: `${fork} already holds these values — nothing to propose.` },
+        [batch]: { outcome: url ? 'opened' : 'unchanged', url, fork },
       }
       if (url) discardEntries(batch, mine)
     } catch (caught) {
-      results.value = { ...results.value, [batch]: { url: null, message: message(caught) } }
+      results.value = {
+        ...results.value,
+        [batch]: { outcome: 'failed', url: null, fork, detail: message(caught) },
+      }
     } finally {
       submitting.value = { ...submitting.value, [batch]: false }
     }

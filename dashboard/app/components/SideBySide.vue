@@ -58,9 +58,15 @@ function releasePdf() {
   vendorPdf.value = ''
 }
 
+/** Which file was asked for last. Picking a second vendor file before the
+ *  first has arrived would otherwise land whichever the network returned last
+ *  under the name of the one selected. */
+let sequence = 0
+
 /** Fetched from raw.githubusercontent at the ref the run read, so what is on
  *  screen is the file the finding came from rather than today's version. */
 async function load() {
+  const mine = ++sequence
   status.value = 'loading'
   error.value = ''
   const assets = source('assetManagement')
@@ -73,17 +79,23 @@ async function load() {
   releasePdf()
   try {
     const vendorFile = rawUrl(vendor.repo, readAt(vendor), vendorPath.value)
-    repoText.value = await $fetch<string>(
+    const repo = await $fetch<string>(
       rawUrl(assets.repo, readAt(assets), repoPath.value), { responseType: 'text' })
     if (scanned.value) {
       const bytes = await $fetch<Blob>(vendorFile, { responseType: 'blob' })
+      if (mine !== sequence) return
+      repoText.value = repo
       vendorPdf.value = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
       vendorText.value = ''
     } else {
-      vendorText.value = await $fetch<string>(vendorFile, { responseType: 'text' })
+      const text = await $fetch<string>(vendorFile, { responseType: 'text' })
+      if (mine !== sequence) return
+      repoText.value = repo
+      vendorText.value = text
     }
     status.value = 'ready'
   } catch (caught) {
+    if (mine !== sequence) return
     status.value = 'error'
     error.value = `Could not read both files. ${caught instanceof Error ? caught.message : String(caught)}`
   }

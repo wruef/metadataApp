@@ -81,6 +81,18 @@ They are read from the sheets rather than from the run's own rows, because the
 two do not hold the same set: a note written against a calibration file that
 asset-management no longer carries is still a reason worth offering.
 
+It also carries `unmatchedSignOffs` — per check, the sign-offs whose key matches
+no row the run produced. A sheet is keyed by whatever identified a row when
+somebody signed it: a calibration file name, a reference designator with its
+year and deployment number, an asset ID. When the thing behind the key stops
+existing, the line stays in the sheet and matches nothing, and until this field
+existed it was invisible: no row carried it, so no screen showed it. Each entry
+carries `key`, `status`, `reviewers`, `dateReviewed` and `notes`. Only sign-offs
+somebody actually decided are listed; a key with nothing written against it is a
+line somebody added and never came back to. The dashboard shows them under
+*Sign-offs with nothing to sign*, which is a list to fix rather than a queue to
+work: the correction is an edit to the sheet.
+
 Non-finite floats are written as `null`. Python emits `NaN` and `Infinity`
 happily and neither is valid JSON, which a browser refuses to parse.
 
@@ -99,18 +111,27 @@ in `image_verify`, and a photograph that disagrees with the sheet is still a
 problem. But a photograph of an instrument is not evidence of which instrument
 went in the water, and 127 deployments were reading as confirmed on that alone.
 
-The serial comparison is a containment rather than an equality, and
-deliberately so: the two records spell a serial differently — an instrument
-reporting `05400030` against a record carrying `5471540-0030` — so the extractor
-keeps only a tail of it. 265 deployments are confirmed that way and are sound,
-because nothing else of the same model could answer to the number.
+The serial comparison is not an equality, and deliberately so. The two records
+often spell a serial differently: a pressure sensor reports `05400030` where
+both the RCA list and the sensor bulk record carry `5471540-0030`, the same
+number in vendor part-number dress. Stripped of everything but digits, and of
+the leading zero, the raw serial is the last seven digits of the recorded one,
+which identifies it exactly. For most instrument classes the extractor keeps
+only a tail of the serial instead, and the comparison is containment. 265
+deployments are confirmed that way.
 
-Four were not. Their raw serial is a **single digit**, because the PREST
-extractor keeps two characters, and the same digit fits the instrument beside
-them. Those now report `AMBIGUOUS_SN` and name the rival asset. Nothing
-disagrees, so it is not a mismatch; nothing was established either, so it is not
-a match. A serial is only evidence while no other instrument of the same model
-could answer to it.
+Either way, a match that fits two assets settles nothing, so every match is put
+to the rest of the family: if the serial also fits another asset on the same
+platform, the verdict is `AMBIGUOUS_SN` and names the rival. Nothing disagrees,
+so it is not a mismatch; nothing was established either, so it is not a match. A
+serial is only evidence while no other instrument of the same model could answer
+to it.
+
+Five pressure-sensor deployments used to report a single digit, because the
+pattern let a greedy wildcard eat the number and kept two characters of what was
+left. They now carry the whole eight and all five confirm. Three more have no
+serial at all: the archive holds no file from the deployment operation, which is
+the only place that instrument class prints one.
 
 Where neither answer is available, the status is `RAW_SN_POSSIBLE` when the
 instrument class writes its serial into its raw data — extraction would settle
@@ -142,6 +163,17 @@ it can only mean a calibration was required and asset-management holds none at
 all, because the check rewrites it to `excluded` wherever none was expected.
 That is worse than a calibration dated after the deployment, which is already a
 problem, so 32 deployments that read as merely unchecked now read as findings.
+
+Three fields are written only where the run has something to say, so a row
+that names nothing does not read as naming something. `rawAssetID` is the asset
+a mismatching raw serial actually belongs to, where the run could place it --
+carried as a field because the correction the dashboard offers is exactly "make
+the sheet say this asset", and reading that back out of a verdict sentence is
+not a contract. An `AMBIGUOUS_SN` names a rival in its verdict and sets no
+`rawAssetID`: an asset the serial *also* fits is the reason the row cannot be
+settled, which is the opposite of a correction to offer. `rawFilesTried` and
+`rawAttemptedAt` are what the archive was asked for, so a row holding no serial
+says which files were read to conclude that.
 
 There is no `verificationStatus` column in the dashboard. It is the raw serial
 and the sign-off read together, both of which are columns of their own, and the

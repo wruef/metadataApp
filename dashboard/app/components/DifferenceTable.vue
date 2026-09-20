@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useAuth, FORKS } from '~/auth'
+import { useAuth, FORKS, type ForkKey } from '~/auth'
 import { sheetKey, useBatch } from '~/batch'
 import { calibrationPath, type Correction } from '~/calfile'
 import { parseList, scalar } from '~/csv'
-import { deploymentPath, POSITION_FIELDS, type FieldCorrection } from '~/deployfile'
+import { isNodeRefDes, POSITION_FIELDS, sheetPathFor, type FieldCorrection } from '~/deployfile'
 import { readDifference } from '~/display'
 import { type Row } from '~/store'
 
@@ -44,12 +44,15 @@ const differences = computed(() =>
 
 const isCalibration = computed(() => check === 'calibrations')
 const isPosition = computed(() => check === 'positions')
-/** A node is named SITE-NODE, fourteen characters; an instrument adds a port
- *  and an instrument code. Node deployments live in NODE_deployments.csv in the
- *  deployments repository, not on the asset-management sheets this corrects, so
- *  offering to correct one here wrote to a sheet with no such row. */
-const isNode = computed(() => isPosition.value && String(row.refDes ?? '').length <= 14)
-const correctable = computed(() => (isCalibration.value || isPosition.value) && !isNode.value)
+/** A node's deployment lives in NODE_deployments.csv in the deployments
+ *  repository rather than on an asset-management sheet, so its correction goes
+ *  to a different fork and a batch of its own. */
+const isNode = computed(() => isPosition.value && isNodeRefDes(String(row.refDes ?? '')))
+const correctable = computed(() => isCalibration.value || isPosition.value)
+
+/** Which fork this correction is written to, and therefore which fork has to be
+ *  in sync before it can be. */
+const forkKey = computed<ForkKey>(() => (isNode.value ? 'deployments' : 'assetManagement'))
 
 /** What names a line, and what identifies the whole correction. */
 const nameOf = (entry: Difference) => String(entry.coefficient ?? entry.field ?? '')
@@ -57,17 +60,23 @@ const heldBy = (entry: Difference) => (isCalibration.value ? entry.github : entr
 
 const path = computed(() => (isCalibration.value
   ? calibrationPath(String(row.instrument), String(row.fileName))
-  : deploymentPath(String(row.refDes))))
+  : sheetPathFor(String(row.refDes))))
 
 /** Which batch this row's correction belongs in. */
-const batchKey = computed<'calibrations' | 'sheets'>(
-  () => (isCalibration.value ? 'calibrations' : 'sheets'))
+const batchKey = computed<'calibrations' | 'sheets' | 'nodes'>(
+  () => (isCalibration.value ? 'calibrations' : isNode.value ? 'nodes' : 'sheets'))
 
 /** What identifies the record within that batch -- the file for a calibration,
  *  the deployment for a position, because one sheet holds a whole array. */
 const id = computed(() => (isCalibration.value
   ? path.value
   : sheetKey('position', String(row.refDes), row.deployNum as string | number)))
+
+const editUrl = computed(() => {
+  const fork = auth.forkFor(forkKey.value)
+  const base = FORKS.find((each) => each.key === forkKey.value)!.base
+  return fork ? `https://github.com/${fork}/edit/${base}/${path.value}` : ''
+})
 
 /** Queueing the same record twice replaces the earlier entry, so a row already
  *  in the queue says so rather than silently taking a second copy. */
@@ -100,10 +109,10 @@ const anyEditable = computed(() => correctable.value && differences.value.some(e
 
 /** Asked once the reviewer could actually act on the answer. */
 watchEffect(() => {
-  if (anyEditable.value && auth.canSignOff) batch.checkSync('assetManagement')
+  if (anyEditable.value && auth.canSignOff) batch.checkSync(forkKey.value)
 })
 
-const blocked = computed(() => batch.refusalFor('assetManagement'))
+const blocked = computed(() => batch.refusalFor(forkKey.value))
 const editing = computed(() => anyEditable.value && auth.canSignOff && !blocked.value)
 
 const values = ref<Record<string, string>>({})
@@ -163,14 +172,6 @@ function add() {
                         String(row.positionName ?? ''), fields)
   }
 }
-
-/** The whole file on GitHub, for the cases a text box cannot do: an array
- *  coefficient, a column this table does not show, a wholesale rewrite. */
-const editUrl = computed(() => {
-  const fork = auth.forkFor('assetManagement')
-  const base = FORKS.find((each) => each.key === 'assetManagement')!.base
-  return fork ? `https://github.com/${fork}/edit/${base}/${path.value}` : ''
-})
 
 /**
  * One note, where the file says the same thing about every coefficient.
@@ -271,15 +272,8 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
       <span class="from">asset-management note</span>{{ sharedNote }}
     </p>
 
-    <!-- A node's position is not on these sheets at all. -->
-    <p v-if="isNode" class="mt-2 text-gray-500 text-[12.5px]">
-      A node's position lives in <span class="font-mono">NODE_deployments.csv</span> in the
-      deployments repository, which this dashboard does not write.
-      <span class="font-mono">publish-metadata positions --node-fork</span> proposes it.
-    </p>
-
     <!-- Correcting the file, under the numbers it is about. -->
-    <fork-guard v-if="correctable && anyEditable" fork="assetManagement" action="correct these values" class="mt-2">
+    <fork-guard v-if="correctable && anyEditable" :fork="forkKey" action="correct these values" class="mt-2">
       <template #default>
         <p v-if="unreadable.length" class="mt-2 text-red-700 text-[12.5px]">
           Cannot be read as the value this coefficient holds: {{ unreadable.join(', ') }}.
@@ -307,9 +301,10 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
           >Edit the whole file on GitHub</a>
         </div>
         <p class="mt-1.5 text-gray-500 text-[12.5px]">
-          Joins the {{ isPosition ? 'deployment sheet' : 'calibration' }} batch, which goes over as
-          one pull request on <b>{{ auth.forkFor('assetManagement') }}</b>. Sign-offs travel
-          separately, and nothing anyone computes changes until you raise that request upstream.
+          Joins the {{ isNode ? 'node position' : isPosition ? 'deployment sheet' : 'calibration' }}
+          batch, which goes over as one pull request on <b>{{ auth.forkFor(forkKey) }}</b>.
+          Sign-offs travel separately, and nothing anyone computes changes until you raise that
+          request upstream.
         </p>
       </template>
     </fork-guard>
@@ -323,7 +318,8 @@ const columns = computed(() => 3 + (isCalibration.value ? 2 : 0) + (editing.valu
         title="Queued."
       >
         <template #description>
-          Waiting with the other {{ isPosition ? 'deployment sheet' : 'calibration' }} corrections.
+          Waiting with the other
+          {{ isNode ? 'node position' : isPosition ? 'deployment sheet' : 'calibration' }} corrections.
           <nuxt-link to="/queue" class="underline">Open the queue</nuxt-link>
           to propose them.
         </template>

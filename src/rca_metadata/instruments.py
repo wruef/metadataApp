@@ -28,6 +28,38 @@ def expectsRawSerial(refDes):
     return any(sensor in instrument for sensor in VERIFIABLE_BY_RAW_SN + VERIFIABLE_BY_RAW_SN_DP)
 
 
+## The fewest digits a normalised serial may carry and still identify anything
+## by its suffix. A floor rather than a threshold: the spellings this reconciles
+## agree on seven digits, and four is low enough to admit a shorter one without
+## admitting the coincidence of two numbers sharing their last digit or two.
+SERIAL_DIGITS = 4
+
+
+def sameSerial(raw, recorded):
+    """Whether a serial read out of raw data names the asset the record does.
+
+    Containment first, because the extractor keeps a tail for most instruments
+    and the two records otherwise agree: a raw `325` against a recorded
+    `16-50325`.
+
+    Then the digits alone. A pressure sensor reports `05400030` where the record
+    carries `5471540-0030` -- the dash dropped, the prefix cut to its last three
+    digits and a zero put in front -- so neither string contains the other and
+    the two are the same instrument. Stripped of everything but digits, and of
+    the leading zero, the raw serial is the last seven digits of the recorded
+    one, and that is exact enough to identify it: no other pressure sensor on
+    record ends the same way.
+    """
+    raw, recorded = str(raw).strip(), str(recorded).strip()
+    if not raw or not recorded or 'nan' in (raw, recorded):
+        return False
+    if raw == recorded or raw in recorded:
+        return True
+    digits = ''.join(c for c in raw if c.isdigit()).lstrip('0')
+    held = ''.join(c for c in recorded if c.isdigit())
+    return len(digits) >= SERIAL_DIGITS and held.endswith(digits)
+
+
 def partialMatch(str1, str2, minCharacters):
     """True when the strings share a tail of at least ``minCharacters``.
 

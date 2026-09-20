@@ -39,7 +39,11 @@ const queuedAlready = computed(() => batch.entryFor('sheets', id.value))
 /** The asset the serial in this deployment's raw file actually belongs to,
  *  where the run could place it. */
 const fromRaw = computed(() => {
-  const named = assetNamedByRawSerial(String(row.rawFile_verify ?? ''))
+  // The run writes the asset as a field. Runs published before it did carry it
+  // only inside the verdict, and those still have to render.
+  const named = typeof row.rawAssetID === 'string' && row.rawAssetID
+    ? row.rawAssetID
+    : assetNamedByRawSerial(String(row.rawFile_verify ?? ''))
   return named && named !== held.value ? named : ''
 })
 

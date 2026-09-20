@@ -155,10 +155,14 @@ instrument is not evidence of which instrument went in the water.
 | `NO_SN` | Not checked | a raw file exists and no serial has been extracted from it |
 | `NAN` | Excluded | this instrument class writes no serial into its data |
 
-The comparison is a containment rather than an equality, because the two records
-spell a serial differently — an instrument reporting `05400030` against a record
-carrying `5471540-0030`. That is sound while no other instrument of the same
-model could answer to the number, which is what `AMBIGUOUS_SN` catches.
+The comparison is not an equality, because the two records often spell a serial
+differently — an instrument reporting `05400030` against a record carrying
+`5471540-0030`, the same number in vendor part-number dress. Stripped to digits,
+and of the leading zero, the raw serial is the last seven of the recorded one.
+For most classes the extractor keeps a tail of the serial instead and the
+comparison is containment. Either way it is sound only while no other instrument
+of the same model could answer to the number, which is what `AMBIGUOUS_SN`
+catches: every match is put to the rest of the platform before it is called one.
 
 A five-beam ADCP is the other way round: its raw data reports a serial that
 shares nothing with the record's, because the record holds the system serial
@@ -208,8 +212,9 @@ longitude and depth are compared for each deployment.
 | `HITL_PIN_NOT_FOUND` | Needs a person | a reviewer pinned this deployment to a spreadsheet row that is no longer there |
 
 A `MISMATCH` can be corrected from the row, which rewrites that one deployment's
-line on its array's sheet. It joins the deployment sheet batch, one pull request
-on your `asset-management` fork. See
+line. An instrument's line is on its array's sheet in `asset-management`; a
+node's is in `NODE_deployments.csv` in the `deployments` repository, so the two
+go to different forks in different batches. See
 [using-the-dashboard.md](using-the-dashboard.md#correcting-a-position).
 
 A profiler's deployment depth is the literal `N/A`, which is the value rather

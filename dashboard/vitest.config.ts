@@ -8,4 +8,9 @@ export default defineConfig({
   resolve: {
     alias: { '~': fileURLToPath(new URL('./app', import.meta.url)) },
   },
+  test: {
+    /** What Nuxt puts in scope for every module. Without it a store cannot be
+     *  imported at all, let alone driven. */
+    setupFiles: ['./test/setup/nuxt.ts'],
+  },
 })

@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   applyDeploymentCorrections,
-  deploymentPath,
   ASSET_FIELD,
-  PRELIMINARY_NOTE,
+  deploymentPath,
   deploymentSection,
   deploymentTitle,
+  isNodeRefDes,
+  NODE_PATH,
+  PRELIMINARY_NOTE,
+  sheetPathFor,
 } from '../app/deployfile'
 
 /**
@@ -157,7 +160,7 @@ describe('what the pull request says', () => {
   })
 
   it('puts every value before and after it in the section, and says where they came from', () => {
-    const section = deploymentSection('CE02SHBP-LJ01D-05-ADCPTB104', 13,
+    const section = deploymentSection('deployment/CE02SHBP_Deploy.csv', 'CE02SHBP-LJ01D-05-ADCPTB104', 13,
       'Taken from the RCA position spreadsheet, position `LJ01D`.', [
         { field: 'lat', from: '44.637213', to: '44.637184' },
       ], false)
@@ -169,7 +172,8 @@ describe('what the pull request says', () => {
   })
 
   it('says so when it cleared the preliminary note', () => {
-    const section = deploymentSection('CE02SHBP-LJ01D-05-ADCPTB104', 13, 'from the spreadsheet', [
+    const section = deploymentSection('deployment/CE02SHBP_Deploy.csv', 'CE02SHBP-LJ01D-05-ADCPTB104', 13,
+      'from the spreadsheet', [
       { field: 'lat', from: '44.637213', to: '44.637184' },
     ], true)
     expect(section).toContain(PRELIMINARY_NOTE)
@@ -178,8 +182,9 @@ describe('what the pull request says', () => {
 
   it('names the deployment, so two on one sheet stay apart in a batch', () => {
     const corrections = [{ field: 'lat', from: '1', to: '2' }]
-    const first = deploymentSection('RS03AXPS-SF03A-2A-CTDPFA302', 10, '', corrections, false)
-    const second = deploymentSection('RS03AXPS-PC03A-05-ADCPTD302', 12, '', corrections, false)
+    const sheet = 'deployment/RS03AXPS_Deploy.csv'
+    const first = deploymentSection(sheet, 'RS03AXPS-SF03A-2A-CTDPFA302', 10, '', corrections, false)
+    const second = deploymentSection(sheet, 'RS03AXPS-PC03A-05-ADCPTD302', 12, '', corrections, false)
     expect(first).toContain('**RS03AXPS-SF03A-2A-CTDPFA302** deployment **10**')
     expect(second).toContain('**RS03AXPS-PC03A-05-ADCPTD302** deployment **12**')
   })
@@ -227,5 +232,23 @@ describe('correcting which instrument was deployed', () => {
     expect(deploymentTitle('RS03AXPS-PC03A-05-ADCPTD302', 1,
                            asset('ATAPL-58315-00002', 'ATAPL-58315-00005')))
       .toBe('Correct sensor.uid for RS03AXPS-PC03A-05-ADCPTD302 deployment 1')
+  })
+})
+
+
+describe('where a deployment row lives', () => {
+  it('is its array sheet for an instrument and the node file for a node', () => {
+    expect(sheetPathFor('CE02SHBP-LJ01D-05-ADCPTB104')).toBe('deployment/CE02SHBP_Deploy.csv')
+    // Fourteen characters is a node: site and node, no port or instrument code.
+    // It lives in the deployments repository, not on an array sheet.
+    expect(sheetPathFor('CE02SHBP-LJ01D')).toBe(NODE_PATH)
+    expect(isNodeRefDes('CE02SHBP-LJ01D')).toBe(true)
+    expect(isNodeRefDes('CE02SHBP-LJ01D-05-ADCPTB104')).toBe(false)
+  })
+
+  it('names that file in the section, so a batch of both stays readable', () => {
+    const corrections = [{ field: 'lat', from: '1', to: '2' }]
+    expect(deploymentSection(NODE_PATH, 'CE02SHBP-LJ01D', 1, '', corrections, false))
+      .toContain('`NODE_deployments.csv`')
   })
 })

@@ -99,6 +99,39 @@ def hitlNotes(hitl):
     return vocabulary
 
 
+def unmatchedSignOffs(hitl, seen):
+    """Sign-offs whose key matches no row this run produced.
+
+    A sheet is keyed by what identified a row when somebody signed it: a
+    calibration file name, a reference designator with its year and deployment
+    number, an asset ID. When the thing behind that key stops existing -- a
+    calibration file asset-management no longer carries, a deployment renumbered
+    or removed from a sheet -- the sign-off stays in the sheet and matches
+    nothing. It is then invisible: no row carries it, so no screen shows it, and
+    the judgement written beside it is lost without anyone being told.
+
+    ``seen`` maps a check name to the keys its rows carried. Returns the same
+    mapping, each check holding the rows of its sheet that went unclaimed, in
+    the order the sheet holds them. Only sign-offs someone actually decided are
+    returned: a blank row is a key with nothing written against it, and reporting
+    those would bury the ones that matter.
+    """
+    unmatched = {}
+    for check, frame in hitl.items():
+        claimed = seen.get(check, set())
+        rows = []
+        for key, record in frame.iterrows():
+            if str(key) in claimed or not str(record.get('Status', '')).strip():
+                continue
+            rows.append({'key': str(key),
+                         'status': str(record.get('Status', '')),
+                         'reviewers': str(record.get('Reviewers', '') or ''),
+                         'dateReviewed': str(record.get('DateReviewed', '') or ''),
+                         'notes': '' if pd.isna(record.get('HITLnotes')) else str(record['HITLnotes'])})
+        unmatched[check] = rows
+    return unmatched
+
+
 ## Every bulk asset record OOI keeps, by the name this package calls it. All of
 ## them are read, not only the two a deployment sheet is checked against: an
 ## asset filed in the wrong one is misfiled rather than missing, and saying
@@ -201,6 +234,36 @@ def inForceAt(entries, deployDate):
     """
     day = deployDate.date()
     return [entry for entry in entries if entry[0].date() <= day]
+
+
+## Why a deployment has no calibration to name. The deployments check and the
+## published history spell these the same way because they read them from here.
+NO_CALIBRATION = 'none'                   # the asset has no calibration at all
+NO_VALID_CALIBRATION = 'noValidCalFile'   # it has some, all dated after the deployment
+
+
+def calibrationInForce(history, deployDate):
+    """The calibration in force at a deployment.
+
+    ``history`` is one asset's ``(calibration date, value)`` entries, or None
+    where asset-management holds none for it. Returns ``(date, values, problem)``
+    -- every value recorded at the newest calibration date on or before the
+    deployment, with ``problem`` None when there is one to name. A vendor
+    calibration can be several files at one date, which is why the values are a
+    list; the deployments check takes the first and the history chooses among
+    them by format.
+
+    Both read this, so a row's verdict and its published calibration link cannot
+    disagree about which calibration was in force. They used to wrap the same
+    rule separately and spell its two sentinels by hand.
+    """
+    if not history:
+        return None, [], NO_CALIBRATION
+    earlier = inForceAt(history, deployDate)
+    if not earlier:
+        return None, [], NO_VALID_CALIBRATION
+    latest = max(date for date, _ in earlier)
+    return latest, [value for date, value in earlier if date == latest], None
 
 
 def calibrationHistory(calFiles):

@@ -464,6 +464,79 @@ def compareConstants(githubCal, spec, sensor, constants, stem):
     return calCompare
 
 
+def _expectedFor(name, spec, sensor, constants, coeffMap, source, vendorCals):
+    """What one coefficient should hold, and where that came from.
+
+    Four answers, and telling them apart is most of what this comparison does:
+    a fixed value nobody publishes, the vendor's own number, a default the
+    sensor declares for a coefficient the certificate leaves out on purpose, and
+    nothing at all. The last returns the source ``'missing'``, which is recorded
+    as a difference rather than skipped -- an unchecked coefficient reading as a
+    pass is the failure mode this rewrite exists for.
+    """
+    if name in constants.get(sensor, {}):
+        return constants[sensor][name], 'constant'
+
+    key = coeffMap.get(name, [None, name])[1] if source.get('keyBy') == 'map' else name
+    ## A reader also hands back None for a field its file does not spell -- an
+    ## ac-s .dev with no tcal line -- and that reached float(None) and took the
+    ## whole run down.
+    if key in vendorCals and vendorCals[key] is not None:
+        return vendorCals[key], 'vendor'
+
+    ## Some certificates leave a coefficient out because it does not apply: an
+    ## optode with no 2-point recalibration prints no concentration coefficient,
+    ## and the record then carries the identity. Where a sensor says what that
+    ## absence means, the record is held to it, so a file claiming a correction
+    ## its certificate never made is still a finding.
+    fallback = spec.get('defaults', {}).get(name)
+    return (fallback, 'default') if fallback is not None else (None, 'missing')
+
+
+def _compareAgainstVendor(githubCal, vendorCals, spec, sensor, constants, coeffMap, source, stem):
+    """Every coefficient in one github file against one vendor file."""
+    calCompare = [source.get('verdict', 'COMPARED')]
+    for _, row in githubCal.iterrows():
+        name = row['name']
+        if name in spec.get('notVendor', ()):
+            ## The vendor file does not carry this and never will, so there is
+            ## nothing to compare it against. Declared per sensor, so it reads
+            ## as a stated limit of the check rather than a silence.
+            continue
+        githubCoeff = _githubValue(row['value'], spec['parseGithub'])
+        expected, coeffSource = _expectedFor(name, spec, sensor, constants, coeffMap,
+                                             source, vendorCals)
+        if coeffSource == 'missing':
+            recordDiff(calCompare, stem, name, githubCoeff, None, None, 'missing', noteOn(row))
+            continue
+
+        ## vendors publish scalars as text ('1.733339e+000'); the report carries
+        ## the number, not the spelling. Coerced only when the vendor value is a
+        ## scalar: an OPTAA sheet is a matrix on both sides, and float() on one
+        ## ends the run.
+        if not isinstance(githubCoeff, list) and not isinstance(expected, list):
+            expected = float(expected)
+        coeffDiff = _difference(githubCoeff, expected, source.get('ordered', False))
+        if coeffDiff:
+            recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff,
+                       coeffSource, noteOn(row))
+    return calCompare
+
+
+def _nothingReadVerdict(spec, vendorPath, calCompare):
+    """Which of three silences this was.
+
+    Each asks something different of a person: find the vendor file, accept that
+    a scan cannot be parsed, or go and fetch the format this instrument is
+    actually compared against.
+    """
+    if spec.get('pdf', True) and findVendorFile(vendorPath, '.pdf'):
+        calCompare[0] = 'PDF_NOTCOMPARED'
+    elif spec['sources'] and anyVendorFile(vendorPath):
+        calCompare[0] = 'FORMAT_NOTCOMPARED'
+    return calCompare
+
+
 def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=None,
                            vendorPresent=True):
     """Compare one github calibration file against its vendor original.
@@ -501,62 +574,7 @@ def compareCalCoefficients(githubCal, vendorPath, coeffMap, constants, assets=No
                       else source['reader'](path))
         if source.get('requires') and not vendorCals.get(source['requires']):
             continue
-        calCompare = [source.get('verdict', 'COMPARED')]
+        return _compareAgainstVendor(githubCal, vendorCals, spec, sensor, constants,
+                                     coeffMap, source, stem)
 
-        for _, row in githubCal.iterrows():
-            githubCoeff = _githubValue(row['value'], spec['parseGithub'])
-            name = row['name']
-            if name in spec.get('notVendor', ()):
-                ## The vendor file does not carry this and never will, so there
-                ## is nothing to compare it against. Declared per sensor, so it
-                ## reads as a stated limit of the check rather than a silence.
-                continue
-            if name in constants.get(sensor, {}):
-                coeffSource = 'constant'
-                expected = constants[sensor][name]
-            else:
-                coeffSource = 'vendor'
-                key = coeffMap.get(name, [None, name])[1] if source.get('keyBy') == 'map' else name
-                ## A reader also hands back None for a field its file does not
-                ## spell -- an ac-s .dev with no tcal line -- and that reached
-                ## float(None) and took the whole run down.
-                if key not in vendorCals or vendorCals[key] is None:
-                    ## Some certificates leave a coefficient out because it does
-                    ## not apply: an optode with no 2-point recalibration prints
-                    ## no concentration coefficient, and the record then carries
-                    ## the identity. Where a sensor says what that absence means,
-                    ## the record is held to it, so a file claiming a correction
-                    ## its certificate never made is still a finding.
-                    expected = spec.get('defaults', {}).get(name)
-                    if expected is None:
-                        ## Otherwise nothing was checked. Reported rather than
-                        ## skipped -- an unchecked coefficient reading as a pass
-                        ## is the failure mode this rewrite exists for.
-                        recordDiff(calCompare, stem, name, githubCoeff, None, None,
-                                   'missing', noteOn(row))
-                        continue
-                    coeffSource = 'default'
-                else:
-                    expected = vendorCals[key]
-
-            ## vendors publish scalars as text ('1.733339e+000'); the report
-            ## carries the number, not the spelling
-            ## Coerced only when the vendor value is a scalar. An OPTAA sheet is
-            ## a matrix on both sides, and float() on one ends the run.
-            if not isinstance(githubCoeff, list) and not isinstance(expected, list):
-                expected = float(expected)
-            coeffDiff = _difference(githubCoeff, expected, source.get('ordered', False))
-            if coeffDiff:
-                recordDiff(calCompare, stem, name, githubCoeff, expected, coeffDiff,
-                           coeffSource, noteOn(row))
-        return calCompare
-
-    ## Nothing was read. Which of three reasons it was matters, because each
-    ## asks something different of a person: find the vendor file, accept that
-    ## a scan cannot be parsed, or go and fetch the format this instrument is
-    ## actually compared against.
-    if spec.get('pdf', True) and findVendorFile(vendorPath, '.pdf'):
-        calCompare[0] = 'PDF_NOTCOMPARED'
-    elif spec['sources'] and anyVendorFile(vendorPath):
-        calCompare[0] = 'FORMAT_NOTCOMPARED'
-    return calCompare
+    return _nothingReadVerdict(spec, vendorPath, calCompare)

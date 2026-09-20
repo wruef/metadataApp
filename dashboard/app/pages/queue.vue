@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
 import { describe, pathOf, useBatch, type BatchKey, type Entry } from '~/batch'
+import { describeProposal } from '~/github'
 
 /**
  * Everything decided and not yet proposed, grouped by the repository it writes
@@ -130,11 +131,13 @@ const anyBusy = computed(() => Object.values(batch.submitting).some(Boolean))
 
             <u-alert
               v-if="batch.results[definition.key]"
-              :color="batch.results[definition.key]!.url ? 'success' : 'error'"
+              :color="describeProposal(batch.results[definition.key]!).tone"
               variant="subtle"
             >
               <template #description>
-                <span class="whitespace-pre-line">{{ batch.results[definition.key]!.message }}</span>
+                <span class="whitespace-pre-line">
+                  {{ describeProposal(batch.results[definition.key]!).text }}
+                </span>
                 <a
                   v-if="batch.results[definition.key]!.url"
                   :href="batch.results[definition.key]!.url!"

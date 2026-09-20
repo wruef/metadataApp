@@ -71,6 +71,15 @@ export interface Check {
   missingFromGithub?: (VendorOnly | string)[]
 }
 
+/** A sign-off left behind by the thing it was written against. */
+export interface UnmatchedSignOff {
+  key: string
+  status: string
+  reviewers: string
+  dateReviewed: string
+  notes: string
+}
+
 export interface Source {
   repo: string
   ref: string
@@ -92,6 +101,11 @@ export interface Report {
    *  reasons a sign-off picks from. Absent on runs published before it was
    *  carried, which is why signing off falls back to free text alone. */
   hitlNotes?: Record<string, string[]>
+  /** Per check, the sign-offs whose key matches no row this run produced — a
+   *  calibration file asset-management no longer carries, a deployment
+   *  renumbered out of a sheet. Absent on runs published before it was
+   *  carried, which reads as nothing orphaned rather than as an error. */
+  unmatchedSignOffs?: Record<string, UnmatchedSignOff[]>
   checks: Record<string, Check>
 }
 

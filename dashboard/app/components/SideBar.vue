@@ -29,6 +29,15 @@ const vendorOnly = computed(
   () => store.report?.checks?.calibrations?.missingFromGithub?.length ?? 0,
 )
 
+/** Sign-offs whose key matches no row this run produced. Nothing else on any
+ *  screen shows them, which is the reason the rail carries a count. */
+const orphaned = computed(() =>
+  Object.values(store.report?.unmatchedSignOffs ?? {}).reduce(
+    (total, rows) => total + (rows?.length ?? 0),
+    0,
+  ),
+)
+
 const runAt = computed(() =>
   store.report ? new Date(store.report.runAt).toLocaleDateString() : '',
 )
@@ -118,6 +127,13 @@ const LINK =
         <span class="grow">Not in asset-management</span>
         <span class="n">{{ vendorOnly }}</span>
       </nuxt-link>
+      <!-- Judgements that have lost what they were about. Here rather than on a
+           check, because no check has a row to put them on. -->
+      <nuxt-link v-if="orphaned" to="/orphan-signoffs" :class="LINK" active-class="on">
+        <i class="fa-link-slash fas w-4" />
+        <span class="grow">Sign-offs with nothing to sign</span>
+        <span class="n">{{ orphaned }}</span>
+      </nuxt-link>
       <!-- A product rather than a queue: what was where and when, which the
            deployments repository holds. Its own action because it is proposed
            as one whole file set, not row by row. -->
@@ -161,6 +177,14 @@ const LINK =
       <span class="grow">Docs</span>
       <i class="fa-arrow-up-right-from-square fas text-[10px] text-white/40" />
     </a>
+
+    <!-- The two jobs that maintain a review's inputs: reading serial numbers
+         out of the archive, and deleting runs nobody needs. Beside Settings
+         because neither is part of reading a run. -->
+    <nuxt-link to="/workflows" :class="LINK" active-class="on">
+      <i class="fa-play fas w-4" />
+      <span class="grow">Workflows</span>
+    </nuxt-link>
 
     <!-- Who a sign-off would be attributed to, kept in sight rather than buried
          in a settings page. -->

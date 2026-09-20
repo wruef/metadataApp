@@ -82,8 +82,9 @@ number.
 The other views: one per check, ranked worst first; **Changes**, the diff between
 two runs when a run was given a baseline; **Reference designators**, the list the
 run saw; **Not in asset-management**, the vendor calibrations with no repository
-file; **Deployment history**, the product the run built; and **Queued changes**,
-everything decided and not yet proposed. The run stamp at the top of every page
+file; **Sign-offs with nothing to sign**, the decisions whose key matches no row
+any more; **Deployment history**, the product the run built; and **Queued
+changes**, everything decided and not yet proposed. The run stamp at the top of every page
 names the run being read — nothing refreshes on its own, so a report older than a
 season is marked stale rather than left to look current.
 
@@ -168,6 +169,7 @@ A batch is keyed by the repository it writes to *and* by what the change is:
 | Sign-offs | `metadataApp` | the 2i-HITL sheets, all three in one request |
 | Calibration coefficients | `asset-management` | `calibration/<instrument>/*.csv` |
 | Deployment sheets | `asset-management` | `deployment/<array>_Deploy.csv` |
+| Node positions | `deployments` | `NODE_deployments.csv` |
 
 Both halves of that key matter. The repository is a hard boundary, because a
 pull request cannot span two of them. The kind is a boundary of review:
@@ -200,10 +202,16 @@ sign-offs — a different repository, and a batch of its own. Three things are
 offered: a calibration file's coefficients, one deployment's position on its
 array's sheet, and the asset ID that names which instrument was in the water.
 
+A node's position is the fourth. A node is named `SITE-NODE` and its deployment
+lives in `NODE_deployments.csv` in the `deployments` repository rather than on
+an array's sheet, so it is the same correction to a different file in a
+different repository — its own batch, on that fork, guarded the same way.
+
 The asset ID is corrected from the deployments view, under the row. It is the
 answer to the check's commonest finding: a serial number read out of the raw
-archive that belongs to a different asset of the same model. That asset is
-offered to take with a click, and anything else is typed. The pre-deploy
+archive that belongs to a different asset of the same model. The run writes that
+asset as `rawAssetID`, so it is offered to take with a click, and anything else
+is typed. The pre-deploy
 photograph names an asset too and is deliberately **not** offered, for the same
 reason it does not confirm a deployment: a photograph of an instrument is not
 evidence of which instrument went in the water.
@@ -314,10 +322,12 @@ only written if the run was told to publish. Publishing commits it, which
 rebuilds the site a couple of minutes later; the run then appears in the picker
 in the run stamp, which is where you open it.
 
-Serial extraction is not started from here. It is its own workflow, **Extract
-serial numbers**, and its result is a pull request rather than a report: the
-serial numbers it reads out of the raw archive go into `params/rawFileSN.csv`,
-a person merges them, and the next verification run reads them. See
+The other two workflows are started from **Workflows** in the rail rather than
+from this bar, because neither produces a report. **Extract serial numbers**
+reads the raw archive and proposes `params/rawFileSN.csv` as a pull request for
+a person to merge; **Delete published runs** takes runs out of the picker. Each
+is followed in the same tray, and each is dispatched into the same copy of this
+repository a verification run is. See
 [Serial numbers from the raw archive](#serial-numbers-from-the-raw-archive).
 
 ## Publishing the generated files
@@ -331,7 +341,9 @@ proposed to **your own fork** when you name one — never to a shared repository
 
 Positions need two forks because instrument sheets live in `asset-management`
 and node deployments live in `deployments`; a single combined write would file
-half of them into the wrong sheet.
+half of them into the wrong sheet. A reviewer correcting one position at a time
+does it from the dashboard instead; this is for correcting every one the
+spreadsheet disagrees with in a single pass.
 
 ## In CI
 
@@ -372,9 +384,10 @@ a decade of annual runs is under a megabyte — and the history then *is* the
 provenance record, with every published run reachable as a baseline.
 
 `.github/workflows/prune-runs.yaml` deletes runs that are no longer worth
-keeping, on `workflow_dispatch`. It takes either a number of newest runs to keep
-or a list of names, and it **says what it would do and changes nothing** unless
-`dry_run` is unticked. The same thing on the command line:
+keeping, on `workflow_dispatch` or from the dashboard's **Workflows** page. It
+takes either a number of newest runs to keep or a list of names, and it **says
+what it would do and changes nothing** unless `dry_run` is unticked. The same
+thing on the command line:
 
     prune-runs --keep 10
     prune-runs --before 2026-01-01
@@ -393,7 +406,8 @@ is that run somebody asked for. Nothing is lost that git does not still hold —
 site stops offering it, which is the point.
 
 `.github/workflows/extract-serials.yaml` reads the raw archive on
-`workflow_dispatch` and proposes `params/rawFileSN.csv` as a pull request; it is
+`workflow_dispatch`, or from the dashboard's **Workflows** page, and proposes
+`params/rawFileSN.csv` as a pull request; it is
 kept apart from the verification run so that a run stays a function of the
 repositories and the committed parameter files, which is what lets two runs be
 compared. It needs **Settings → Actions → General → Allow GitHub Actions to
@@ -426,6 +440,10 @@ and the dashboard answers `404` for a report that is plainly there in git. A
 is not suppressed. It also has to check out the **branch**, because the event
 carries the commit the verification run *started* from — the one before it
 published.
+
+`.github/dependabot.yml` proposes updates to the pinned actions and to the
+dashboard's dependencies, monthly. The one third-party action is pinned to a
+commit, which is safe until it is stale; this is what says so.
 
 Everything is inside GitHub. There is no bucket, no AWS credentials and no
 secret of any kind: the site and the runs it reads are one artifact, and the

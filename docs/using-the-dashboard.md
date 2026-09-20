@@ -102,8 +102,15 @@ rows waiting for a person, and a red dot when any of them is a problem.
 
 **This run**: the Changes view, which compares two runs; the reference
 designators the run covered; the vendor calibrations that have no repository
-file; the deployment history the run built; and your queue of changes waiting
-to be proposed.
+file; the sign-offs that match no row; the deployment history the run built; and
+your queue of changes waiting to be proposed.
+
+*Sign-offs with nothing to sign* appears only when there are some. A sign-off is
+written against a key — a calibration file name, a reference designator with its
+year and deployment number, an asset ID — and when the thing behind that key
+stops existing, the line stays in the sheet and matches nothing. It is a list to
+fix rather than a queue to work: open a row and it names the sheet to correct
+the key in or delete the line from.
 
 **Settings**, at the foot, showing who you are signed in as.
 
@@ -184,6 +191,7 @@ Each group is **one pull request** on **one of your own forks**. The groups are:
 | Sign-offs | your `metadataApp` | all three 2i-HITL sheets |
 | Calibration coefficients | your `asset-management` | every calibration file you corrected |
 | Deployment sheets | your `asset-management` | every deployment you repositioned or reassigned |
+| Node positions | your `deployments` | every node you repositioned |
 
 Coefficients and deployment sheets go to the same fork and still travel
 separately. Somebody approving a page of numbers has not agreed to move an
@@ -220,7 +228,7 @@ thing, with separate rules, and it works the same way on three checks.
 | check | the button | what it changes |
 |---|---|---|
 | Calibrations | **Add to batch** | the coefficients in `calibration/<instrument>/<file>.csv` |
-| Positions | **Add to batch** | the position on one deployment's row in `deployment/<array>_Deploy.csv` |
+| Positions | **Add to batch** | the position on one deployment's row in `deployment/<array>_Deploy.csv`, or in `NODE_deployments.csv` for a node |
 | Deployments | **Add to batch** | `sensor.uid` on that row — which instrument the sheet says was deployed |
 
 Adding does not open anything. The correction joins the batch for its kind and

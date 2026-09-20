@@ -37,16 +37,15 @@ FIRST_RAW_PATTERNS = {
     'SPKIR': ([r"S\/N:\s+(\d{2,4})"], 3),
     'NUTNR': ([r"SUNA\sSN:(\d{1,4}).*"], 3),
     'FLOR': ([r"Ser\s.*-(\d{1,4}).*"], None),
-    ## TODO: two characters is barely a comparison at all, and this needs the
-    ## records to agree how a PREST serial is written before it can be more.
     ## The instrument reports SerialNumber='05400030' where both the RCA list
-    ## and the sensor bulk record carry 5471540-0030 -- the same number in
-    ## vendor part-number dress, the prefix and the dash gone and a zero in
-    ## front. Nothing lines the two spellings up, so only a tail can be
-    ## compared, and two characters of one matches 5471540-0130 and a great many
-    ## serials belonging to other instruments. What it yields in practice is in
-    ## params/rawFileSN.csv: '0', '1', '7'.
-    'PREST': ([r"SerialNumber=.*(\d{1,9}).*"], 2),
+    ## and the sensor bulk record carry 5471540-0030: the same number in vendor
+    ## part-number dress, the dash gone and the prefix cut to its last three
+    ## digits with a zero in front. The whole eight characters are kept, because
+    ## seven of them agree with the record's digits exactly -- see `sameSerial`.
+    ## The old pattern let `.*` eat the number and kept two characters of what
+    ## was left, which is how five deployments came to record a single digit.
+    'PREST': ([r"<HardwareData.*SerialNumber='(\d{1,10})'>",
+               r"SerialNumber='(\d{4,10})'"], None),
     'TMPSFA': ([r"RBR\s+XR-420\s+\d.\d{2,4}\s+(\d{1,9}).*"], 5),
     ## A Nortek Signature opens with "Nortek 104550 Data Interface", and every
     ## $PNORI information line carries the serial as its third field.
@@ -247,6 +246,12 @@ EARLY_FILES = 3
 ## new instrument. A deep profiler reported the recovered profiler's
 ## instruments 27 hours after the recorded start of the next deployment.
 SETTLING_TIME = datetime.timedelta(days=2)
+## How far before the recorded deployment date the power-on banner is looked
+## for. The banner is printed when the instrument is powered up, which happens
+## during the deployment operation and need not fall on the calendar day the
+## sheet records: one pressure sensor printed its serial at 23:00 the night
+## before, an hour outside a window that began at midnight.
+BANNER_LOOKBACK = datetime.timedelta(days=1)
 
 
 def _settled(inWindow, deployDate, endDate):
@@ -270,25 +275,43 @@ def _settled(inWindow, deployDate, endDate):
     return nearest + early
 
 
-def _candidates(refDes, files, deployDate, endDate):
+def _candidates(refDes, files, deployDate, endDate, priorEnd=None):
     """Files worth trying for one deployment, in the order they are worth trying.
 
-    Only files dated within the deployment are candidates: from the day the
+    Files dated within the deployment are the candidates: from the day the
     instrument went in the water to the day it came out. A file from before
     holds the previous deployment's instrument, and reading it is how the wrong
     serial gets confirmed.
 
-    A power-on banner is printed once, so the first few files are read for one;
-    the day of deployment itself counts, because a daily file is stamped
-    midnight and the banner is in it. Everything else -- a serial on the data
-    lines, in every ADCP ensemble, in every ac-s packet, in every profiler
-    engineering file -- is read from the middle of the deployment instead.
+    A power-on banner is printed once, when the instrument is switched on, and
+    that moment belongs to the deployment operation rather than to the calendar
+    day the sheet records. So the banner pass reaches back a day, to the files
+    nearest the deployment moment on either side of it -- but never back to
+    where the previous deployment could still be writing, which is
+    ``priorEnd``, its recorded recovery, plus the settling time. Everything else -- a serial on the data lines, in
+    every ADCP ensemble, in every ac-s packet, in every profiler engineering
+    file -- is read from the middle of the deployment instead.
     """
     start = datetime.datetime.combine(deployDate.date(), datetime.time.min)
     inWindow = [(date, fileName) for date, fileName in files if start <= date < endDate]
     first, fallback = _extractors(refDes)
     if first is SNfromFirstRaw:
-        for _, fileName in inWindow[:BANNER_FILES]:
+        ## The recovery time is as approximate as the deployment time, and a
+        ## daily file stamped midnight covers the whole day before it. A nitrate
+        ## sensor recovered at midnight on the 6th left two files dated the 6th,
+        ## both full of the recovered instrument's serial; reaching back to the
+        ## recorded recovery would have confirmed the wrong one. So the settling
+        ## time applies to the previous deployment's end the same way it applies
+        ## to this one's start -- which usually leaves nothing to reach back to,
+        ## and finding nothing is the right answer where the alternative is
+        ## confirming the instrument that came out of the water.
+        floor = start - BANNER_LOOKBACK
+        if priorEnd:
+            floor = max(floor, priorEnd + SETTLING_TIME)
+        before = sorted(entry for entry in files if floor <= entry[0] < start)
+        ## Outward from the deployment moment: the last files before it, newest
+        ## first, then the first files after it.
+        for _, fileName in list(reversed(before[-BANNER_FILES:])) + inWindow[:BANNER_FILES]:
             yield fileName, first
         for fileName in _settled(inWindow, deployDate, endDate):
             yield fileName, fallback
@@ -330,14 +353,31 @@ def extractSerials(byRefDes, wanted=None, log=print):
         log(f'{refDes}: listing {min(years)}-{max(years)}')
         lister = createFileList_DP if _isDeepProfiler(refDes) else createFileList
         files = lister(refDes, years)
+        priorEnd = _priorEnds(deployments)
         for deployment in todo:
-            rows.append(_extractOne(refDes, deployment, files, log))
+            rows.append(_extractOne(refDes, deployment, files, log,
+                                    priorEnd.get(deployment['deployNum'])))
     return rows
 
 
-def _extractOne(refDes, deployment, files, log):
+def _priorEnds(deployments):
+    """When the deployment before each one was recovered, by deployment number.
+
+    None for the first, which has nothing before it. This is the floor on how
+    far back the banner pass may reach, so it is taken from every deployment on
+    record rather than from the ones being attempted.
+    """
+    ends, previous = {}, None
+    for deployment in sorted(deployments, key=lambda d: d['deployDate']):
+        ends[deployment['deployNum']] = previous
+        previous = _endDate(deployment)
+    return ends
+
+
+def _extractOne(refDes, deployment, files, log, priorEnd=None):
     tried, serial, found = [], MISSING, 'none'
-    for fileName, extract in _candidates(refDes, files, deployment['deployDate'], _endDate(deployment)):
+    for fileName, extract in _candidates(refDes, files, deployment['deployDate'],
+                                         _endDate(deployment), priorEnd):
         tried.append(os.path.basename(fileName))
         serial = extract(fileName)
         if MISSING not in str(serial):

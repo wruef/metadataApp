@@ -37,6 +37,10 @@ export const useRuns = defineStore('runs', () => {
   const run = shallowRef<WorkflowRun | null>(null)
   const steps = shallowRef<Step[]>([])
   const open = ref(false)
+  /** Which workflow is being followed, and what to call it on screen. The tray
+   *  is shared by all three, so it has to say which one it is showing. */
+  const workflow = ref(WORKFLOW)
+  const label = ref('all checks')
 
   let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -67,11 +71,18 @@ export const useRuns = defineStore('runs', () => {
           : String(caught)
   }
 
-  /** Starts a run and follows it until it finishes. */
-  async function start() {
+  /**
+   * Starts a workflow and follows it until it finishes.
+   *
+   * ``what`` is what the tray calls it, as a noun phrase: "Running all checks",
+   * "Running the serial number extraction".
+   */
+  async function dispatch(file: string, inputs: Record<string, unknown>, what: string) {
     const auth = useAuth()
     const repo = auth.workflowRepo
     stopWatching()
+    workflow.value = file
+    label.value = what
     error.value = ''
     run.value = null
     steps.value = []
@@ -79,10 +90,10 @@ export const useRuns = defineStore('runs', () => {
     open.value = true
     const since = Date.now()
     try {
-      await $fetch(`${API}/${repo}/actions/workflows/${WORKFLOW}/dispatches`, {
+      await $fetch(`${API}/${repo}/actions/workflows/${file}/dispatches`, {
         ...options(),
         method: 'POST',
-        body: { ref: auth.workflowRef, inputs: dispatchInputs(source) },
+        body: { ref: auth.workflowRef, inputs },
       })
       status.value = 'finding'
       poll(repo, since)
@@ -91,11 +102,16 @@ export const useRuns = defineStore('runs', () => {
     }
   }
 
+  /** The verification run, which is what the bar at the top starts. */
+  function start() {
+    return dispatch(WORKFLOW, dispatchInputs(source), 'all checks')
+  }
+
   async function poll(repo: string, since: number) {
     try {
       if (!run.value) {
         const found = await $fetch<{ workflow_runs: WorkflowRun[] }>(
-          `${API}/${repo}/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=5`,
+          `${API}/${repo}/actions/workflows/${workflow.value}/runs?event=workflow_dispatch&per_page=5`,
           options(),
         )
         run.value = pickRun(found.workflow_runs, since)
@@ -119,5 +135,6 @@ export const useRuns = defineStore('runs', () => {
     }
   }
 
-  return { source, status, error, run, steps, open, busy, start, stopWatching }
+  return { source, status, error, run, steps, open, busy, workflow, label,
+           start, dispatch, stopWatching }
 })

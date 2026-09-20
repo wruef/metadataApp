@@ -54,10 +54,22 @@ runs:
             if git push origin HEAD:"$BRANCH"; then exit 0; fi
             # Somebody pushed between the pull and the push; go round again.
           else
-            # A conflict. The -latest copies are this run's; the index is
-            # whatever reports are now on disk.
-            git checkout --theirs -- reports/latest.json reports/history-latest.json \
-              reports/comparison-latest.json 2>/dev/null || true
+            # A conflict. Every conflicting path is resolved in favour of this
+            # run, which finished later: during a rebase --theirs is the commit
+            # being replayed, so that is this run's side. A path with no such
+            # side was deleted here, which the prune workflow does, and
+            # removing it is the resolution.
+            #
+            # One path at a time. Asking git for three names in one command
+            # fails whole when one of them is not in conflict, and the rest
+            # then stay conflicted and get committed with their markers in
+            # them -- a latest.json no browser can parse, published as the run
+            # everybody reads.
+            for path in $(git diff --name-only --diff-filter=U); do
+              git checkout --theirs -- "$path" 2>/dev/null || git rm -q -- "$path"
+            done
+            # The index needs no merging either way: whatever reports are on
+            # disk after the rebase are the index.
             index-metadata --rebuild reports --out reports/index.json
             git add -A reports
             GIT_EDITOR=true git rebase --continue

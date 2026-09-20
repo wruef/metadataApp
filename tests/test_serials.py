@@ -8,7 +8,7 @@ import struct
 
 import pandas as pd
 
-from rca_metadata.instruments import partialMatch
+from rca_metadata.instruments import partialMatch, sameSerial
 from rca_metadata.serials import (
     DATA_LINE_PATTERNS,
     FIRST_RAW_PATTERNS,
@@ -41,32 +41,60 @@ def fileList(n, start=datetime.datetime(2020, 1, 1)):
 
 ## --- which files are read ---
 
-def test_theDeploymentDayIsTheFirstFileTried():
-    """A daily file is stamped midnight, before a mid-morning deployment, and
-    the power-on banner is in it."""
+def test_theLastFileBeforeTheDeploymentIsTheFirstOneTried():
+    """The banner is printed when the instrument is powered up, and that happens
+    during the deployment operation rather than on the calendar day the sheet
+    records: one pressure sensor printed its serial at 23:00 the night
+    before."""
     first = next(iter(_candidates(CTD, fileList(30), DEPLOY, RECOVER)))
-    assert first == ('file_4.log', SNfromFirstRaw)
+    assert first == ('file_3.log', SNfromFirstRaw)
 
 
-def test_filesBeforeTheDeploymentAreNeverRead():
-    """They hold the previous deployment's instrument, and reading one is how
-    the wrong serial gets confirmed."""
+def test_theBannerPassReachesBackOneDayAndNoFurther():
     names = [f for f, _ in _candidates(CTD, fileList(30), DEPLOY, RECOVER)]
-    assert 'file_3.log' not in names and 'file_0.log' not in names
+    assert 'file_3.log' in names
+    assert 'file_2.log' not in names and 'file_0.log' not in names
+
+
+def test_theBannerPassNeverReadsPastThePreviousRecovery():
+    """A file from before the previous deployment came out holds the previous
+    instrument, and reading one is how the wrong serial gets confirmed.
+
+    The recovery time is as approximate as the deployment time, so the settling
+    time applies to it too: a nitrate sensor recorded as recovered at midnight
+    on the 6th left two files dated the 6th, both carrying the recovered
+    instrument's serial, and the deployment that followed on the 7th would have
+    been confirmed against the wrong one.
+    """
+    recovered = datetime.datetime(2020, 1, 4, 6, 0)
+    names = [f for f, _ in _candidates(CTD, fileList(30), DEPLOY, RECOVER, recovered)]
+    assert 'file_3.log' not in names
+    assert names[0] == 'file_4.log'
+
+
+def test_aTurnaroundLeavesNothingToReachBackTo():
+    """Recovered and redeployed inside the settling time: there is no gap the
+    banner could be in that the previous instrument is not also in. Finding
+    nothing is the right answer, because the alternative is confirming the
+    instrument that came out of the water."""
+    recovered = DEPLOY - datetime.timedelta(hours=6)
+    names = [f for f, _ in _candidates(CTD, fileList(30), DEPLOY, RECOVER, recovered)]
+    assert names[0] == 'file_4.log'
 
 
 def test_filesAfterRecoveryAreNeverRead():
     recover = datetime.datetime(2020, 1, 8)
     names = {f for f, _ in _candidates(CTD, fileList(30), DEPLOY, recover)}
-    assert names == {'file_4.log', 'file_5.log', 'file_6.log'}
+    assert names == {'file_3.log', 'file_4.log', 'file_5.log', 'file_6.log'}
 
 
 def test_bannerFilesThenDataLineFilesFromTheMiddle():
     candidates = list(_candidates(CTD, fileList(30), DEPLOY, RECOVER))
-    assert [e for _, e in candidates[:5]] == [SNfromFirstRaw] * 5
+    ## one file from the day before, then five from inside the deployment
+    assert [e for _, e in candidates[:6]] == [SNfromFirstRaw] * 6
     ## the window runs to December and the files stop in January, so the files
     ## nearest the middle are the last ones; then the earliest past two days
-    assert candidates[5:] == [(f'file_{i}.log', SNfromRaw) for i in (29, 28, 27, 26, 7, 8, 9)]
+    assert candidates[6:] == [(f'file_{i}.log', SNfromRaw) for i in (29, 28, 27, 26, 7, 8, 9)]
 
 
 def test_serialsCarriedByEveryRecordAreReadFromTheMiddleOfTheDeployment():
@@ -257,3 +285,54 @@ def test_partialMatchOnTrailingDigits():
     ## shorter than the match, on either side, is not enough to go on
     assert partialMatch('12', '123456', 4) is False
     assert partialMatch('1234567', '9999', 4) is False
+
+
+## --- whether a raw serial names the asset the record does ---
+
+def test_theSameNumberInTwoDressesIsOneInstrument():
+    """A pressure sensor reports 05400030 where both the RCA list and the sensor
+    bulk record carry 5471540-0030: the dash dropped, the prefix cut to its last
+    three digits and a zero put in front. Neither string contains the other."""
+    assert sameSerial('05400030', '5471540-0030')
+    assert sameSerial('05400047', '5471540-0047')
+    ## pandas reads the parameter file's column as a number, so the leading zero
+    ## is gone by the time the check sees it.
+    assert sameSerial('5400030', '5471540-0030')
+
+
+def test_theOtherPressureSensorsAreNotTheSameInstrument():
+    """They share a seven-digit prefix, so a rule that matched loosely would
+    confirm every one of them against every other."""
+    for other in ('5471540-0028', '5471540-0029', '5471540-0031', '5471540-0046'):
+        assert not sameSerial('05400030', other)
+
+
+def test_aTailStillMatchesTheWayItAlwaysDid():
+    """Most classes have only a tail extracted, and those comparisons are
+    containment. Nothing here may change what they already decided."""
+    assert sameSerial('325', '16-50325')
+    assert sameSerial('1292', '1292')
+    assert not sameSerial('325', '16-50326')
+
+
+def test_ashortTailStillMatchesAndIsNotOnItsOwnEnough():
+    """Containment is permissive by design, because a three-character tail is
+    all most classes have extracted. It is the rival scan in the deployment
+    check, not this function, that decides whether such a match identifies one
+    instrument -- see the AMBIGUOUS_SN tests."""
+    assert sameSerial('30', '5471540-0030')
+
+
+def test_theDigitsOnlyPathNeedsFourOfThem():
+    """The reconciliation exists for a seven-digit agreement. A shorter run of
+    digits found only after both sides are stripped is a coincidence, not an
+    identification."""
+    ## Containment fails on both: neither string appears in the other.
+    assert not sameSerial('0-30', '5471540-0030')
+    assert sameSerial('0-0030', '5471540-0030')
+
+
+def test_nothingOnEitherSideIsNotAMatch():
+    for raw, recorded in (('', '5471540-0030'), ('05400030', ''), ('nan', '5471540-0030'),
+                          ('05400030', 'nan')):
+        assert not sameSerial(raw, recorded)

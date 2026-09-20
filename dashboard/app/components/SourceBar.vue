@@ -10,6 +10,12 @@ const store = useStore()
 
 const testing = computed(() => runs.source.mode === 'testing')
 
+/** Publishing is a decision about the run in front of you. Ticked for a branch
+ *  check and left ticked through a switch back to Production, it becomes a
+ *  production publish that replaces the figures everyone reads -- the label
+ *  changes and the tick does not, which is exactly how that gets missed. */
+watch(() => runs.source.mode, () => { runs.source.publish = false })
+
 /** What the report on screen was actually run against, which is not what the
  *  bar is pointing at until a new run has been published. */
 const shown = computed(() => {

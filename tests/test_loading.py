@@ -81,3 +81,70 @@ def test_hitlNotesSurvivesASheetWhoseNotesAreAllBlank():
     sheet = pd.DataFrame({'Reviewers': ['WR'], 'DateReviewed': ['9/18/26'], 'Status': ['Clear'],
                           'HITLnotes': [np.nan]}, index=pd.Index(['ATAPL-1'], name='assetID'))
     assert hitlNotes({'sensorBulk': sheet}) == {'sensorBulk': []}
+
+
+## --- sign-offs that no longer match anything ---
+
+def signOffSheet(rows):
+    """A 2i-HITL sheet: the key is the index, as loadHITL leaves it."""
+    columns = ['key', 'Reviewers', 'DateReviewed', 'Status', 'HITLnotes']
+    frame = pd.DataFrame(rows, columns=columns).set_index('key')
+    frame.index.name = 'githubFile'
+    return frame
+
+
+def test_aSignOffNoRowClaimsIsReported():
+    """The calibration file it was written against is gone from
+    asset-management, so no row carries the sign-off and no screen shows it."""
+    from rca_metadata.loading import unmatchedSignOffs
+
+    sheet = signOffSheet([
+        {'key': 'ATAPL-1__20140101.csv', 'Reviewers': 'WR', 'DateReviewed': '5/1/19',
+         'Status': 'Clear', 'HITLnotes': 'checked against the vendor original'},
+        {'key': 'ATAPL-2__20150101.csv', 'Reviewers': 'WR', 'DateReviewed': '5/1/19',
+         'Status': 'Clear', 'HITLnotes': ''},
+    ])
+    found = unmatchedSignOffs({'calibrations': sheet},
+                              {'calibrations': {'ATAPL-2__20150101.csv'}})
+    assert [row['key'] for row in found['calibrations']] == ['ATAPL-1__20140101.csv']
+    assert found['calibrations'][0]['notes'] == 'checked against the vendor original'
+    assert found['calibrations'][0]['reviewers'] == 'WR'
+
+
+def test_aSignOffWithNoDecisionIsNotReported():
+    """A key with nothing written against it is a line somebody added and never
+    came back to. Listing those buries the judgements that were actually made."""
+    from rca_metadata.loading import unmatchedSignOffs
+
+    sheet = signOffSheet([{'key': 'ATAPL-3__20160101.csv', 'Reviewers': '',
+                           'DateReviewed': '', 'Status': '', 'HITLnotes': ''}])
+    assert unmatchedSignOffs({'calibrations': sheet}, {'calibrations': set()}) == {
+        'calibrations': []}
+
+
+def test_everyCheckGetsAnEntryEvenWithNothingOrphaned():
+    """The dashboard reads a count per check, and a missing key is a different
+    thing from a zero."""
+    from rca_metadata.loading import unmatchedSignOffs
+
+    sheet = signOffSheet([{'key': 'ATAPL-4__20170101.csv', 'Reviewers': 'WR',
+                           'DateReviewed': '5/1/19', 'Status': 'Clear', 'HITLnotes': ''}])
+    found = unmatchedSignOffs({'calibrations': sheet, 'sensorBulk': signOffSheet([])},
+                              {'calibrations': {'ATAPL-4__20170101.csv'}})
+    assert found == {'calibrations': [], 'sensorBulk': []}
+
+
+def test_theRealSheetsHaveOrphansAndTheyCarryDecisions():
+    """Against the team's own sheets and the committed report: the orphans are
+    real, and every one of them is a judgement somebody made."""
+    import json
+
+    from rca_metadata.loading import loadHITL, unmatchedSignOffs
+
+    with open('dashboard/test/fixtures/report.json') as handle:
+        report = json.load(handle)
+    seen = {name: {str(row.get('hitlKey')) for row in check.get('rows', [])}
+            for name, check in report['checks'].items()}
+    found = unmatchedSignOffs(loadHITL(), seen)
+    assert found['deployments'], 'the deployment sheet has orphans today'
+    assert all(row['status'].strip() for rows in found.values() for row in rows)

@@ -17,6 +17,24 @@ export function deploymentPath(refDes: string) {
   return `deployment/${refDes.slice(0, 8)}_Deploy.csv`
 }
 
+/** A node is named SITE-NODE, fourteen characters; an instrument adds a port
+ *  and an instrument code. */
+export const NODE_REFDES_LENGTH = 14
+
+/** Every node deployment, in the deployments repository rather than on the
+ *  asset-management sheets. One flat file for all of them, with the same
+ *  columns a deployment sheet has, so the same correction writes it. */
+export const NODE_PATH = 'NODE_deployments.csv'
+
+export function isNodeRefDes(refDes: string) {
+  return refDes.length <= NODE_REFDES_LENGTH
+}
+
+/** Which file holds this deployment's row, in whichever repository. */
+export function sheetPathFor(refDes: string) {
+  return isNodeRefDes(refDes) ? NODE_PATH : deploymentPath(refDes)
+}
+
 /** The columns a position governs, matching `POSITION_FIELDS` in positions.py. */
 export const POSITION_FIELDS = ['lat', 'lon', 'water_depth', 'deployment_depth']
 
@@ -128,6 +146,9 @@ export function deploymentTitle(refDes: string, deployNum: string | number,
  * still has to be readable on its own.
  */
 export function deploymentSection(
+  /** The file this row is in, which differs between an array sheet and the
+   *  node file, so it is passed rather than derived from the designator. */
+  path: string,
   refDes: string,
   deployNum: string | number,
   /** One sentence saying where the new values came from. It is the whole
@@ -139,7 +160,7 @@ export function deploymentSection(
 ) {
   const rows = corrections.map((each) => `| \`${each.field}\` | ${each.from} | ${each.to} |`)
   return [
-    `\`${deploymentPath(refDes)}\` — **${refDes}** deployment **${deployNum}**`,
+    `\`${path}\` — **${refDes}** deployment **${deployNum}**`,
     '',
     '| field | was | now |',
     '|---|---|---|',

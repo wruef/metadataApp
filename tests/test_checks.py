@@ -279,7 +279,7 @@ def rawRow(rawSN, assetID, refDes='RS01SLBS-MJ01A-06-PRESTA101'):
 def test_anExactSerialConfirmsTheAsset():
     from rca_metadata.checks import _rawVerdict
 
-    assert _rawVerdict(rawRow('507', 'ATAPL-1'), {'ATAPL-1': '507'}) == 'MATCH'
+    assert _rawVerdict(rawRow('507', 'ATAPL-1'), {'ATAPL-1': '507'}) == ('MATCH', None)
 
 
 def test_aTailThatFitsOnlyThisInstrumentConfirmsIt():
@@ -290,7 +290,7 @@ def test_aTailThatFitsOnlyThisInstrumentConfirmsIt():
     from rca_metadata.checks import _rawVerdict
 
     bulk = {'ATAPL-66662-00001': '16-50325', 'ATAPL-66662-00002': '16-50601'}
-    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == 'MATCH'
+    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == ('MATCH', None)
 
 
 def test_aTailThatFitsTheInstrumentBesideItConfirmsNothing():
@@ -300,7 +300,9 @@ def test_aTailThatFitsTheInstrumentBesideItConfirmsNothing():
     from rca_metadata.checks import _rawVerdict
 
     bulk = {'ATAPL-67639-00004': '5471540-0030', 'ATAPL-67639-00001': '5463757-0012'}
-    verdict = _rawVerdict(rawRow('0', 'ATAPL-67639-00004'), bulk)
+    verdict, named = _rawVerdict(rawRow('0', 'ATAPL-67639-00004'), bulk)
+    ## an asset the serial *also* fits is not a correction to offer
+    assert named is None
     assert verdict.startswith('AMBIGUOUS_SN')
     assert 'ATAPL-67639-00001' in verdict
 
@@ -312,7 +314,7 @@ def test_anotherModelEntirelyDoesNotMakeASerialAmbiguous():
     from rca_metadata.checks import _rawVerdict
 
     bulk = {'ATAPL-66662-00001': '16-50325', 'ATOSU-99999-00001': '325-XYZ'}
-    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == 'MATCH'
+    assert _rawVerdict(rawRow('325', 'ATAPL-66662-00001'), bulk) == ('MATCH', None)
 
 
 def test_anAmbiguousSerialIsNotAMismatch():
@@ -414,9 +416,10 @@ def test_anAliasedSerialConfirmsTheAsset():
 
     bulk = {'ATAPL-58345-00004': '23340', 'ATAPL-58345-00003': '19075'}
     aliases = {'ATAPL-58345-00004': '21829'}
-    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk, aliases) == 'MATCH'
-    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk) .startswith('MISMATCH')
-    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00003'), bulk, aliases) == 'MISMATCH: raw: 21829: ATAPL-58345-00004'
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk, aliases) == ('MATCH', None)
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00004'), bulk)[0].startswith('MISMATCH')
+    assert _rawVerdict(rawRow('21829', 'ATAPL-58345-00003'), bulk, aliases) == (
+        'MISMATCH: raw: 21829: ATAPL-58345-00004', 'ATAPL-58345-00004')
 
 
 ## --- review fixes, each caught by one row ---
@@ -479,4 +482,4 @@ def test_aBlankAssetOnTheSheetDoesNotCrashTheRawVerdict():
 
     row = {'firstRawFile': 'x.dat', 'rawSN': '999', 'AssetID': float('nan'),
            'refDes': 'RS01SBPS-SF01A-2A-CTDPFA102'}
-    assert _rawVerdict(row, {'ATAPL-1': '123'}).startswith('MISMATCH')
+    assert _rawVerdict(row, {'ATAPL-1': '123'})[0].startswith('MISMATCH')

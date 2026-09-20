@@ -10,6 +10,58 @@
 /** The workflow that runs every check. */
 export const WORKFLOW = 'verify.yaml'
 
+/**
+ * The two workflows that maintain the inputs and the run list rather than
+ * producing a report.
+ *
+ * Both are dispatched into whichever copy of this repository the reviewer's
+ * runs go to, which is their own fork unless they own the shared one. That is
+ * the same repository a verification run is started in, and for the same
+ * reason: it is the one holding their parameter files and their published runs.
+ */
+export const EXTRACT_WORKFLOW = 'extract-serials.yaml'
+export const PRUNE_WORKFLOW = 'prune-runs.yaml'
+
+export interface Extraction {
+  /** Only these reference designators, space separated. Empty attempts every
+   *  deployment that has no serial on record yet, which is the usual run. */
+  refdes: string
+  /** Re-read the whole archive, including deployments already settled. Hours
+   *  rather than minutes, and only worth it after the extractor itself changes. */
+  everything: boolean
+}
+
+export function newExtraction(): Extraction {
+  return { refdes: '', everything: false }
+}
+
+export function extractInputs(extraction: Extraction) {
+  return {
+    asset_management_repo: PRODUCTION.repo,
+    asset_management_ref: PRODUCTION.ref,
+    refdes: extraction.refdes.trim(),
+    everything: extraction.everything,
+  }
+}
+
+export interface Prune {
+  /** How many of the newest runs to hold on to. */
+  keep: number
+  /** Say what would go and change nothing. On by default, because the other
+   *  way round is a deletion nobody asked to see first. */
+  dryRun: boolean
+}
+
+export function newPrune(): Prune {
+  return { keep: 10, dryRun: true }
+}
+
+export function pruneInputs(prune: Prune) {
+  // The workflow reads keep as text, and a keep of nothing would delete
+  // everything the rule reaches; the page will not offer less than one.
+  return { keep: String(Math.max(1, Math.trunc(prune.keep) || 1)), remove: '', dry_run: prune.dryRun }
+}
+
 /** What production means, matching the workflow's own defaults. */
 export const PRODUCTION = {
   repo: 'oceanobservatories/asset-management',

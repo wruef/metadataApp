@@ -17,7 +17,12 @@ export function withBase(base: string, path: string) {
  * in the app: a reviewer has to be able to read how to get a token before they
  * have a dashboard they can sign in to, and GitHub renders them as they are.
  */
-export const DOCS = 'https://github.com/wruef/metadataApp/blob/main/docs'
+const REPO = 'https://github.com/wruef/metadataApp/blob/main'
+export const DOCS = `${REPO}/docs`
+
+/** A file of this repository on GitHub, for the places a reader has to go and
+ *  edit one by hand — a 2i-HITL sheet whose key has come loose from its row. */
+export const repoFile = (path: string) => `${REPO}/${path}`
 export const GUIDE = `${DOCS}/using-the-dashboard.md`
 /** The whole season's review in order. Linked from the top of the rail rather
  *  than the foot, because it is the first thing a reviewer needs after a cruise

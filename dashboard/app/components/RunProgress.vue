@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Step } from '~/dispatch'
+import { WORKFLOW, type Step } from '~/dispatch'
 import { useRuns } from '~/runs'
 import { useStore } from '~/store'
 
@@ -16,9 +16,9 @@ function stepClass(step: Step) {
 const heading = computed(() => {
   if (runs.status === 'starting') return 'Starting the run…'
   if (runs.status === 'finding') return 'Waiting for GitHub to pick it up…'
-  if (runs.status === 'running') return 'Running all checks'
-  if (runs.status === 'error') return 'The run could not be started'
-  return runs.run?.conclusion === 'success' ? 'Run finished' : 'Run failed'
+  if (runs.status === 'running') return `Running ${runs.label}`
+  if (runs.status === 'error') return 'It could not be started'
+  return runs.run?.conclusion === 'success' ? 'Finished' : 'Failed'
 })
 
 const succeeded = computed(() => runs.status === 'done' && runs.run?.conclusion === 'success')
@@ -68,9 +68,14 @@ const succeeded = computed(() => runs.status === 'done' && runs.run?.conclusion 
     <!-- The report on screen does not change when a run finishes: it is a file,
          and it is only replaced if the run was told to publish. -->
     <footer v-if="runs.status === 'done'" class="bg-gray-50 border-gray-200 border-t flex gap-2.5 items-center px-4 py-2.5">
-      <u-button v-if="succeeded" size="xs" @click="store.load()">Reload the report</u-button>
+      <u-button v-if="succeeded && runs.workflow === WORKFLOW" size="xs" @click="store.load()">
+        Reload the report
+      </u-button>
       <span class="text-[11.5px] text-gray-500 leading-snug">
-        <template v-if="succeeded">Only changes anything here if the run published.</template>
+        <template v-if="succeeded && runs.workflow === WORKFLOW">
+          Only changes anything here if the run published.
+        </template>
+        <template v-else-if="succeeded">Read what it did on GitHub.</template>
         <template v-else>Open it on GitHub to read which step failed.</template>
       </span>
     </footer>

@@ -21,6 +21,11 @@ on:
       - "environment.yml"
       - ".github/workflows/verify.yaml"
       - ".github/workflows/tests.yaml"
+      # tests/test_commit_action.py runs the publish step's shell for real,
+      # against two clones of a throwaway repository. It is the only place that
+      # shell is ever executed off a runner, and the conflict it resolves
+      # cannot be arranged on purpose, so a change to the action has to run it.
+      - ".github/actions/**"
   pull_request:
     paths:
       - "src/**"
@@ -31,6 +36,11 @@ on:
       - "constraints.txt"
       - "environment.yml"
       - ".github/workflows/verify.yaml"
+      # tests/test_commit_action.py runs the publish step's shell for real,
+      # against two clones of a throwaway repository. It is the only place that
+      # shell is ever executed off a runner, and the conflict it resolves
+      # cannot be arranged on purpose, so a change to the action has to run it.
+      - ".github/actions/**"
   workflow_dispatch:
 
 concurrency:

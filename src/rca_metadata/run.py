@@ -35,6 +35,13 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
     deployments = loading.loadDeployments(amSource)
     byRefDes = loading.deploymentsByRefDes(deployments)
 
+    sensorBulk = checks.checkSensorBulk(params['assets'], params['serialByAsset'],
+                                        hitl['sensorBulk'])
+    calibrations = checks.checkCalibrations(amSource, calFiles, vendorFiles, params, hitl)
+    deploymentRows = checks.checkDeployments(
+        byRefDes, params, hitl, loading.calibrationHistory(calFiles),
+        amSource.listDirs('calibration'))
+
     return {
         ## UTC, and said so. A naive stamp is read as local time by the browser
         ## and sorts against the UTC file stamp in the run index, so a laptop
@@ -47,14 +54,10 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
             'deployments': report.describeSource(deploySource),
             'positionSpreadsheet': positionFile,
         },
-        'sensorBulk': checks.checkSensorBulk(params['assets'], params['serialByAsset'],
-                                             hitl['sensorBulk']),
-        'calibrations': checks.checkCalibrations(amSource, calFiles, vendorFiles, params, hitl),
+        'sensorBulk': sensorBulk,
+        'calibrations': calibrations,
         'deploymentSheets': checks.checkDeploymentSheets(deployments, params),
-        'deployments': checks.checkDeployments(
-            byRefDes, params, hitl,
-            loading.calibrationHistory(calFiles),
-            amSource.listDirs('calibration')),
+        'deployments': deploymentRows,
         'positions': _checkPositions(amSource, deploySource, positionFile, deployments, paramsDir),
         ## Not a check -- the inventory of what the run covered, which the
         ## dashboard offers as a view of its own.
@@ -72,6 +75,14 @@ def verify(amSource, calSource, deploySource=None, positionFile=None,
         ## Not a check either -- the reasons a reviewer picks from when signing
         ## a row off, which are whatever the team has already written.
         'hitlNotes': loading.hitlNotes(hitl),
+        ## Not a check either -- the sign-offs that matched none of the rows
+        ## above, which is the one thing a run knows and no row can say.
+        'unmatchedSignOffs': loading.unmatchedSignOffs(hitl, {
+            'sensorBulk': {row['hitlKey'] for row in sensorBulk},
+            'calibrations': {row['hitlKey'] for row in calibrations['files']}
+                            | {row['hitlKey'] for row in calibrations['missingFromGithub']},
+            'deployments': {row['hitlKey'] for row in deploymentRows},
+        }),
     }
 
 

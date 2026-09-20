@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 import { FORKS, useAuth } from '~/auth'
 import { useForkSync } from '~/forksync'
-import { openPullRequest } from '~/github'
+import { openPullRequest, type ProposalResult } from '~/github'
 import { withBase } from '~/paths'
 import { useStore } from '~/store'
 
@@ -52,7 +52,8 @@ export const useDeployHistory = defineStore('deployHistory', () => {
   const status = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const error = ref('')
   const submitting = ref(false)
-  const result = ref<{ url: string | null; message: string } | null>(null)
+  /** What proposing the history produced. The page writes the sentence. */
+  const result = ref<ProposalResult | null>(null)
 
   const sync = useForkSync()
   const definition = FORKS.find((each) => each.key === 'deployments')!
@@ -132,13 +133,13 @@ export const useDeployHistory = defineStore('deployHistory', () => {
         ].join('\n'),
         'history',
       )
-      result.value = url
-        ? { url, message: 'Pull request opened on your deployments fork.' }
-        : { url: null, message: 'Your fork already matches this history — nothing to propose.' }
+      result.value = { outcome: url ? 'opened' : 'unchanged', url, fork }
     } catch (caught) {
       result.value = {
+        outcome: 'failed',
         url: null,
-        message: caught instanceof Error ? caught.message : String(caught),
+        fork: auth.forkFor('deployments'),
+        detail: caught instanceof Error ? caught.message : String(caught),
       }
     } finally {
       submitting.value = false

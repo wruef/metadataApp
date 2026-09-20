@@ -26,8 +26,12 @@
     "referenceDesignators",
     "excludedInstruments",
     "hitlNotes",
+    "unmatchedSignOffs",
     "checks"
   ],
+
+  "//unmatchedSignOffs": "Per check, the sign-offs whose key matches no row the run produced -- a calibration file asset-management no longer carries, a deployment renumbered out of a sheet. Every check has an entry, empty when nothing is orphaned.",
+  "unmatchedSignOff": ["key", "status", "reviewers", "dateReviewed", "notes"],
 
   "//parameters": "What produced the numbers: the commit of this repository, whether it was dirty, and the libraries that parsed the files. Comparison is exact to the last digit, so the versions are part of the answer.",
   "parameters": ["commit", "dirty", "python", "pandas"],
@@ -55,6 +59,10 @@
   "row": ["severity", "finding", "cleared", "reason"],
 
   "//rows": "Per check, on top of the four above. hitlKey is the line a sign-off writes to, settled by the run rather than rebuilt in a browser.",
+  "//optional": "Written only where the run has something to say. rawAssetID is the asset a mismatching raw serial belongs to, where it could be placed; rawFilesTried and rawAttemptedAt are what the archive was asked for, so a row with no serial says which files were read.",
+  "optional": {
+    "deployments": ["rawAssetID", "rawFilesTried", "rawAttemptedAt"]
+  },
   "rows": {
     "calibrations": ["fileName", "instrument", "hitlKey", "calRepo_check", "fileParse"],
     "deployments": ["refDes", "deployNum", "deployYear", "AssetID", "hitlKey", "verificationStatus"],

@@ -8,6 +8,11 @@ things work the way they do; this one is the checklist.
 Read it once end to end before the first cruise you run it for. After that,
 the [checklist at the bottom](#the-checklist) is enough.
 
+This file is the source. A copy is published as a Claude page, which is easier
+to read on a ship's laptop, and the dashboard's rail links to this one. Anything
+written on the page has to be copied back here to survive, because the page is
+regenerated from this file.
+
 - [What you end up with](#what-you-end-up-with)
 - [The sequence at a glance](#the-sequence-at-a-glance)
 - [0. Once, before your first review](#0-once-before-your-first-review)
@@ -50,15 +55,15 @@ in a state that blocks your next correction.
 |---|---|---|
 | 1 | GitHub, your three forks | forks identical to upstream |
 | 2 | asset-management upstream | the season's sheets and calibration files merged |
-| 3 | Actions tab → **Extract serial numbers** | `params/rawFileSN.csv` updated and merged |
+| 3 | dashboard → **Workflows** → Run the extraction | `params/rawFileSN.csv` updated and merged |
 | 4 | dashboard bar → **Production**, **Publish**, **Run all checks** | a new run the site opens on |
 | 5 | dashboard, each check | every open row decided: cleared, flagged, or corrected |
 | 6 | dashboard → **Queued changes** | one pull request per batch, on your forks |
 | 7 | GitHub compare pages | the same changes as pull requests on the shared repositories |
 | 8 | dashboard, another production run | the rows you decided have left the queue |
 | 9 | dashboard → **Deployment history** | the history proposed to the deployments repository |
-| 10 | command line | node positions and season lists |
-| 11 | Actions tab → **Delete published runs** | a run picker you can read |
+| 10 | command line | the season lists |
+| 11 | dashboard → **Workflows** → Delete published runs | a run picker you can read |
 
 ## 0. Once, before your first review
 
@@ -116,8 +121,10 @@ Most deployments are confirmed by the serial number the instrument wrote into
 its own raw data. This step reads those out for every deployment that has none
 on record yet.
 
-1. Open `wruef/metadataApp` → **Actions** → **Extract serial numbers** → **Run
-   workflow**. Leave every box at its default and run it.
+1. Open **Workflows** in the dashboard rail and press **Run the extraction**.
+   Leave both boxes as they are; the page says how many deployments in this run
+   one would settle. (The same job is in the Actions tab as **Extract serial
+   numbers**, if you would rather start it there.)
 2. Wait. An incremental run is a few minutes; the log lists each instrument and
    what it found.
 3. When it finishes, a pull request named **Serial numbers from the raw
@@ -215,8 +222,10 @@ For every open row there are three possible decisions:
    The RCA position spreadsheet is the authority, so **Take every spreadsheet
    value** is usually the whole answer. Then **Add to batch**.
 3. A row whose reference designator has no instrument code is a **node**. Its
-   position lives in the deployments repository, not on these sheets, and the
-   dashboard does not write it. Step 10 covers those.
+   position lives in `NODE_deployments.csv` in the deployments repository rather
+   than on an array's sheet, so it corrects exactly the same way and joins a
+   group of its own, on your `deployments` fork. That fork has to be in sync for
+   it, the way your `asset-management` fork does for the others.
 4. `NEEDS_HITL` means more than one spreadsheet row could be this deployment.
    Pin the right one in `params/HITLpositionList.csv` and run again.
 
@@ -339,6 +348,12 @@ already on the shared repository, and you merge it there directly. Steps 4 to
 9 do not apply to that one batch. The other two repositories are not yours,
 and the steps above apply in full.
 
+*Note: the plan is to move this repository to the OOI-CabledArray shared org as
+the last step of this build. Once that happens, `wruef/metadataApp` becomes a
+fork rather than the shared repository, and steps 4–9 (the fork workflow) will
+apply to it too, same as the other two repositories. Update this section once
+the move is done.*
+
 ### Doing several batches
 
 Each batch is its own branch cut from your `master` at the moment you opened
@@ -394,9 +409,10 @@ Two products the dashboard does not write. Both need the package installed and
 clones of the repositories on disk; the README's *Running a verification*
 section covers that.
 
-**Node positions.** The dashboard corrects instrument positions on the
-asset-management sheets. Node positions live in `NODE_deployments.csv` in the
-deployments repository, and only this proposes them:
+**Every position at once.** The dashboard corrects a position a row at a time,
+instruments and nodes alike, which is what step 5 covers. This corrects every
+position the spreadsheet disagrees with in one pass, across both repositories,
+which is worth it after a cruise has moved a great many:
 
     publish-metadata positions --fork YOU/asset-management --node-fork YOU/deployments
 
@@ -413,11 +429,14 @@ year, written to `out/` for whoever needs them:
 Every published run stays in the **Run** dropdown until somebody removes it,
 and a review leaves several behind. Keep the ones worth comparing against.
 
-1. **Actions → Delete published runs → Run workflow.** Set **keep** to the
-   number of newest runs to hold on to, or list names in **remove**. Leave
-   `dry_run` ticked.
-2. Read the run summary. It lists exactly what would go.
-3. Run it again with `dry_run` unticked. The site rebuilds without them.
+1. Open **Workflows** in the rail. Under **Delete published runs**, set how
+   many of the newest to keep; the page says how many that would delete.
+2. Press **Show what would go** and read the run summary. It lists exactly what
+   would be deleted and changes nothing.
+3. Untick the dry run and press it again. The site rebuilds without them.
+
+Deleting specific runs by name is the Actions tab's **Delete published runs**,
+which takes a `remove` list.
 
 The run the dashboard opens on is never deleted, and a deleted run is still in
 the repository's history if it turns out to have been needed.
@@ -470,7 +489,7 @@ Copy this into wherever you keep the season's notes and tick it off.
     Review
     [ ] Calibrations: every open row corrected, cleared or flagged
     [ ] Deployments: every open row corrected, cleared, flagged, or left for extraction
-    [ ] Positions: every mismatch corrected or cleared; node rows noted for step 10
+    [ ] Positions: every mismatch corrected or cleared, nodes included
     [ ] Sensor bulk: every mismatch decided
     [ ] Duplicate asset deployments: empty, or decided
 
@@ -486,7 +505,7 @@ Copy this into wherever you keep the season's notes and tick it off.
 
     Products
     [ ] Deployment history proposed and raised upstream
-    [ ] Node positions and season lists produced from the command line
+    [ ] Season lists produced from the command line
 
     After
     [ ] Old runs deleted from the picker

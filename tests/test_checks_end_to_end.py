@@ -67,6 +67,8 @@ def test_aRawSerialOfAnotherAssetNamesIt():
     [row] = run({REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]},
                 rawRows=[(REFDES['ctd'], 3, 2020, 'f.dat', '0118')])
     assert row['rawFile_verify'] == 'MISMATCH: raw: 0118: ATAPL-58345-00002'
+    ## and names it as a field, which is what the correction offers to take
+    assert row['rawAssetID'] == 'ATAPL-58345-00002'
     assert row['verificationStatus'] == 'RAW_SN_POSSIBLE'
 
 

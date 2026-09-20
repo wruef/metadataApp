@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
 import { REFDES_FILE, useDeployHistory } from '~/deployhistory'
+import { describeProposal } from '~/github'
 import { useStore } from '~/store'
 
 /**
@@ -85,9 +86,9 @@ const types = computed(() => history.files.filter((file) => file.name !== REFDES
 
       <u-alert
         v-if="history.result"
-        :color="history.result.url ? 'success' : 'error'"
+        :color="describeProposal(history.result).tone"
         variant="subtle"
-        :title="history.result.message"
+        :title="describeProposal(history.result).text"
       >
         <template v-if="history.result.url" #description>
           <a :href="history.result.url" target="_blank" rel="noopener" class="underline">

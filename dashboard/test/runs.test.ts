@@ -2,13 +2,17 @@ import { describe, expect, it } from 'vitest'
 
 import {
   dispatchInputs,
-  sourceLabel,
+  extractInputs,
   flattenSteps,
+  newExtraction,
+  newPrune,
   newSource,
   pickRun,
   PRODUCTION,
+  pruneInputs,
   ready,
   SLACK_MS,
+  sourceLabel,
   type WorkflowRun,
 } from '../app/dispatch'
 
@@ -149,5 +153,42 @@ describe('steps', () => {
 
   it('survives a job GitHub has not filled in yet', () => {
     expect(flattenSteps([{ name: 'verify' }])).toEqual([])
+  })
+})
+
+/**
+ * The two workflows that maintain a review's inputs rather than produce a
+ * report. Both are dispatched into the same repository a verification run is.
+ */
+describe('the maintenance workflows', () => {
+  it('attempts every unsettled deployment when no designator is named', () => {
+    expect(extractInputs(newExtraction())).toEqual({
+      asset_management_repo: PRODUCTION.repo,
+      asset_management_ref: PRODUCTION.ref,
+      refdes: '',
+      everything: false,
+    })
+  })
+
+  it('passes the designators through, trimmed', () => {
+    const inputs = extractInputs({ refdes: '  RS01SBPS-PC01A-06-VADCPA101  ', everything: true })
+    expect(inputs.refdes).toBe('RS01SBPS-PC01A-06-VADCPA101')
+    expect(inputs.everything).toBe(true)
+  })
+
+  it('sends the run count as the text the workflow reads', () => {
+    expect(pruneInputs(newPrune())).toEqual({ keep: '10', remove: '', dry_run: true })
+  })
+
+  it('never asks to keep less than one run', () => {
+    // An empty box reads as 0, and a keep of nothing is a rule that reaches
+    // every run there is.
+    expect(pruneInputs({ keep: 0, dryRun: true }).keep).toBe('1')
+    expect(pruneInputs({ keep: -4, dryRun: false }).keep).toBe('1')
+    expect(pruneInputs({ keep: 3.7, dryRun: true }).keep).toBe('3')
+  })
+
+  it('says nothing about deleting by name, which the Actions tab is for', () => {
+    expect(pruneInputs(newPrune()).remove).toBe('')
   })
 })

@@ -96,7 +96,7 @@ const comparing = ref(false)
 
       <div>
         <h4>Sources</h4>
-        <dl v-if="links.length || hitlKey || row.sourceRow" class="kv">
+        <dl v-if="links.length || hitlKey || row.sourceRow || row.rawFilesTried" class="kv">
           <template v-for="link in links" :key="link.href">
             <dt>{{ link.label }}</dt>
             <dd>
@@ -115,6 +115,18 @@ const comparing = ref(false)
           <template v-if="hitlKey">
             <dt>2i-HITL key</dt>
             <dd>{{ hitlKey }}</dd>
+          </template>
+          <!-- What the extraction actually read. A row holding no serial says
+               which files were tried rather than sending a reviewer to the
+               parameter file to find out. -->
+          <template v-if="row.rawFilesTried">
+            <dt>Raw files read</dt>
+            <dd>
+              <span class="break-all">{{ String(row.rawFilesTried).split(' ').join(', ') }}</span>
+              <span v-if="row.rawAttemptedAt" class="text-gray-500">
+                · {{ row.rawAttemptedAt }}
+              </span>
+            </dd>
           </template>
         </dl>
         <p v-else class="text-[12.5px] text-gray-500">Nothing further recorded for this row.</p>

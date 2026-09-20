@@ -37,6 +37,17 @@ def missing(required, present):
     return sorted(set(required) - set(present))
 
 
+def test_everyOrphanedSignOffCarriesWhatTheContractNames(schema, report):
+    """No check has a row for these, so the shape of the entry is the only thing
+    standing between a judgement somebody made and a blank page."""
+    orphaned = report['unmatchedSignOffs']
+    assert orphaned, 'the committed report has orphaned sign-offs today'
+    for rows in orphaned.values():
+        for row in rows:
+            assert not missing(schema['unmatchedSignOff'], row)
+            assert row['status'].strip()
+
+
 def test_theEmitterAndTheSchemaAgreeOnTheVersion(schema):
     assert schema['schemaVersion'] == SCHEMA_VERSION
 

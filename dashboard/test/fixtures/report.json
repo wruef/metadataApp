@@ -78,6 +78,69 @@
   ],
   "sensorBulk": []
  },
+ "unmatchedSignOffs": {
+  "calibrations": [
+   {
+    "key": "ATAPL-58337-00006__20150507.csv",
+    "status": "Clear",
+    "reviewers": "KB,WR",
+    "dateReviewed": "4/30/19",
+    "notes": ""
+   },
+   {
+    "key": "ATOSU-58320-00021__20212026.csv",
+    "status": "Clear",
+    "reviewers": "MV,WR",
+    "dateReviewed": "7/15/22",
+    "notes": ""
+   },
+   {
+    "key": "ATOSU-58332-00009__20140910.csv",
+    "status": "NotClear",
+    "reviewers": "KB,WR",
+    "dateReviewed": "4/30/19",
+    "notes": "seabird sent a file for 20140415?"
+   },
+   {
+    "key": "ATOSU-69943-00011__20140815.csv",
+    "status": "NotClear",
+    "reviewers": "KB,WR",
+    "dateReviewed": "4/30/19",
+    "notes": "received two 2013 files from seabird; no 2014...neither tcal matches... not sure where numbers are coming from"
+   }
+  ],
+  "deployments": [
+   {
+    "key": "CE04OSPD-DP01B.2014.1",
+    "status": "Clear",
+    "reviewers": "WR,DM,TM",
+    "dateReviewed": "4/29/20",
+    "notes": "verified with deployment logs and images"
+   },
+   {
+    "key": "CE04OSPD-DP01B.2015.2",
+    "status": "Clear",
+    "reviewers": "WR,DM,TM",
+    "dateReviewed": "4/29/20",
+    "notes": "verified with deployment logs and images"
+   },
+   {
+    "key": "CE04OSPD-DP01B.2016.3",
+    "status": "Clear",
+    "reviewers": "WR,DM,TM",
+    "dateReviewed": "4/29/20",
+    "notes": "verified with deployment logs and images"
+   },
+   {
+    "key": "CE04OSPD-DP01B.2017.4",
+    "status": "Clear",
+    "reviewers": "WR,DM,TM",
+    "dateReviewed": "4/29/20",
+    "notes": "verified with deployment logs and images"
+   }
+  ],
+  "sensorBulk": []
+ },
  "checks": {
   "sensorBulk": {
    "rows": [

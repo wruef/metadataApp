@@ -55,3 +55,53 @@ def test_theNewestPositionSpreadsheetIsUsed(tmp_path):
 def test_noSpreadsheetMeansThePositionCheckIsSkipped(tmp_path):
     """It is a periodic drop from the team, not something a run can fetch."""
     assert latestPositionFile(str(tmp_path / 'nothing_*.xlsx')) is None
+
+
+## --- comparing two runs from the command line ---
+
+REPORT = {
+    'schemaVersion': 2,
+    'runAt': '2026-09-15T12:00:00',
+    'parameters': {'commit': 'abc', 'dirty': False},
+    'sources': {'assetManagement': {'repo': 'o/am', 'ref': 'master', 'commit': 'aaa'}},
+    'checks': {'deployments': {'rows': [{'refDes': 'X', 'deployNum': 1, 'severity': 'ok'}],
+                               'summary': {'problem': 0, 'total': 1}}},
+}
+
+
+def written(tmp_path, name, report):
+    import json
+    path = tmp_path / name
+    path.write_text(json.dumps(report))
+    return str(path)
+
+
+def test_comparingTwoRunsWritesWhatMoved(tmp_path, capsys):
+    import json
+
+    from rca_metadata.cli import compareMain
+
+    worse = {**REPORT, 'checks': {'deployments': {
+        'rows': [{'refDes': 'X', 'deployNum': 1, 'severity': 'problem'}],
+        'summary': {'problem': 1, 'total': 1}}}}
+    out = str(tmp_path / 'comparison.json')
+    assert compareMain([written(tmp_path, 'a.json', REPORT),
+                        written(tmp_path, 'b.json', worse), '--out', out]) == 0
+
+    comparison = json.loads((tmp_path / 'comparison.json').read_text())
+    assert comparison['comparable'] is True
+    assert [entry['key'] for entry in comparison['checks']['deployments']['newlyFailing']] == [['X', '1']]
+    assert 'newlyFailing 1' in capsys.readouterr().out
+
+
+def test_aComparisonThatCannotBeTrustedSaysSoOnTheWayOut(tmp_path, capsys):
+    """Two runs produced by different versions of the checks: a moved row could
+    be the check having changed rather than the data."""
+    from rca_metadata.cli import compareMain
+
+    other = {**REPORT, 'parameters': {'commit': 'def', 'dirty': False}}
+    compareMain([written(tmp_path, 'a.json', REPORT), written(tmp_path, 'b.json', other),
+                 '--out', str(tmp_path / 'c.json')])
+    printed = capsys.readouterr().out
+    assert 'cannot be compared' in printed
+    assert 'different commits' in printed

@@ -102,6 +102,35 @@ export async function openPullRequest(
   return pull.html_url
 }
 
+/**
+ * What proposing a batch produced.
+ *
+ * The fact, not the sentence: a store records what happened and the page that
+ * shows it writes the words, so the same outcome can be worded differently in
+ * two places without the store knowing either wording.
+ */
+export interface ProposalResult {
+  outcome: 'opened' | 'unchanged' | 'failed'
+  /** The pull request, where one was opened. */
+  url: string | null
+  /** The fork it was proposed to, which every sentence below names. */
+  fork: string
+  /** Only for a failure: what went wrong, in the words it arrived in. */
+  detail?: string
+}
+
+/** One sentence for a reviewer, and the colour it should read in. */
+export function describeProposal(result: ProposalResult) {
+  if (result.outcome === 'opened') {
+    return { tone: 'success' as const, text: `Pull request opened on ${result.fork}.` }
+  }
+  if (result.outcome === 'unchanged') {
+    // Not a failure: the fork already says what this would have said.
+    return { tone: 'neutral' as const, text: `${result.fork} already holds this — nothing to propose.` }
+  }
+  return { tone: 'error' as const, text: result.detail || `Could not propose this to ${result.fork}.` }
+}
+
 /** What GitHub says about two branches in the same network. */
 export interface Comparison {
   status: 'identical' | 'behind' | 'ahead' | 'diverged'

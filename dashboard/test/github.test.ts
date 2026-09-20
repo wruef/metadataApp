@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { authHeaders, isMissing, syncRefusal } from '../app/github'
+import { authHeaders, describeProposal, isMissing, syncRefusal } from '../app/github'
 
 /**
  * The sign-off path reads a sheet in order to add a line to it, so what a
@@ -86,5 +86,40 @@ describe('whether a fork may be corrected', () => {
     const refusal = syncRefusal({ status: 'diverged', ahead_by: 1, behind_by: 1 }, UPSTREAM)!
     expect(refusal).toContain('Raise them upstream')
     expect(refusal).toContain('Once they have, press Sync fork')
+  })
+})
+
+
+/**
+ * The store records what happened; this is the one place it becomes a sentence,
+ * so two pages showing the same outcome cannot word it differently.
+ */
+describe('what proposing a batch produced', () => {
+  it('names the fork the pull request was opened on', () => {
+    const said = describeProposal({ outcome: 'opened', url: 'https://x/pull/1', fork: 'wruef/asset-management' })
+    expect(said.tone).toBe('success')
+    expect(said.text).toContain('wruef/asset-management')
+  })
+
+  it('reads as neither success nor failure when the fork already says it', () => {
+    // An empty pull request is not created, and that is not an error.
+    const said = describeProposal({ outcome: 'unchanged', url: null, fork: 'wruef/deployments' })
+    expect(said.tone).toBe('neutral')
+    expect(said.text).toContain('nothing to propose')
+  })
+
+  it('shows a failure in the words it arrived in', () => {
+    const said = describeProposal({
+      outcome: 'failed', url: null, fork: 'wruef/asset-management',
+      detail: 'Your fork is 2 commits behind oceanobservatories/asset-management.',
+    })
+    expect(said.tone).toBe('error')
+    expect(said.text).toContain('2 commits behind')
+  })
+
+  it('still says something when a failure arrived with no detail', () => {
+    const said = describeProposal({ outcome: 'failed', url: null, fork: 'wruef/deployments' })
+    expect(said.tone).toBe('error')
+    expect(said.text).toContain('wruef/deployments')
   })
 })

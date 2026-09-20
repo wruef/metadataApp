@@ -24,6 +24,7 @@ const SCHEMA = read('../../schema/report.json') as {
   summary: string[]
   row: string[]
   rows: Record<string, string[]>
+  unmatchedSignOff: string[]
 }
 
 const REPORT = read('./fixtures/report.json') as Report
@@ -46,6 +47,29 @@ describe('the committed report', () => {
   it('carries every field the contract names', () => {
     expect(missing(SCHEMA.report, REPORT)).toEqual([])
     expect(missing(SCHEMA.parameters, REPORT.parameters)).toEqual([])
+  })
+
+  it('names every sign-off that matches no row, with what was decided', () => {
+    // These are the judgements no check can show, because the calibration file
+    // or the deployment they were written against is gone from the records.
+    // Nothing else in the report carries them, so the shape is the only thing
+    // standing between them and a blank page.
+    const orphaned = REPORT.unmatchedSignOffs ?? {}
+    expect(Object.keys(orphaned).length).toBeGreaterThan(0)
+    for (const rows of Object.values(orphaned)) {
+      for (const row of rows) {
+        expect(missing(SCHEMA.unmatchedSignOff, row)).toEqual([])
+        // A line with nothing written against it is a key somebody added and
+        // never came back to; listing those buries the decisions that matter.
+        expect(row.status.trim()).not.toBe('')
+      }
+    }
+  })
+
+  it('has a sheet for every check its orphaned sign-offs name', () => {
+    for (const check of Object.keys(REPORT.unmatchedSignOffs ?? {})) {
+      expect(HITL_SHEETS[check as SheetKey]?.path).toBeTruthy()
+    }
   })
 
   it('says which commit each repository was read at', () => {
