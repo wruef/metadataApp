@@ -61,7 +61,7 @@ jobs:
         # pandas 3 and 3.10 gets pandas 2, and this matrix is where that shows.
         python: ["3.11", "3.10"]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v5
         with:

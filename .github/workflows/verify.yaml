@@ -51,7 +51,7 @@ jobs:
       contents: write
     steps:
       - name: Check out this repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       # Cloned rather than read over the API: the calibration comparison probes
       # the filesystem for vendor files, so reading remotely would mean ~1,300
@@ -59,7 +59,7 @@ jobs:
       # but a clone, not a copy: without .git there is no commit to record, and
       # a run that cannot name the state it read cannot be compared against.
       - name: Clone asset-management
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.asset_management_repo }}
           ref: ${{ inputs.asset_management_ref }}
@@ -67,7 +67,7 @@ jobs:
           fetch-depth: 1
 
       - name: Clone calibrationFiles
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: OOI-CabledArray/calibrationFiles
           ref: ${{ inputs.calibration_files_ref }}
@@ -75,7 +75,7 @@ jobs:
           fetch-depth: 1
 
       - name: Clone deployments
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: OOI-CabledArray/deployments
           ref: main
@@ -118,7 +118,7 @@ jobs:
       # data rather than to the check.
       - name: Clone the baseline
         if: ${{ inputs.baseline_ref != '' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.asset_management_repo }}
           ref: ${{ inputs.baseline_ref }}
