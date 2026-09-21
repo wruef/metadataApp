@@ -46,6 +46,19 @@ FIRST_RAW_PATTERNS = {
     ## was left, which is how five deployments came to record a single digit.
     'PREST': ([r"<HardwareData.*SerialNumber='(\d{1,10})'>",
                r"SerialNumber='(\d{4,10})'"], None),
+    ## A Sea-Bird Deep SeapHox2, which answers `gethd` with the xml and `ds`
+    ## with the plain block, and both spellings are in the archive:
+    ##
+    ##     <HardwareData DeviceType='Deep SeapHox2' SerialNumber='0002085'>
+    ##       SerialNumber    = 0002106
+    ##
+    ## The record carries 721-2085 against the instrument's 0002085 -- the same
+    ## number under a product prefix -- which `sameSerial` reconciles on the
+    ## last four digits. Anchored on `SerialNumber=` so the circuit boards'
+    ## `PCBSerialNum` and the internal pH and temperature sensors'
+    ## `<SerialNumber desc=... value=...>` are left alone; those are parts of
+    ## the instrument rather than the instrument.
+    'PHSENH': ([r"SerialNumber='(\d{4,10})'", r"SerialNumber\s*=\s*(\d{4,10})"], None),
     'TMPSFA': ([r"RBR\s+XR-420\s+\d.\d{2,4}\s+(\d{1,9}).*"], 5),
     ## A Nortek Signature opens with "Nortek 104550 Data Interface", and every
     ## $PNORI information line carries the serial as its third field.
@@ -84,6 +97,19 @@ BINARY_HEAD = 512 * 1024
 ## later run can tell a deployment never tried from one tried and empty.
 COLUMNS = ['referenceDesignator', 'deployNum', 'deployYear', 'rawFile', 'rawSerialNumber',
            'attemptedAt', 'filesTried']
+
+## The serial is text, whatever it looks like. Read as a number, a Sea-Bird pH
+## sensor's 0002085 comes back 2085 and a pressure sensor's 05400030 comes back
+## 5400030 -- and the next extraction writes every one of them back without its
+## leading zeros, so five rows nobody attempted turn up in the pull request the
+## reviewer is told to read. The comparison tolerates either spelling; the
+## parameter file should still say what the instrument actually printed.
+SERIAL_COLUMN = {'rawSerialNumber': str}
+
+
+def readSerialTable(path):
+    """params/rawFileSN.csv, with the serial column left as it was written."""
+    return pd.read_csv(path, dtype=SERIAL_COLUMN)
 
 
 def _stream(rawFileName):

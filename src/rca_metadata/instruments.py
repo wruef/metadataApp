@@ -9,7 +9,14 @@ the cycle.
 """
 
 ## Instrument types whose serial number can be read out of a raw file.
-VERIFIABLE_BY_RAW_SN = ['CTD', 'SPK', 'NUT', 'PAR', 'FLOR', 'PREST', 'TMPSFA', 'OPTAA', 'ADCP']
+##
+## 'PHSENH' and not 'PHSEN': only the Sea-Bird Deep SeapHox2 prints a serial at
+## power-on. The PHSEND and PHSENA at the other sites are Sunburst SAMI2-pH,
+## whose records carry a one-byte device id that is not the serial and is not
+## stable across deployments, so nothing in their raw data identifies the
+## instrument.
+VERIFIABLE_BY_RAW_SN = ['CTD', 'SPK', 'NUT', 'PAR', 'FLOR', 'PREST', 'TMPSFA', 'OPTAA', 'ADCP',
+                        'PHSENH']
 
 ## Deep profiler instruments whose serial number is in the engineering file.
 VERIFIABLE_BY_RAW_SN_DP = ['ENG000000', 'VEL3DA105', 'FLCDRA103', 'FLNTUA103', 'DOSTAD105',

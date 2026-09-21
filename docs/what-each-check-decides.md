@@ -163,6 +163,13 @@ comparison is containment. Either way it is sound only while no other instrument
 of the same model could answer to the number, which is what `AMBIGUOUS_SN`
 catches: every match is put to the rest of the platform before it is called one.
 
+The Sea-Bird pH sensor spells it a third way, and the same rule settles it. It
+prints `SerialNumber='0002085'` at power-on where both records carry
+`721-2085`: the same number under a product prefix. Only `PHSENH` is read this
+way. `PHSEND` and `PHSENA` are Sunburst SAMI2-pH, whose records carry a one-byte
+device id that is not the serial and changes between deployments, so nothing in
+their raw data says which instrument wrote them and they stay `NAN`.
+
 A five-beam ADCP is the other way round: its raw data reports a serial that
 shares nothing with the record's, because the record holds the system serial
 and the PD0 ensembles hold the electronics'. `params/serialAliases.csv` pairs

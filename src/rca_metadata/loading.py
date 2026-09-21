@@ -11,6 +11,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from . import serials
+
 ## The cabled array deployment sheets, by array.
 CABLED_ARRAYS = ['CE02SHBP', 'CE04OSBP', 'CE04OSPD', 'CE04OSPS', 'RS01SBPD', 'RS01SBPS',
                  'RS01SLBS', 'RS01SUM1', 'RS01SUM2', 'RS03ASHS', 'RS03AXBS', 'RS03AXPD',
@@ -39,7 +41,7 @@ def loadParams(paramsDir='params'):
         'assets': assets.set_index('assetID').T.to_dict('series'),
         'coeffMap': coeffMap,
         'constants': constants,
-        'rawSN': pd.read_csv(os.path.join(paramsDir, 'rawFileSN.csv')),
+        'rawSN': serials.readSerialTable(os.path.join(paramsDir, 'rawFileSN.csv')),
         'imageSN': pd.read_csv(os.path.join(paramsDir, 'imageSN.csv')),
         ## asset ID -> the serial its raw data reports, where that differs from
         ## the bulk record. Confirmed by a person, one row per asset.

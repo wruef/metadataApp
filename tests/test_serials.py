@@ -336,3 +336,85 @@ def test_nothingOnEitherSideIsNotAMatch():
     for raw, recorded in (('', '5471540-0030'), ('05400030', ''), ('nan', '5471540-0030'),
                           ('05400030', 'nan')):
         assert not sameSerial(raw, recorded)
+
+
+## --- the Sea-Bird pH sensor ---
+
+PHSENH_FILE = 'PHSENH110_10.33.14.10_2101_20250828T1655_UTC.dat'
+
+## What the instrument answers `gethd` with, trimmed to the lines that carry a
+## number. Everything below the first line belongs to a part of the instrument
+## rather than to the instrument.
+GETHD = [
+    "<HardwareData DeviceType='Deep SeapHox2' SerialNumber='0002085'>",
+    "  <PCBAssembly PCBSerialNum='295820' AssemblyNum='42018.1E'/>",
+    "      <SerialNumber desc='reference' value='MB21227'/>",
+    "      <SerialNumber desc='isFET' value='20347'/>",
+]
+
+
+def test_theSeapHoxSerialIsReadFromTheHardwareBanner():
+    assert searchLines(GETHD, PHSENH_FILE, FIRST_RAW_PATTERNS) == '0002085'
+
+
+def test_theSeapHoxSerialIsAlsoReadFromThePlainStatusBlock():
+    """`ds` prints the same number without the xml, and both spellings are in
+    the archive."""
+    block = ['[InstrumentInfo]', '  DeviceType      = Deep SeapHox2',
+             '  SerialNumber    = 0002106', '  FirmwareVersion = 6.1.4 b30014']
+    assert searchLines(block, PHSENH_FILE, FIRST_RAW_PATTERNS) == '0002106'
+
+
+def test_theInstrumentsOwnSerialIsTakenAndNotItsPartsSerials():
+    """The circuit boards and the internal pH and temperature sensors all print
+    a serial in the same banner. Reading one of those would confirm a deployment
+    against a component."""
+    for line in GETHD[1:]:
+        assert searchLines([line], PHSENH_FILE, FIRST_RAW_PATTERNS) == MISSING
+
+
+def test_theSeapHoxSerialReconcilesWithTheRecordsSpelling():
+    """The instrument writes 0002085 where both records carry 721-2085: the
+    same number under a product prefix."""
+    assert sameSerial('0002085', '721-2085')
+    ## pandas reads the parameter file's column as a number, so the leading
+    ## zeros are gone by the time the check sees it.
+    assert sameSerial('2085', '721-2085')
+    assert not sameSerial('0002085', '721-2069')
+
+
+def test_onlyTheSeabirdPhSensorIsVerifiableByRawFile():
+    """PHSEND and PHSENA are Sunburst SAMI2-pH. Their records carry a one-byte
+    device id that is not the serial and changes between deployments, so nothing
+    in their raw data identifies the instrument."""
+    from rca_metadata.instruments import expectsRawSerial
+
+    assert expectsRawSerial('CE02SHBP-LJ01D-10-PHSENH110')
+    assert expectsRawSerial('CE04OSPS-PC01B-4C-PHSENH109')
+    assert not expectsRawSerial('CE02SHBP-LJ01D-10-PHSEND103')
+    assert not expectsRawSerial('RS01SBPS-PC01A-4B-PHSENA102')
+
+
+def test_aSerialKeepsItsLeadingZerosThroughTheParameterFile(tmp_path):
+    """Read as a number, a Sea-Bird pH sensor's 0002085 comes back 2085, and the
+    next extraction writes every untouched row back without its leading zeros --
+    so rows nobody attempted turn up in the pull request a reviewer is told to
+    read. The comparison tolerates either spelling; the file should still say
+    what the instrument printed."""
+    from rca_metadata.serials import readSerialTable
+
+    path = tmp_path / 'rawFileSN.csv'
+    path.write_text(
+        'referenceDesignator,deployNum,deployYear,rawFile,rawSerialNumber,attemptedAt,filesTried\n'
+        'CE02SHBP-LJ01D-10-PHSENH110,1.0,2025,http://x/a.dat,0002085,2026-09-21,\n'
+        'RS01SLBS-MJ01A-06-PRESTA101,1.0,2014,http://x/b.dat,05400030,2026-09-19,\n')
+
+    table = readSerialTable(str(path))
+    assert list(table['rawSerialNumber']) == ['0002085', '05400030']
+
+    ## Merging an unrelated attempt leaves both spellings alone.
+    merged = mergeSerials(table, [{
+        'referenceDesignator': 'RS01SUM1-LJ01B-09-PRESTB102', 'deployNum': 1.0,
+        'deployYear': 2014, 'rawFile': 'http://x/c.dat', 'rawSerialNumber': '05400031',
+        'attemptedAt': '2026-09-21', 'filesTried': ''}])
+    assert set(merged['rawSerialNumber']) == {'0002085', '05400030', '05400031'}

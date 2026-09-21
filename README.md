@@ -546,7 +546,11 @@ next deployment. Twelve deployments read as a different asset from the sheet
 before that rule, five of them in 2026.
 
 Text instruments print the serial in a power-on banner (CTD, SPKIR, NUTNR,
-FLORT, PREST, TMPSF) or on every data line (PARAD, and SPKIR and NUTNR again).
+FLORT, PREST, TMPSF, PHSENH) or on every data line (PARAD, and SPKIR and NUTNR
+again). Only the Sea-Bird pH sensor is on that list: PHSEND and PHSENA are
+Sunburst SAMI2-pH, whose records carry a one-byte device id that is not the
+serial and changes between deployments, so nothing in their raw data says which
+instrument wrote them.
 The two binary instruments carry it in every record in a fixed place: the ADCP
 in bytes 55-58 of the PD0 fixed leader, read from the first ensemble whose
 checksum is intact, and the OPTAA in the three bytes after the meter type of an

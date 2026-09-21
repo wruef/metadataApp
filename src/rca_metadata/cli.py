@@ -392,7 +392,8 @@ def extractMain(argv=None):
     Writes the parameter file the deployment check reads. Nothing here decides a
     verdict: the file is proposed as a pull request and read by the next run.
     """
-    from .serials import MISSING, extractSerials, mergeSerials, openDeployments
+    from .serials import (MISSING, extractSerials, mergeSerials, openDeployments,
+                          readSerialTable)
 
     parser = argparse.ArgumentParser(description='Read deployment serial numbers out of the raw archive.')
     parser.add_argument('--asset-management', default=AM_REPO, metavar='OWNER/REPO[@REF]')
@@ -406,7 +407,7 @@ def extractMain(argv=None):
     args = parser.parse_args(argv)
 
     path = os.path.join(args.params, 'rawFileSN.csv')
-    table = pd.read_csv(path)
+    table = readSerialTable(path)
     deployments = loading.loadDeployments(parseSource(args.asset_management, args.clones))
     byRefDes = loading.deploymentsByRefDes(deployments)
     wanted = openDeployments(byRefDes, table, refDes=args.refdes, everything=args.all)
