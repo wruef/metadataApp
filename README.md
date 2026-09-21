@@ -20,7 +20,7 @@ The package is the source of truth; nothing is maintained in two places.
 | `deployments` | is the instrument on the sheet the one that was in the water, and did it have a calibration? |
 | `positions` | do the deployment sheets agree with the RCA position spreadsheet? |
 | `sensorBulk` | do serial numbers agree between the RCA instrument list and the OOI sensor bulk record? |
-| `deploymentSheets` | is one asset deployed in two places at once, and is every asset a sheet names in the bulk record it belongs to? |
+| `deploymentSheets` | is one asset in the water twice at once, is one node in two places, and is every asset a sheet names in the bulk record it belongs to? |
 
 Every verdict each of them can return, and whether it counts as passing, is in
 [docs/what-each-check-decides.md](docs/what-each-check-decides.md).
@@ -70,8 +70,8 @@ typecheck cannot run at all. To point it at a report other than the default
 
     NUXT_PUBLIC_REPORT_URL=/reports/report_20260915T162613Z.json npm run dev
 
-The overview opens on **what needs a person**: not a count of problems, but the
-situations behind them — *coefficients that disagree with the vendor*, *positions
+The overview opens on **what needs verification**: not one number, but the
+situations behind it — *coefficients that disagree with the vendor*, *positions
 the spreadsheet contradicts*, *deployments an extraction would settle* — each
 with its count and a link that opens the check already filtered to exactly those
 rows. The count and the table it opens are the same filter, so they cannot drift
@@ -109,8 +109,8 @@ each so the distribution is visible without changing anything.
 
 Every column header sorts: once for ascending, again for descending, a third
 time back to the queue order the check opens in. **Review status** sorts by
-consequence rather than alphabetically, because `problem` before `review` is the
-order that means something and alphabetically it is the reverse. A row with
+the order the categories are defined in rather than alphabetically, because that
+is the order a queue is worked in and alphabetically it is meaningless. A row with
 nothing in the sorted column goes last whichever way the column points — an
 empty cell is the absence of a value, not the smallest one.
 

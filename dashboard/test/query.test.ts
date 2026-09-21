@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import { SEVERITY_TONE } from '../app/display'
-import { ALL, ATTENTION, matchesWhere } from '../app/query'
+import { ALL, matchesWhere } from '../app/query'
 import type { Row, Severity } from '../app/store'
 
 /** Only the fields the severity filter and the tone rule read. */
@@ -12,39 +12,43 @@ const row = (severity: Severity, finding?: Severity): Row => ({
   cleared: severity === 'cleared',
 })
 
-const attention = (candidate: Row) => matchesWhere(candidate, [], { severity: ATTENTION })
+const needsVerifying = (candidate: Row) =>
+  matchesWhere(candidate, [], { severity: 'verification' })
 
-describe('what still needs a person', () => {
+describe('what still needs verifying', () => {
   it('leaves out a signed-off row, whatever its checks found', () => {
-    expect(attention(row('cleared', 'problem'))).toBe(false)
-    expect(attention(row('cleared', 'review'))).toBe(false)
-    expect(attention(row('cleared', 'ok'))).toBe(false)
+    expect(needsVerifying(row('cleared', 'verification'))).toBe(false)
+    expect(needsVerifying(row('cleared', 'ok'))).toBe(false)
   })
 
-  it('keeps a failing row nobody has signed off', () => {
-    expect(attention(row('problem'))).toBe(true)
-  })
-
-  it('keeps a row waiting on a person', () => {
-    expect(attention(row('review'))).toBe(true)
+  it('keeps a row nobody has signed off', () => {
+    expect(needsVerifying(row('verification'))).toBe(true)
   })
 
   it('leaves out rows that agree, or that nothing checked', () => {
-    expect(attention(row('ok'))).toBe(false)
-    expect(attention(row('unchecked'))).toBe(false)
+    expect(needsVerifying(row('ok'))).toBe(false)
+    expect(needsVerifying(row('unchecked'))).toBe(false)
   })
 
   /** A report published before sign-offs became a category of their own still
-   *  carries them as problems. The filter has to drop those too, or an old run
+   *  carries them as work. The filter has to drop those too, or an old run
    *  reads as having work that somebody already did. */
   it('leaves out a cleared row in a report that predates the category', () => {
-    expect(matchesWhere({ severity: 'problem', cleared: true }, [], { severity: ATTENTION })).toBe(
-      false,
-    )
+    expect(
+      matchesWhere({ severity: 'verification', cleared: true }, [], { severity: 'verification' }),
+    ).toBe(false)
+  })
+
+  /** A filtered view is a URL somebody sent to whoever owns the instrument.
+   *  Links written before the two categories became one should still land on
+   *  the rows they were about. */
+  it('still answers to the name the two categories had together', () => {
+    expect(matchesWhere(row('verification'), [], { severity: 'attention' })).toBe(true)
+    expect(matchesWhere(row('ok'), [], { severity: 'attention' })).toBe(false)
   })
 
   it('still shows a signed-off row under its own category', () => {
-    const cleared = row('cleared', 'problem')
+    const cleared = row('cleared', 'verification')
     expect(matchesWhere(cleared, [], { severity: 'cleared' })).toBe(true)
     expect(matchesWhere(cleared, [], { severity: ALL })).toBe(true)
     expect(matchesWhere(cleared, [], { cleared: 'cleared' })).toBe(true)
@@ -60,8 +64,7 @@ describe('how a signed-off row reads', () => {
   })
 
   it('leaves every other category coloured by itself', () => {
-    expect(SEVERITY_TONE.problem).toBe('crit')
-    expect(SEVERITY_TONE.review).toBe('warn')
+    expect(SEVERITY_TONE.verification).toBe('warn')
     expect(SEVERITY_TONE.ok).toBe('ok')
     expect(SEVERITY_TONE.unchecked).toBe('na')
     expect(SEVERITY_TONE.excluded).toBe('na')
@@ -77,8 +80,8 @@ describe('against the rows of a real run', () => {
    *  the same number or the dashboard contradicts itself on one screen. */
   it('matches exactly the rows the report counted', () => {
     for (const check of Object.values(REPORT.checks)) {
-      const matched = check.rows.filter((candidate) => attention(candidate))
-      expect(matched.length).toBe(check.summary.attention)
+      const matched = check.rows.filter((candidate) => needsVerifying(candidate))
+      expect(matched.length).toBe(check.summary.verification)
     }
   })
 

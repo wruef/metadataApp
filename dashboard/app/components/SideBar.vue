@@ -9,19 +9,11 @@ const auth = useAuth()
 const batch = useBatch()
 
 /** What the check has waiting for a person — the same count as the segment the
- *  check opens on, so the rail and the table agree about how much is left. */
-function attention(key: string) {
-  const summary = store.report?.checks?.[key]?.summary
-  if (!summary) return 0
-  // Cleared rows are not waiting on anyone. Runs published before the report
-  // carried that count fall back to the severities, which over-counts by
-  // whatever has been signed off rather than showing nothing.
-  return summary.attention ?? summary.problem + summary.review
-}
-/** Red only while a problem is still open. A signed-off row is in the cleared
- *  category rather than the problem one, so this counts what is left. */
-function hot(key: string) {
-  return (store.report?.checks?.[key]?.summary.problem ?? 0) > 0
+ *  check opens on, so the rail and the table agree about how much is left. A
+ *  signed-off row is in the cleared category rather than this one, so this is
+ *  what is left rather than what was ever found. */
+function needsVerifying(key: string) {
+  return store.report?.checks?.[key]?.summary.verification ?? 0
 }
 
 /** Vendor calibrations the repository holds nothing for. */
@@ -99,8 +91,8 @@ const LINK =
       >
         <i :class="['fas', check.icon, 'w-4']" />
         <span class="grow">{{ check.title }}</span>
-        <span v-if="attention(check.key)" class="n" :class="{ hot: hot(check.key) }">
-          {{ attention(check.key) }}
+        <span v-if="needsVerifying(check.key)" class="n">
+          {{ needsVerifying(check.key) }}
         </span>
       </nuxt-link>
     </nav>

@@ -5,7 +5,7 @@ import { VERDICTS, assetNamedByRawSerial, compareValues, identity, readDifferenc
 
 describe('verdict tone', () => {
   it('colours a verdict by the severity the run gives it', () => {
-    expect(toneOf('calibrations', 'vendorMatch', 'MISMATCH')).toBe('crit')
+    expect(toneOf('calibrations', 'vendorMatch', 'MISMATCH')).toBe('warn')
     expect(toneOf('calibrations', 'vendorMatch', 'COMPARED')).toBe('ok')
     // A disagreement with a constant is not a disagreement with the vendor.
     expect(toneOf('calibrations', 'vendorMatch', 'CONSTANT_MISMATCH')).toBe('warn')
@@ -33,7 +33,7 @@ describe('verdict tone', () => {
       token: 'MISMATCH',
       detail: 'raw: 379: ATAPL-68020-00002',
     })
-    expect(toneOf('deployments', 'rawFile_verify', 'MISMATCH: raw: 379: ATAPL-68020-00002')).toBe('crit')
+    expect(toneOf('deployments', 'rawFile_verify', 'MISMATCH: raw: 379: ATAPL-68020-00002')).toBe('warn')
     expect(splitVerdict('MATCH')).toEqual({ token: 'MATCH', detail: '' })
   })
 })

@@ -43,7 +43,7 @@ def _severityMoved(before, after):
 def _rank(severity):
     """A severity this code never wrote -- a hand-edited baseline, or one from a
     future version -- ranks as needing a person rather than ending the run."""
-    return SEVERITIES.index(severity if severity in SEVERITIES else 'review')
+    return SEVERITIES.index(severity if severity in SEVERITIES else 'verification')
 
 
 def _changedFields(before, after):

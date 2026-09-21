@@ -10,8 +10,7 @@ import type { Severity } from '~/store'
 export type Tone = 'ok' | 'warn' | 'crit' | 'na'
 
 export const SEVERITY_TONE: Record<Severity, Tone> = {
-  problem: 'crit',
-  review: 'warn',
+  verification: 'warn',
   unchecked: 'na',
   // Green, whatever the checks found. A sign-off is a person saying they have
   // been and this row is settled, and that is as settled as a row gets — a
@@ -31,7 +30,7 @@ export const SEVERITY_TONE: Record<Severity, Tone> = {
  * This mirrors `SEVERITY` in `src/rca_metadata/report.py`, which is the source
  * of truth: the run uses it to rank rows, and this copy only decides a colour.
  * A verdict missing here reads as `warn`, the same way the run counts an
- * unmapped verdict as `review` — a new verdict draws the eye rather than
+ * unmapped verdict as `verification` — a new verdict draws the eye rather than
  * quietly passing.
  */
 export const VERDICTS: Record<string, Record<string, Record<string, Severity | 'warning'>>> = {
@@ -39,9 +38,9 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
     verdict: {
       MATCH: 'ok',
       FORMAT_MATCH: 'ok',
-      MISMATCH: 'problem',
-      MISSING_FROM_RCA_LIST: 'review',
-      MISSING_FROM_SENSOR_BULK: 'problem',
+      MISMATCH: 'verification',
+      MISSING_FROM_RCA_LIST: 'verification',
+      MISSING_FROM_SENSOR_BULK: 'verification',
       NO_BULK_SERIAL: 'unchecked',
     },
   },
@@ -49,53 +48,55 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
     vendorMatch: {
       COMPARED: 'ok',
       COMPARED_XML: 'ok',
-      MISMATCH: 'problem',
-      MISSING_COEFFICIENT: 'problem',
-      NO_VENDOR_FILE: 'problem',
-      VENDOR_DATE_NEAR_MISS: 'problem',
-      VENDOR_DATE_MISNAMED: 'review',
-      CONSTANT_MISMATCH: 'review',
+      MISMATCH: 'verification',
+      MISSING_COEFFICIENT: 'verification',
+      NO_VENDOR_FILE: 'verification',
+      VENDOR_DATE_NEAR_MISS: 'verification',
+      VENDOR_DATE_MISNAMED: 'verification',
+      CONSTANT_MISMATCH: 'verification',
       COMPARED_CONSTANTS: 'ok',
-      NO_CONSTANTS: 'review',
+      NO_CONSTANTS: 'verification',
       CONFIGURATION_ONLY: 'unchecked',
       PDF_NOTCOMPARED: 'unchecked',
       FORMAT_NOTCOMPARED: 'unchecked',
       NOTCOMPARED: 'unchecked',
       NAN: 'unchecked',
     },
-    calRepo_check: { MATCH: 'ok', NOMATCH: 'review', NOT_EXPECTED: 'excluded' },
-    fileParse: { SUCCESS_TYPE1: 'ok', SUCCESS_TYPE2: 'ok', FAIL: 'problem' },
+    calRepo_check: { MATCH: 'ok', NOMATCH: 'verification', NOT_EXPECTED: 'excluded' },
+    fileParse: { SUCCESS_TYPE1: 'ok', SUCCESS_TYPE2: 'ok', FAIL: 'verification' },
     serialNumber: {
       MATCH_SENSORBULK: 'ok',
-      MISMATCH_SENSORBULK: 'problem',
-      MULTIPLE: 'problem',
-      PARSING_ERROR: 'problem',
+      MISMATCH_SENSORBULK: 'verification',
+      MULTIPLE: 'verification',
+      PARSING_ERROR: 'verification',
       NOTFOUND_FILE: 'unchecked',
       NOTFOUND_SENSORBULK: 'unchecked',
     },
     duplicateCoeff: {
       NONE: 'ok',
       DUPLICATES_IDENTICAL: 'ok',
-      DUPLICATES_NOTIDENTICAL: 'problem',
+      DUPLICATES_NOTIDENTICAL: 'verification',
     },
   },
   deploymentSheets: {
     verdict: {
-      SENSOR_NOT_IN_BULK: 'problem',
-      MOORING_NOT_IN_PLATFORM_BULK: 'problem',
-      NODE_NOT_IN_NODE_BULK: 'problem',
-      ELECTRICAL_NOT_IN_ENG_BULK: 'problem',
-      ASSET_IN_WRONG_BULK_RECORD: 'problem',
-      CRUISE_NOT_IN_CRUISE_LIST: 'problem',
-      DUPLICATE_ASSET_IN_DEPLOYMENT: 'problem',
+      SENSOR_NOT_IN_BULK: 'verification',
+      MOORING_NOT_IN_PLATFORM_BULK: 'verification',
+      NODE_NOT_IN_NODE_BULK: 'verification',
+      ELECTRICAL_NOT_IN_ENG_BULK: 'verification',
+      ASSET_IN_WRONG_BULK_RECORD: 'verification',
+      CRUISE_NOT_IN_CRUISE_LIST: 'verification',
+      DUPLICATE_ASSET_IN_DEPLOYMENT: 'verification',
+      DUPLICATE_NODE_IN_DEPLOYMENT: 'verification',
+      DUPLICATE_MOORING_IN_DEPLOYMENT: 'verification',
     },
   },
   deployments: {
-    verificationStatus: { VERIFIED: 'ok', RAW_SN_POSSIBLE: 'review', NOT_VERIFIED: 'review' },
+    verificationStatus: { VERIFIED: 'ok', RAW_SN_POSSIBLE: 'verification', NOT_VERIFIED: 'verification' },
     rawFile_verify: {
       MATCH: 'ok',
-      MISMATCH: 'problem',
-      NO_FILE: 'review',
+      MISMATCH: 'verification',
+      NO_FILE: 'verification',
       AMBIGUOUS_SN: 'unchecked',
       NO_SN: 'unchecked',
       NAN: 'excluded',
@@ -103,22 +104,22 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
     image_verify: { MATCH: 'ok', MISMATCH: 'warning', NAN: 'excluded', NO_IMAGE_ASSET: 'excluded' },
     calFile_verify: {
       VALID_FILE: 'ok',
-      NO_VALID_FILE: 'problem',
+      NO_VALID_FILE: 'verification',
       EXCLUDED: 'excluded',
       VALID_FILE_CAL_OLDER_THAN_15MONTHS: 'warning',
-      none: 'problem',
+      none: 'verification',
       NAN: 'unchecked',
     },
   },
   positions: {
     verdict: {
       MATCH: 'ok',
-      MISMATCH: 'problem',
-      NEEDS_HITL: 'review',
-      NO_POSITION: 'review',
-      NO_POSITION_NAME: 'review',
-      BAD_POSITION_RECORD: 'review',
-      HITL_PIN_NOT_FOUND: 'review',
+      MISMATCH: 'verification',
+      NEEDS_HITL: 'verification',
+      NO_POSITION: 'verification',
+      NO_POSITION_NAME: 'verification',
+      BAD_POSITION_RECORD: 'verification',
+      HITL_PIN_NOT_FOUND: 'verification',
     },
   },
 }

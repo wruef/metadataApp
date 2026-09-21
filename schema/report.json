@@ -14,9 +14,10 @@
     "about what is optional is worse than none."
   ],
 
-  "schemaVersion": 2,
+  "schemaVersion": 3,
 
-  "severities": ["problem", "review", "unchecked", "cleared", "ok", "excluded"],
+  "//severities": "Worst first; the order is the ranking a queue is sorted by. 'verification' was two categories until schema 3, 'problem' and 'review', and they are one because both end in the same place: somebody reading the row and deciding.",
+  "severities": ["verification", "unchecked", "cleared", "ok", "excluded"],
 
   "report": [
     "schemaVersion",
@@ -44,15 +45,13 @@
 
   "check": ["rows", "summary"],
 
-  "//summary": "Every category, plus attention (what is waiting on a person), verified (agreed plus cleared), and considered (the rows this check could judge at all, which is total less excluded).",
+  "//summary": "Every category, plus verified (agreed plus cleared) and considered (the rows this check could judge at all, which is total less excluded). Schema 2 also carried attention, the count waiting on a person; that is now the verification category itself.",
   "summary": [
-    "problem",
-    "review",
+    "verification",
     "unchecked",
     "cleared",
     "ok",
     "excluded",
-    "attention",
     "verified",
     "considered",
     "total"

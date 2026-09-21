@@ -1,5 +1,5 @@
 {
- "schemaVersion": 2,
+ "schemaVersion": 3,
  "runAt": "2026-09-15T16:26:13+00:00",
  "comparedWith": null,
  "sources": {
@@ -154,9 +154,9 @@
      "HITLstatus": "NA",
      "HITLnotes": "",
      "instrumentType": null,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
@@ -168,9 +168,9 @@
      "HITLstatus": "NA",
      "HITLnotes": "",
      "instrumentType": null,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
@@ -182,9 +182,9 @@
      "HITLstatus": "NA",
      "HITLnotes": "",
      "instrumentType": null,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "The asset is in the sensor bulk record but not in the RCA list"
     },
     {
@@ -314,9 +314,9 @@
      "instrumentType": [
       "ENGPRES"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
@@ -332,9 +332,9 @@
      "instrumentType": [
       "ENGPRES"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
@@ -350,9 +350,9 @@
      "instrumentType": [
       "ENGPRES"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The asset is in the RCA list but not in the sensor bulk record"
     },
     {
@@ -368,9 +368,9 @@
      "instrumentType": [
       "HYDLF-A"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
@@ -386,9 +386,9 @@
      "instrumentType": [
       "MARUM"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
@@ -404,9 +404,9 @@
      "instrumentType": [
       "MARUM"
      ],
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The RCA list and the sensor bulk record hold different serial numbers"
     },
     {
@@ -465,13 +465,11 @@
     }
    ],
    "summary": {
-    "problem": 6,
-    "review": 3,
+    "verification": 9,
     "unchecked": 3,
     "cleared": 0,
     "ok": 6,
     "excluded": 0,
-    "attention": 9,
     "verified": 6,
     "considered": 18,
     "total": 18
@@ -485,9 +483,9 @@
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
      "deployYear": 2014,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The same asset appears twice in one deployment"
     },
     {
@@ -496,20 +494,18 @@
      "value": "ATAPL-58320-00002",
      "verdict": "DUPLICATE_ASSET_IN_DEPLOYMENT",
      "deployYear": 2014,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The same asset appears twice in one deployment"
     }
    ],
    "summary": {
-    "problem": 2,
-    "review": 0,
+    "verification": 2,
     "unchecked": 0,
     "cleared": 0,
     "ok": 0,
     "excluded": 0,
-    "attention": 2,
     "verified": 0,
     "considered": 2,
     "total": 2
@@ -536,9 +532,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2018.3",
      "deployYear": 2018,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
@@ -560,9 +556,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2016.2",
      "deployYear": 2016,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
@@ -584,9 +580,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT2-MJ03D-12-VEL3DB304.2014.1",
      "deployYear": 2014,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
@@ -608,9 +604,9 @@
      "verificationStatus": "RAW_SN_POSSIBLE",
      "hitlKey": "RS03INT2-MJ03D-11-CTDPFB307.2026.3",
      "deployYear": 2026,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No raw file was found to check the serial number against"
     },
     {
@@ -752,9 +748,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2022.8",
      "deployYear": 2022,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
@@ -776,9 +772,9 @@
      "verificationStatus": "RAW_SN_POSSIBLE",
      "hitlKey": "RS03ECAL-MJ03E-12-CTDPFB306.2026.7",
      "deployYear": 2026,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No raw file was found to check the serial number against"
     },
     {
@@ -800,9 +796,9 @@
      "verificationStatus": "RAW_SN_POSSIBLE",
      "hitlKey": "RS03CCAL-MJ03F-12-CTDPFB305.2026.7",
      "deployYear": 2026,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No raw file was found to check the serial number against"
     },
     {
@@ -824,9 +820,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2022.8",
      "deployYear": 2022,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
@@ -848,9 +844,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2021.7",
      "deployYear": 2021,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
@@ -872,9 +868,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-10-TRHPHA301.2020.6",
      "deployYear": 2020,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment"
     },
     {
@@ -944,7 +940,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPS-SF03A-4A-NUTNRA301.2015.2",
      "deployYear": 2015,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "The serial number in the raw archive is not the asset on the deployment sheet"
@@ -992,7 +988,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPS-PC03A-06-VADCPA301.2016.3",
      "deployYear": 2016,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No calibration on file dated before this deployment"
@@ -1016,7 +1012,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2018.4",
      "deployYear": 2018,
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No raw file was found to check the serial number against"
@@ -1040,7 +1036,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2014.1",
      "deployYear": 2014,
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No raw file was found to check the serial number against"
@@ -1064,9 +1060,9 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2020.6",
      "deployYear": 2020,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "No calibration on file dated before this deployment"
     },
     {
@@ -1088,7 +1084,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2018.4",
      "deployYear": 2018,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No calibration on file dated before this deployment"
@@ -1112,7 +1108,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-02-VEL3DA303.2017.3",
      "deployYear": 2017,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No calibration on file dated before this deployment"
@@ -1136,9 +1132,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03AXBS-LJ03A-12-DOSTAD301.2014.1",
      "deployYear": 2014,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "No calibration on file dated before this deployment"
     },
     {
@@ -1160,9 +1156,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03AXBS-LJ03A-09-HYDBBA302.2016.3",
      "deployYear": 2016,
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "No calibration on file dated before this deployment"
     },
     {
@@ -1208,7 +1204,7 @@
      "verificationStatus": "VERIFIED",
      "hitlKey": "RS03AXPD-DP03A-06-DOSTAD304.2019.5",
      "deployYear": 2019,
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No raw file was found to check the serial number against"
@@ -1256,9 +1252,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-09-TRHPHA302.2023.1",
      "deployYear": 2023,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 its calibration is more than fifteen months older than the deployment; the pre-deploy photograph shows a different asset"
     },
     {
@@ -1280,9 +1276,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-RASFLA301.2023.9",
      "deployYear": 2023,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 the pre-deploy photograph shows a different asset"
     },
     {
@@ -1304,9 +1300,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2023.9",
      "deployYear": 2023,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
@@ -1328,9 +1324,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-07-PPSDNA301.2022.8",
      "deployYear": 2022,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
     },
     {
@@ -1352,9 +1348,9 @@
      "verificationStatus": "NOT_VERIFIED",
      "hitlKey": "RS03INT1-MJ03C-05-CAMDSB303.2023.7",
      "deployYear": 2023,
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "Nothing independent of the deployment sheet can confirm this instrument \u2014 the pre-deploy photograph shows a different asset"
     },
     {
@@ -1383,13 +1379,11 @@
     }
    ],
    "summary": {
-    "problem": 3,
-    "review": 15,
+    "verification": 18,
     "unchecked": 0,
     "cleared": 15,
     "ok": 3,
     "excluded": 0,
-    "attention": 18,
     "verified": 18,
     "considered": 36,
     "total": 36
@@ -1447,9 +1441,9 @@
      "resolution": "PRIOR",
      "sourceRow": 252,
      "verdict": "MISMATCH",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
@@ -1472,9 +1466,9 @@
      "resolution": "PRIOR",
      "sourceRow": 252,
      "verdict": "MISMATCH",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
@@ -1497,9 +1491,9 @@
      "resolution": "PRIOR",
      "sourceRow": 252,
      "verdict": "MISMATCH",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "The position on the deployment sheet differs from the RCA spreadsheet",
      "differences": [
       {
@@ -1572,13 +1566,11 @@
     }
    ],
    "summary": {
-    "problem": 3,
-    "review": 0,
+    "verification": 3,
     "unchecked": 0,
     "cleared": 0,
     "ok": 7,
     "excluded": 0,
-    "attention": 3,
     "verified": 7,
     "considered": 10,
     "total": 10
@@ -1597,9 +1589,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATOSU-69825-00001__20150803.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No comparison is written for this instrument yet"
     },
     {
@@ -1613,9 +1605,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATOSU-69825-00002__20140815.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No comparison is written for this instrument yet"
     },
     {
@@ -1629,9 +1621,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATOSU-69825-00002__20160722.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No comparison is written for this instrument yet"
     },
     {
@@ -1649,19 +1641,19 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATAPL-69827-10004__20240616.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
-       "file": "ATAPL-69827-10004__20240616",
-       "coefficient": "CC_C1",
-       "github": 1022.922,
-       "expected": 1022.921,
-       "difference": 0.0009999999999763531,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -1743,19 +1735,19 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
      "hitlKey": "ATAPL-66662-00002__20160303.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
-       "file": "ATAPL-66662-00002__20160303",
-       "coefficient": "CC_offset",
-       "github": 4.13,
-       "expected": 0.0,
-       "difference": 4.13,
-       "source": "constant",
-       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -1774,19 +1766,19 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
      "hitlKey": "ATAPL-66662-00008__20150412.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
-       "file": "ATAPL-66662-00008__20150412",
-       "coefficient": "CC_offset",
-       "github": -1.7,
-       "expected": 0.0,
-       "difference": -1.7,
-       "source": "constant",
-       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -1805,19 +1797,19 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "CONSTANT_MISMATCH",
      "hitlKey": "ATAPL-66662-00009__20150419.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "The only differences are with the fixed values in coefficientConstants.csv",
      "differences": [
       {
-       "file": "ATAPL-66662-00009__20150419",
-       "coefficient": "CC_offset",
-       "github": -5.24,
-       "expected": 0.0,
-       "difference": -5.24,
-       "source": "constant",
-       "note": "Added pressure offset for miscalibrated Sea-Bird Druck Pressure Sensors (Redmine #12180)"
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -1836,91 +1828,91 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATAPL-67627-00001__20150423.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_pa0",
-       "github": 1.7333387,
-       "expected": 1.733339,
-       "difference": -2.9999999995311555e-07,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_pa1",
-       "github": 0.0157143164,
-       "expected": 0.01571432,
-       "difference": -3.5999999994928977e-09,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_pa2",
-       "github": -6.68779159e-10,
-       "expected": -6.687792e-10,
-       "difference": 4.1000000017205525e-17,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptca0",
-       "github": 524944.174,
-       "expected": 524944.2,
-       "difference": -0.025999999954365194,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptca1",
-       "github": 4.20704654,
-       "expected": 4.207047,
-       "difference": -4.599999998688986e-07,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptca2",
-       "github": 0.0333027516,
-       "expected": 0.03330275,
-       "difference": 1.6000000005456094e-09,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptempa0",
-       "github": -68.1250017,
-       "expected": -68.125,
-       "difference": -1.6999999985500835e-06,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptempa1",
-       "github": 49.854817,
-       "expected": 49.85482,
-       "difference": -2.9999999995311555e-06,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-67627-00001__20150423",
-       "coefficient": "CC_ptempa2",
-       "github": -0.0340818524,
-       "expected": -0.03408185,
-       "difference": -2.400000004287861e-09,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -1961,64 +1953,64 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATOSU-58694-00007__20200922.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "Coefficients differ from the vendor file and nobody has reviewed it",
      "differences": [
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_frequency_offset",
-       "github": -0.5064574,
-       "expected": -0.4839777,
-       "difference": -0.022479699999999936,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_oxygen_signal_slope",
-       "github": 0.5022414,
-       "expected": 0.4520641,
-       "difference": 0.050177299999999925,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_residual_temperature_correction_factor_a",
-       "github": -0.003577813,
-       "expected": -0.004208362,
-       "difference": 0.0006305490000000002,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_residual_temperature_correction_factor_b",
-       "github": 0.0001487795,
-       "expected": 0.000190347,
-       "difference": -4.156750000000001e-05,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_residual_temperature_correction_factor_c",
-       "github": -2.488514e-06,
-       "expected": -2.901039e-06,
-       "difference": 4.125249999999999e-07,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-58694-00007__20200922",
-       "coefficient": "CC_voltage_offset",
-       "github": -0.5064574,
-       "expected": -0.4839777,
-       "difference": -0.022479699999999936,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -2117,7 +2109,7 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATAPL-58320-00003__20160302.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No comparison is written for this instrument yet"
@@ -2133,7 +2125,7 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATAPL-58320-00004__20160302.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No comparison is written for this instrument yet"
@@ -2170,7 +2162,7 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATAPL-58320-00005__20160302.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "No comparison is written for this instrument yet"
@@ -2211,37 +2203,37 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATAPL-70110-00001__20130422.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
-       "file": "ATAPL-70110-00001__20130422",
-       "coefficient": "CC_dark_counts_volume_scatter",
-       "github": 48.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-70110-00001__20130422",
-       "coefficient": "CC_measurement_wavelength",
-       "github": 700.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-70110-00001__20130422",
-       "coefficient": "CC_scale_factor_volume_scatter",
-       "github": 1.871e-05,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -2260,37 +2252,37 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATAPL-70110-00002__20131205.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
-       "file": "ATAPL-70110-00002__20131205",
-       "coefficient": "CC_dark_counts_volume_scatter",
-       "github": 48.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-70110-00002__20131205",
-       "coefficient": "CC_measurement_wavelength",
-       "github": 700.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATAPL-70110-00002__20131205",
-       "coefficient": "CC_scale_factor_volume_scatter",
-       "github": 1.877e-05,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -2331,37 +2323,37 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "MISMATCH",
      "hitlKey": "ATOSU-70110-00007__20131205.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": true,
      "severity": "cleared",
      "reason": "Coefficients differ from the vendor file, reviewed and cleared",
      "differences": [
       {
-       "file": "ATOSU-70110-00007__20131205",
-       "coefficient": "CC_dark_counts_volume_scatter",
-       "github": 49.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-70110-00007__20131205",
-       "coefficient": "CC_measurement_wavelength",
-       "github": 700.0,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       },
       {
-       "file": "ATOSU-70110-00007__20131205",
-       "coefficient": "CC_scale_factor_volume_scatter",
-       "github": 1.873e-05,
-       "expected": null,
-       "difference": null,
-       "source": "vendor",
-       "note": ""
+       "file": "file",
+       "coefficient": "coefficient",
+       "github": "github",
+       "expected": "expected",
+       "difference": "difference",
+       "source": "source",
+       "note": "note"
       }
      ]
     },
@@ -2380,9 +2372,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NO_VENDOR_FILE",
      "hitlKey": "ATOSU-68020-00008__20170111.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "No vendor calibration is on record to compare against",
      "differences": []
     },
@@ -2506,9 +2498,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NO_VENDOR_FILE",
      "hitlKey": "ATAPL-58341-00006__20170110.csv",
-     "finding": "problem",
+     "finding": "verification",
      "cleared": false,
-     "severity": "problem",
+     "severity": "verification",
      "reason": "No vendor calibration is on record to compare against",
      "differences": []
     },
@@ -2544,9 +2536,9 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATAPL-68020-00001__20170202.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No comparison is written for this instrument yet"
     },
     {
@@ -2560,20 +2552,18 @@
      "duplicateCoeff": "NONE",
      "vendorMatch": "NAN",
      "hitlKey": "ATAPL-68020-00002__20140927.csv",
-     "finding": "review",
+     "finding": "verification",
      "cleared": false,
-     "severity": "review",
+     "severity": "verification",
      "reason": "No comparison is written for this instrument yet"
     }
    ],
    "summary": {
-    "problem": 5,
-    "review": 5,
+    "verification": 10,
     "unchecked": 7,
     "cleared": 16,
     "ok": 3,
     "excluded": 0,
-    "attention": 10,
     "verified": 19,
     "considered": 36,
     "total": 36

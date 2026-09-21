@@ -527,7 +527,7 @@ def test_aCtdWithNoVendorFileIsStillAFinding():
     row = {'fileName': 'x.csv', 'instrument': 'CTDBPN', 'HITLstatus': 'NA',
            'fileParse': 'SUCCESS_TYPE1', 'serialNumber': 'MATCH_SENSORBULK',
            'duplicateCoeff': 'NONE', 'calRepo_check': 'NOMATCH', 'vendorMatch': 'NAN'}
-    assert scoreRows('calibrations', [row])[0]['severity'] == 'review'
+    assert scoreRows('calibrations', [row])[0]['severity'] == 'verification'
 
 
 def test_theRealFixedValuesCoverTheRealFiles():

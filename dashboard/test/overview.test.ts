@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { byYear, niceMax, QUEUE, queueCounts } from '../app/overview'
 import { matchesWhere } from '../app/query'
-import { CHECKS, type Row } from '../app/store'
+import { CHECKS, SEVERITIES, type Row } from '../app/store'
 
 /** Real rows, sampled from a run to cover every verdict each check produces.
  *  Committed, because the published reports are not: a test that silently skips
@@ -17,7 +17,7 @@ const REPORT = JSON.parse(
  *  in the browser. */
 const facetsOf = (check: string) => CHECKS.find((each) => each.key === check)?.facets ?? []
 
-describe('what needs a person', () => {
+describe('what needs verification', () => {
   const queue = queueCounts(REPORT.checks, facetsOf)
 
   it('finds real work in real rows', () => {
@@ -29,14 +29,17 @@ describe('what needs a person', () => {
     expect(queueCounts({ calibrations: { rows: [] } }, facetsOf)).toEqual([])
   })
 
-  it('ranks problems above rows that only need a person', () => {
-    const worst = queue.map((item) => item.worst)
-    const ranked = [...worst].sort(
-      (a, b) =>
-        ['problem', 'review', 'unchecked', 'ok'].indexOf(a) -
-        ['problem', 'review', 'unchecked', 'ok'].indexOf(b),
-    )
-    expect(worst).toEqual(ranked)
+  it('ranks by category first, then by how much is in each', () => {
+    // There is one category for everything a run could not settle, so in
+    // practice this orders the queue largest first. The severity term still
+    // matters: a situation whose rows are all unchecked belongs below one whose
+    // rows need verifying, however many of each there are.
+    const ordered = queue.map((item) => [SEVERITIES.indexOf(item.worst), -item.count])
+    for (let i = 1; i < ordered.length; i++) {
+      const [rank, size] = ordered[i]!
+      const [before, sizeBefore] = ordered[i - 1]!
+      expect(rank > before || (rank === before && size >= sizeBefore)).toBe(true)
+    }
   })
 
   it('never counts a row a reviewer already signed off', () => {
@@ -67,7 +70,7 @@ describe('what needs a person', () => {
 describe('deployments by year', () => {
   const rows = [
     { severity: 'ok', cleared: false, deployDate: '2014-06-01T00:00:00' },
-    { severity: 'problem', cleared: false, deployDate: '2014-08-01T00:00:00' },
+    { severity: 'verification', cleared: false, deployDate: '2014-08-01T00:00:00' },
     { severity: 'ok', cleared: false, deployDate: '2016-06-01T00:00:00' },
     { severity: 'ok', cleared: false, deployDate: '' },
   ] as Row[]
@@ -80,7 +83,7 @@ describe('deployments by year', () => {
   it('splits each year by severity', () => {
     expect(bars[0]).toMatchObject({
       total: 2,
-      counts: { ok: 1, problem: 1, review: 0, unchecked: 0 },
+      counts: { ok: 1, verification: 1, unchecked: 0 },
     })
   })
 

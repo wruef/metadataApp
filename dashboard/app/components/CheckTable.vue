@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
 import { compareValues, identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
-import { ALL, ATTENTION, matchesWhere, type Where } from '~/query'
+import { ALL, matchesWhere, type Where } from '~/query'
 import { useBatch } from '~/batch'
 import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
 import { SEVERITIES, SEVERITY_LABEL, type Check, type Facet, type Row } from '~/store'
@@ -64,9 +64,7 @@ const asked = (key: string) => (typeof route.query[key] === 'string' ? route.que
 /** Otherwise the check opens on its queue, not on the 1,558 rows that already
  *  agree. A check with nothing outstanding opens on everything instead, so it
  *  never greets you with an empty table. */
-const fallback = (check.summary.attention ?? check.summary.problem + check.summary.review) > 0
-  ? ATTENTION
-  : ALL
+const fallback = check.summary.verification > 0 ? 'verification' : ALL
 
 const severity = ref<string>(asked('severity') || fallback)
 /** Empty means the facet is not narrowing anything. */
@@ -152,8 +150,9 @@ const rows = computed(() => {
   if (!sortColumn.value) {
     return found.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
   }
-  // Review status sorts by its rank, not by the word: 'problem' before 'review'
-  // is the order that means something, and alphabetically it is the reverse.
+  // Review status sorts by its rank, not by the word: the order the categories
+  // are defined in is the order a queue is worked in, and alphabetically it is
+  // meaningless.
   if (sortColumn.value === REVIEW_STATUS) {
     return found.sort(
       (a, b) => direction * (SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)),
@@ -165,12 +164,9 @@ const rows = computed(() => {
 
 const severityCounts = computed(() => {
   const base = check.rows.filter((row) => matches(row, 'severity'))
-  const counts: Record<string, number> = { [ALL]: base.length, [ATTENTION]: 0 }
+  const counts: Record<string, number> = { [ALL]: base.length }
   for (const row of base) {
     counts[row.severity] = (counts[row.severity] ?? 0) + 1
-    // A signed-off row is in the cleared category, never in these two, so
-    // nothing here has to exclude it.
-    if (row.severity === 'problem' || row.severity === 'review') counts[ATTENTION]!++
   }
   return counts
 })
@@ -178,7 +174,6 @@ const severityCounts = computed(() => {
 /** The segments, in the order a queue is worked. A severity the check has none
  *  of anywhere is left out rather than shown as a permanent zero. */
 const segments = computed(() => [
-  { value: ATTENTION, label: 'Needs attention' },
   ...SEVERITIES.filter((s) => check.summary[s] > 0).map((s) => ({
     value: s as string,
     label: SEVERITY_LABEL[s],

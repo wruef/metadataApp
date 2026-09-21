@@ -69,9 +69,8 @@ verdict.
 
 The seven are settled. Every coefficient agrees, so the two are one calibration
 recorded under two dates and nothing about the numbers is in doubt — a file name
-is wrong. That is a `review` rather than a `problem`, because it needs a person
-and not an alarm. Five NUTNR and two FLNTU calibrations are in that state, one
-to three days out.
+is wrong. That needs verifying and not an alarm. Five NUTNR and two FLNTU
+calibrations are in that state, one to three days out.
 
 The five are not. Four FLORD calibrations have a vendor file one day away whose
 `CC_scale_factor_cdom` differs, and one OPTAA has one seven days away differing

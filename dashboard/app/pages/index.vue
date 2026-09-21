@@ -99,7 +99,8 @@ const tiles = computed(() => {
       <h1 class="font-semibold text-2xl">Metadata verification</h1>
       <p class="max-w-prose mt-1 text-gray-600">
         Every deployed sensor correctly assigned, and every calibration file matching the vendor
-        original. Work the queue by consequence: problems first, then what needs a person.
+        original. Everything a run could not settle on its own is in one category, needing
+        verification: work the queue situation by situation.
       </p>
     </div>
 
@@ -142,12 +143,12 @@ const tiles = computed(() => {
       </div>
     </div>
 
-    <!-- The piece that makes the page worth opening: not how many problems there
-         are, but which situations they are, and a way into each. -->
+    <!-- The piece that makes the page worth opening: not how much needs
+         verifying, but which situations it is, and a way into each. -->
     <div class="bg-white border border-gray-200 overflow-hidden rounded-lg">
       <h2 class="border-b border-gray-100 flex gap-2.5 items-baseline px-4 py-3">
-        <span class="font-semibold text-[13px]">What needs a person</span>
-        <span class="text-[12px] text-gray-500">ranked by consequence, not by row order</span>
+        <span class="font-semibold text-[13px]">What needs verification</span>
+        <span class="text-[12px] text-gray-500">largest first, not in row order</span>
       </h2>
       <div v-if="!queue.length" class="px-4 py-6 text-gray-500 text-sm">
         Nothing outstanding in this run.

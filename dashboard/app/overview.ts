@@ -2,7 +2,7 @@ import { matchesWhere, type Where } from '~/query'
 import { SEVERITIES, type Facet, type Row, type Severity } from '~/store'
 
 /**
- * The overview: what needs a person, and how the deployment record has held up
+ * The overview: what needs verification, and how the deployment record has held up
  * over the years.
  *
  * Nuxt-free so it can be tested. The queue is the piece that earns the page —
@@ -118,7 +118,7 @@ export const QUEUE: Queued[] = [
     title: 'Sheet entries naming something no other record knows',
     detail:
       'A deployment sheet names an asset, mooring or cruise that is absent from the record that should define it.',
-    where: { severity: 'problem', cleared: 'open' },
+    where: { severity: 'verification', cleared: 'open' },
   },
 ]
 
@@ -169,7 +169,11 @@ export function byYear(rows: Row[], yearOf: (row: Row) => string): YearBar[] {
     if (!year) continue
     let bar = years.get(year)
     if (!bar) {
-      bar = { year, total: 0, counts: { problem: 0, review: 0, unchecked: 0, cleared: 0, ok: 0, excluded: 0 } }
+      bar = {
+        year,
+        total: 0,
+        counts: Object.fromEntries(SEVERITIES.map((s) => [s, 0])) as Record<Severity, number>,
+      }
       years.set(year, bar)
     }
     bar.total++

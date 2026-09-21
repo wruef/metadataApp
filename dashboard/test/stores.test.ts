@@ -148,6 +148,64 @@ const report = (runAt: string, comparedWith: string | null = null) => ({
   checks: { deployments: { rows: [], summary: { problem: 0, total: 0 } } },
 })
 
+describe('a run published under the older schema', () => {
+  /** Schema 2 ranked a row `problem` where one record disagreed with another
+   *  and `review` where nothing had established it either way. Every one of
+   *  those runs is still in the picker, and next season's review is read
+   *  against one, so they have to go on rendering: a severity with no label has
+   *  no colour and no segment, and the table shows blank badges. */
+  it('is read with the two old categories folded into one', async () => {
+    globalThis.$fetch = vi.fn(() => Promise.resolve({
+      schemaVersion: 2,
+      runAt: '2026-09-18T00:00:00',
+      sources: {},
+      checks: {
+        deployments: {
+          rows: [
+            { severity: 'problem', finding: 'problem', cleared: false },
+            { severity: 'review', cleared: false },
+            { severity: 'ok', cleared: false },
+          ],
+          summary: { problem: 1, review: 1, unchecked: 0, cleared: 0, ok: 1,
+                     excluded: 0, attention: 2, total: 3 },
+        },
+      },
+    })) as never
+
+    const store = useStore()
+    await store.load()
+    const check = store.report!.checks.deployments!
+    expect(check.rows.map((row) => row.severity)).toEqual([
+      'verification', 'verification', 'ok'])
+    expect(check.rows[0]!.finding).toBe('verification')
+    expect(check.summary.verification).toBe(2)
+    // The old keys are gone, so nothing can read one by accident and get a
+    // number that means half the category.
+    expect('problem' in check.summary).toBe(false)
+    expect('attention' in check.summary).toBe(false)
+  })
+
+  it('leaves a current run alone', async () => {
+    globalThis.$fetch = vi.fn(() => Promise.resolve({
+      schemaVersion: 3,
+      runAt: '2026-09-18T00:00:00',
+      comparedWith: null,
+      sources: {},
+      checks: {
+        deployments: {
+          rows: [{ severity: 'verification', cleared: false }],
+          summary: { verification: 1, unchecked: 0, cleared: 0, ok: 0,
+                     excluded: 0, total: 1 },
+        },
+      },
+    })) as never
+
+    const store = useStore()
+    await store.load()
+    expect(store.report!.checks.deployments!.summary.verification).toBe(1)
+  })
+})
+
 describe('the comparison a run is read with', () => {
   /** Which urls were asked for, so a request that should not happen is visible
    *  as an absence rather than as a caught error nobody sees. */

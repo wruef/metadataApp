@@ -352,6 +352,29 @@ def _instrumentOf(refDes):
     return str(refDes).split('-')[-1]
 
 
+## An asset that hosts instruments rather than being one, and how much of a
+## reference designator names the place it occupies. Many deployment rows carry
+## the same node at the same time -- that is a node doing its job, a dozen
+## instruments hanging off it -- so these are compared place against place
+## rather than row against row. Being in two places at once is the error.
+##
+## A node is the site and the node: RS03AXBS-MJ03A. A mooring is the site alone.
+## electrical.uid is empty in every sheet today, and what a place would mean for
+## one is not something to guess at before there is a row to look at.
+HOSTING_ASSETS = {
+    'node.uid': ('NODE', lambda refDes: '-'.join(str(refDes).split('-')[:2])),
+    'mooring.uid': ('MOORING', lambda refDes: str(refDes).split('-')[0]),
+}
+
+
+def _overlap(starts, stops, first, second):
+    """Whether two deployments were in the water over any of the same days.
+
+    Strict at both ends: one ending the day the next begins is a turnaround.
+    """
+    return starts[first] < stops[second] and starts[second] < stops[first]
+
+
 def checkDeploymentSheets(deployments, bulk):
     """Integrity of the deployment sheets themselves.
 
@@ -386,11 +409,20 @@ def checkDeploymentSheets(deployments, bulk):
         if value not in cruises:
             record(index, value, 'CRUISE_NOT_IN_CRUISE_LIST')
 
-    ## The same instrument cannot be in two places at once. Compared by the
-    ## time it was in the water, not by deployment number: numbers count per
-    ## designator, so one asset can be deployment 3 on one and 7 on another in
-    ## the same season, and two unrelated designators can share a number. A
-    ## deployment still in the water runs to the end of time here.
+    ## No asset is in the water twice at once. Asset IDs are unique across every
+    ## instrument class, so the asset alone identifies the instrument and two
+    ## rows carrying one are two claims about where it was.
+    ##
+    ## Overlapping dates are the whole test. Deployment numbers cannot find this
+    ## on their own: they count per designator, so one asset can be deployment 3
+    ## on one and 7 on another in the same season, and two unrelated designators
+    ## can share a number. Nor does the designator matter. Two overlapping
+    ## deployments of one asset on the *same* designator used to be waved
+    ## through as a redeployment, and that is where the error actually lives:
+    ## deployment 4 of a velocity meter was never given a stop date, deployment
+    ## 5 started a year later, and the sheet has said ever since that both are
+    ## still in the water. A deployment with no stop date runs to the end of
+    ## time here, which is what makes that visible.
     starts = pd.to_datetime(deployments['startDateTime'])
     stops = pd.to_datetime(deployments['stopDateTime']).fillna(pd.Timestamp.max)
     designator = deployments['Reference Designator']
@@ -398,18 +430,51 @@ def checkDeploymentSheets(deployments, bulk):
         if len(group) < 2 or not str(asset).strip():
             continue
         for first, second in itertools.combinations(group.index, 2):
-            ## The same designator again is a redeployment, not a second place.
-            if designator[first] == designator[second]:
-                continue
-            if not (starts[first] < stops[second] and starts[second] < stops[first]):
+            if not _overlap(starts, stops, first, second):
                 continue
             ## Unless the two names are one instrument, which the RAS and its
             ## D1000 are: one asset, two data streams, named once under each.
+            ## One designator twice is never that -- the set is then a single
+            ## name and matches nothing here.
             if frozenset(_instrumentOf(designator[k]) for k in (first, second)) in ONE_INSTRUMENT_TWO_STREAMS:
                 continue
             for here, there in ((first, second), (second, first)):
-                record(here, asset, 'DUPLICATE_ASSET_IN_DEPLOYMENT: also '
-                       f"{designator[there]} deployment {deployments.at[there, 'deploymentNumber']}")
+                where = ('deployment ' if designator[there] == designator[here]
+                         else f'{designator[there]} deployment ')
+                record(here, asset, 'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps '
+                       f"{where}{deployments.at[there, 'deploymentNumber']}")
+
+    ## A node is at one place at a time too. It hosts many instruments at once,
+    ## so its asset is on many rows at once and those rows are not the
+    ## comparison -- the places are. A junction box recorded at RS03AXBS-MJ03A
+    ## since 2014 and at RS03CCAL-MJ03F since 2018, both still open, is one box
+    ## in two places on the seafloor.
+    for column, (kind, placeOf) in HOSTING_ASSETS.items():
+        held = deployments[column].dropna().astype(str).str.strip()
+        for asset, group in deployments.loc[held[held != ''].index].groupby(held):
+            byPlace = {}
+            for index in group.index:
+                byPlace.setdefault(placeOf(designator[index]), []).append(index)
+            for here in sorted(byPlace):
+                ## Every other place this one is claimed at over the same days,
+                ## named on one finding rather than one apiece: a box at three
+                ## places is one thing wrong, not six.
+                clashes = []
+                for there in sorted(byPlace):
+                    if there == here:
+                        continue
+                    other = next((b for a in byPlace[here] for b in byPlace[there]
+                                  if _overlap(starts, stops, a, b)), None)
+                    if other is not None:
+                        clashes.append(f'{there} from {starts[other]:%Y-%m-%d}')
+                if not clashes:
+                    continue
+                ## The earliest row at this place, so the finding points at a
+                ## sheet line somebody can open rather than at whichever
+                ## instrument happened to be compared first.
+                first = min(byPlace[here], key=lambda index: starts[index])
+                record(first, asset,
+                       f'DUPLICATE_{kind}_IN_DEPLOYMENT: also at ' + ', '.join(clashes))
     return rows
 
 

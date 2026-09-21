@@ -164,7 +164,7 @@ You should have: the dashboard opening on this season's run.
 
 ## 5. Work the queue, check by check
 
-The home page opens on **what needs a person**: each situation with its count,
+The home page opens on **what needs verification**: each situation with its count,
 and a link that opens the check filtered to exactly those rows. Work them in
 the order the rail lists the checks. Every row you open shows a sentence saying
 why it is open, the values that disagree, the check's raw output, and links to
@@ -180,7 +180,7 @@ For every open row there are three possible decisions:
 
 ### Calibrations
 
-1. Open **Calibrations**. It opens on *Needs attention*.
+1. Open **Calibrations**. It opens on *Needs verification*.
 2. For a `MISMATCH`, press **View files side by side**. The coefficients that
    disagree are marked in both files.
 3. If the repository file is wrong: type the vendor's value in **Correct to**,

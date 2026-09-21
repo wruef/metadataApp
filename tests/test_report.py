@@ -21,8 +21,8 @@ def test_agreeingRowIsOk():
     assert severityOf('sensorBulk', {'verdict': 'MATCH'}) == 'ok'
 
 
-def test_disagreementIsAProblem():
-    assert severityOf('sensorBulk', {'verdict': 'MISMATCH'}) == 'problem'
+def test_disagreementNeedsVerifying():
+    assert severityOf('sensorBulk', {'verdict': 'MISMATCH'}) == 'verification'
 
 
 def test_nothingComparedIsNotAPass():
@@ -46,7 +46,7 @@ def test_aPhotographAloneLeavesADeploymentUnconfirmed():
 
     row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'NAN',
            'image_verify': 'MATCH', 'calFile_verify': 'VALID_FILE', 'cleared': False}
-    assert severityOf('deployments', row) == 'review'
+    assert severityOf('deployments', row) == 'verification'
     assert 'photograph alone' in reasonOf('deployments', row)
 
 
@@ -72,7 +72,7 @@ def test_noCalibrationAtAllIsAFindingRatherThanAnAbsence():
 
     row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
            'image_verify': 'NAN', 'calFile_verify': 'none', 'cleared': False}
-    assert severityOf('deployments', row) == 'problem'
+    assert severityOf('deployments', row) == 'verification'
     assert 'holds none' in reasonOf('deployments', row)
 
 
@@ -102,7 +102,7 @@ def test_aConfirmedDeploymentStillCarriesItsRealFindings():
     the calibration on file, and a missing one is still a finding."""
     row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH', 'image_verify': 'NAN',
            'calFile_verify': 'NO_VALID_FILE'}
-    assert severityOf('deployments', row) == 'problem'
+    assert severityOf('deployments', row) == 'verification'
 
 
 def test_aDisagreeingPhotographIsNotedRatherThanHeldAgainstTheRow():
@@ -133,16 +133,16 @@ def test_aRowTakesItsWorstVerdict():
     missing is not a pass."""
     row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'MATCH',
            'image_verify': 'NAN', 'calFile_verify': 'NO_VALID_FILE'}
-    assert severityOf('deployments', row) == 'problem'
+    assert severityOf('deployments', row) == 'verification'
 
 
 def test_verdictDetailAfterAColonIsIgnored():
     row = {'rawFile_verify': 'MISMATCH: raw: 1130: ATAPL-58322-00003'}
-    assert severityOf('deployments', row) == 'problem'
+    assert severityOf('deployments', row) == 'verification'
 
 
 def test_anUnmappedVerdictGoesInFrontOfAPersonRatherThanPassing():
-    assert severityOf('positions', {'verdict': 'SOMETHING_NEW'}) == 'review'
+    assert severityOf('positions', {'verdict': 'SOMETHING_NEW'}) == 'verification'
 
 
 def test_aCheckWithNoMappingIsNotScored():
@@ -158,7 +158,7 @@ def test_aSignedOffRowKeepsItsFailingCheck():
     rows = scoreRows('calibrations', [{'vendorMatch': 'MISMATCH', 'HITLstatus': 'Clear'}])
     assert rows[0]['cleared'] is True
     assert rows[0]['severity'] == 'cleared'
-    assert rows[0]['finding'] == 'problem'
+    assert rows[0]['finding'] == 'verification'
 
 
 def test_notClearIsNotCleared():
@@ -175,20 +175,19 @@ def test_summaryCountsEverySeverityAndTheClearedRows():
         {'verdict': 'MATCH'}, {'verdict': 'MISMATCH'},
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'NO_BULK_SERIAL'}])
     assert summarise(rows) == {
-        'problem': 1, 'review': 0, 'unchecked': 1, 'cleared': 1, 'ok': 1, 'excluded': 0,
-        'attention': 1, 'verified': 2, 'considered': 4, 'total': 4}
+        'verification': 1, 'unchecked': 1, 'cleared': 1, 'ok': 1, 'excluded': 0,
+        'verified': 2, 'considered': 4, 'total': 4}
 
 
-def test_aClearedRowIsItsOwnCategoryRatherThanAProblem():
-    """Both rows disagree with the sensor bulk record. The signed-off one is not
-    a problem and not work; the other is both."""
+def test_aClearedRowIsItsOwnCategoryRatherThanWorkStillToDo():
+    """Both rows disagree with the sensor bulk record. The signed-off one has
+    been verified; the other is still waiting for somebody."""
     signed, open_ = scoreRows('sensorBulk', [
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'MISMATCH'}])
     assert signed['severity'] == 'cleared'
-    assert open_['severity'] == 'problem'
+    assert open_['severity'] == 'verification'
     counts = summarise([signed, open_])
-    assert counts['problem'] == 1
-    assert counts['attention'] == 1
+    assert counts['verification'] == 1
     assert counts['cleared'] == 1
 
 
@@ -197,7 +196,7 @@ def test_aClearedRowKeepsWhatTheCheckFound():
     errors, so the finding may never be discarded by the sign-off."""
     row = scoreRows('sensorBulk', [{'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}])[0]
     assert row['severity'] == 'cleared'
-    assert row['finding'] == 'problem'
+    assert row['finding'] == 'verification'
 
 
 def test_aClearedRowThatAgreesKeepsAnAgreeingFinding():
@@ -219,22 +218,20 @@ def test_aFlaggedRowIsStillWaitingOnSomeone():
     """NotClear is a reviewer asking for someone else, not a decision closing
     the row."""
     rows = scoreRows('sensorBulk', [{'verdict': 'MISMATCH', 'HITLstatus': 'NotClear'}])
-    assert summarise(rows)['attention'] == 1
+    assert summarise(rows)['verification'] == 1
 
 
-def test_theProblemCountLeavesOutWhatWasSignedOff():
-    """The rail colours itself red on an open problem, so a problem somebody
-    has already dealt with must not light it."""
+def test_theVerificationCountLeavesOutWhatWasSignedOff():
+    """The rail carries this count, so a row somebody has already dealt with
+    must not keep it lit."""
     rows = scoreRows('sensorBulk', [
         {'verdict': 'MISMATCH', 'HITLstatus': 'Clear'}, {'verdict': 'MATCH'}])
-    counts = summarise(rows)
-    assert counts['problem'] == 0
-    assert counts['attention'] == 0
+    assert summarise(rows)['verification'] == 0
 
 
 def test_aSettledRowNobodySignedOffIsNotWork():
     rows = scoreRows('sensorBulk', [{'verdict': 'MATCH'}, {'verdict': 'NO_BULK_SERIAL'}])
-    assert summarise(rows)['attention'] == 0
+    assert summarise(rows)['verification'] == 0
 
 
 ## --- the document ---

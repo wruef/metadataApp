@@ -98,7 +98,7 @@ rows waiting for a person, and a red dot when any of them is a problem.
 | Deployments | is the instrument on the sheet the one that was in the water? |
 | Positions | do the deployment sheets agree with the RCA position spreadsheet? |
 | Sensor bulk | do serial numbers agree between the RCA list and OOI's record? |
-| Duplicate asset deployments | is one asset deployed in two places at once? |
+| Duplicate asset deployments | is one asset in the water twice at once, or one node in two places? |
 
 **This run**: the Changes view, which compares two runs; the reference
 designators the run covered; the vendor calibrations that have no repository
@@ -114,9 +114,9 @@ the key in or delete the line from.
 
 **Settings**, at the foot, showing who you are signed in as.
 
-The home page opens on **what needs a person** — not a count of problems, but
-the situations behind them, each with a count and a link that opens the check
-already filtered to exactly those rows. Below it, deployments by the year they
+The home page opens on **what needs verification** — not one number, but the
+situations behind it, each with a count and a link that opens the check already
+filtered to exactly those rows. Below it, deployments by the year they
 went in the water.
 
 Every page carries a **run stamp**: when the run happened, which commit of each
@@ -127,11 +127,11 @@ marked stale.
 
 ## Working the queue
 
-Open a check. It opens on **Needs attention** rather than on everything, so a
-check with 1,558 agreeing rows does not bury the 105 that do not.
+Open a check. It opens on **Needs verification** rather than on everything, so
+a check with 1,558 agreeing rows does not bury the 105 that do not.
 
-- **The segmented control** at the top switches between attention, each review
-  status, and everything. Each carries its own count.
+- **The segmented control** at the top switches between each review status and
+  everything. Each carries its own count.
 - **The dropdowns** beside it narrow by instrument, site, year, verdict or
   sign-off, depending on the check. Their options come from the rows in front of
   you, and each option's count is measured against the other filters, so
@@ -463,8 +463,7 @@ the commit it read, or when either ran from a modified working tree.
 
 | status | meaning |
 |---|---|
-| **Problem** | something disagrees and nobody has looked at it |
-| **Needs a person** | something needs a judgement rather than a fix |
+| **Needs verification** | something disagrees, or nothing has established the row, and nobody has looked at it |
 | **Not checked** | nothing settled this, and something could have |
 | **Cleared in review** | a reviewer has been; the finding is still shown beside it |
 | **Agreed** | the records agree |

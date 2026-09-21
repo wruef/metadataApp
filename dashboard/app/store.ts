@@ -7,12 +7,14 @@ import { withBase } from '~/paths'
  *  own rather than a flag beside a severity: a row a reviewer signed off is not
  *  a problem and not work waiting on anybody. What the checks found is kept on
  *  the row as `finding`, and shown beside the badge. */
-export const SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok', 'excluded'] as const
+/** Worst first; the order is the ranking a queue is sorted by. `verification`
+ *  was two categories until schema 3, `problem` and `review`, and they are one
+ *  because both end in the same place: somebody reading the row and deciding. */
+export const SEVERITIES = ['verification', 'unchecked', 'cleared', 'ok', 'excluded'] as const
 export type Severity = (typeof SEVERITIES)[number]
 
 export const SEVERITY_LABEL: Record<Severity, string> = {
-  problem: 'Problem',
-  review: 'Needs a person',
+  verification: 'Needs verification',
   unchecked: 'Not checked',
   cleared: 'Cleared in review',
   ok: 'Agreed',
@@ -24,8 +26,7 @@ export const SEVERITY_LABEL: Record<Severity, string> = {
  *  one. Annotating this `Record<Severity, string>` widens the values back to
  *  string and the badge rejects them. */
 export const SEVERITY_COLOR = {
-  problem: 'error',
-  review: 'warning',
+  verification: 'warning',
   unchecked: 'neutral',
   cleared: 'success',
   ok: 'success',
@@ -56,12 +57,9 @@ export interface VendorOnly {
 
 export interface Check {
   rows: Row[]
-  /** `attention` is what is waiting on a person: the problem and review rows,
-   *  which a signed-off row is never one of. `verified` is agreed plus cleared.
-   *  Both optional because runs published before they were carried have
-   *  neither, and the dashboard falls back to the severities. */
+  /** `verified` is agreed plus cleared. Optional because runs published before
+   *  it was carried have none, and the dashboard falls back to the severities. */
   summary: Record<Severity | 'cleared' | 'total', number> & {
-    attention?: number
     verified?: number
     /** The rows this check could judge at all: total less excluded. */
     considered?: number
@@ -188,7 +186,7 @@ export const CHECKS = [
       { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
     ] },
   { key: 'deploymentSheets', title: 'Duplicate asset deployments', icon: 'fa-table',
-    blurb: 'The same asset deployed twice at once, and sheet entries naming something no other record knows.',
+    blurb: 'One asset in the water twice at once, one node in two places, and sheet entries naming something no other record knows.',
     columns: ['refDes', 'deployNum', 'deployYear', 'value', 'verdict'],
     facets: [
       { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },
@@ -260,6 +258,39 @@ export interface RunEntry {
  * and refusing it is cheaper than explaining a page of movements that happened
  * to somebody else's run.
  */
+/**
+ * A report published under an older schema, read as the current one.
+ *
+ * Schema 2 ranked a row as `problem` where one record disagreed with another
+ * and `review` where nothing had established it either way. Schema 3 has one
+ * category for both. Every run published before the change is still in the
+ * picker, and next season's review is read against one of them, so they have to
+ * go on rendering: without this their rows carry a severity with no label, no
+ * colour and no segment, and the table shows blank badges.
+ */
+const LEGACY_SEVERITY: Record<string, Severity> = {
+  problem: 'verification',
+  review: 'verification',
+}
+
+export function asCurrentSchema(report: Report): Report {
+  if ((report.schemaVersion ?? 0) >= 3) return report
+  for (const check of Object.values(report.checks ?? {})) {
+    for (const row of check.rows ?? []) {
+      row.severity = LEGACY_SEVERITY[row.severity] ?? row.severity
+      if (row.finding) row.finding = LEGACY_SEVERITY[row.finding] ?? row.finding
+    }
+    const counts = check.summary as Record<string, number>
+    if (counts) {
+      counts.verification = (counts.problem ?? 0) + (counts.review ?? 0)
+      delete counts.problem
+      delete counts.review
+      delete counts.attention
+    }
+  }
+  return report
+}
+
 export function comparisonFor(report: Report | null, comparison: Comparison | null) {
   if (!report || !comparison) return null
   return comparison.currentRunAt === report.runAt ? comparison : null
@@ -312,7 +343,7 @@ export const useStore = defineStore('report', () => {
             : `${typeof fetched}`
         throw new Error(`${url} did not return a run report — got ${got}`)
       }
-      report.value = fetched
+      report.value = asCurrentSchema(fetched)
       // The old run's comparison must not sit under the new run's report for
       // the round trip it takes to fetch the new one.
       comparison.value = null

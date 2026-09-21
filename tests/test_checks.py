@@ -159,18 +159,53 @@ def test_overlappingDeploymentsAreFoundWhateverTheirNumbers():
     assert len(found) == 2
     ## each row names the other place
     assert {r['verdict'] for r in found} == {
-        'DUPLICATE_ASSET_IN_DEPLOYMENT: also RS03AXPS-PC03A-4A-DOSTAD303 deployment 7',
-        'DUPLICATE_ASSET_IN_DEPLOYMENT: also RS01SBPD-DP01A-06-DOSTAD104 deployment 3'}
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps RS03AXPS-PC03A-4A-DOSTAD303 deployment 7',
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps RS01SBPD-DP01A-06-DOSTAD104 deployment 3'}
 
 
-def test_aRedeploymentOnTheSameDesignatorIsNotASecondPlace():
-    """Two deployments of one slot whose dates overlap is a sheet error of a
-    different kind, not the same instrument in two places."""
+def test_aRedeploymentThatOverlapsTheLastOneIsStillTwoPlacesAtOnce():
+    """This is where the error actually lives, and it was waved through as a
+    redeployment. Deployment 4 of a velocity meter was never given a stop date
+    and deployment 5 started a year later, so the sheet has said ever since that
+    one asset is in the water twice. No deployment number can show that."""
     frame = pd.concat([
-        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2020-08-01T00:00:00', deployNum=6),
-        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2021-07-01T00:00:00', deployNum=7),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2019-06-25T00:00:00', deployNum=5, stop='2024-08-20T00:00:00'),
+    ], ignore_index=True)
+    found = duplicates(checkDeploymentSheets(frame, BULK))
+    assert len(found) == 2
+    ## One designator, so naming it in the verdict would say nothing. The
+    ## deployment number is what tells the two rows apart.
+    assert {r['verdict'] for r in found} == {
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5',
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 4'}
+
+
+def test_aCleanTurnaroundOnOneDesignatorIsNotReported():
+    """Recovered and redeployed in the same slot, with the dates to say so. The
+    rule has to leave the ordinary case alone or every instrument on the array
+    is a finding."""
+    frame = pd.concat([
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')],
+               year='2020-08-01T00:00:00', deployNum=6, stop='2021-07-01T00:00:00'),
+        sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')],
+               year='2021-07-01T00:00:00', deployNum=7),
     ], ignore_index=True)
     assert duplicates(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_onlyTheLastDeploymentMayBeOpenEnded():
+    """Two deployments of one asset with no stop date between them both run to
+    the end of time, which is the same claim twice."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')],
+               year='2016-07-13T00:00:00', deployNum=2),
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')],
+               year='2019-07-07T00:00:00', deployNum=3),
+    ], ignore_index=True)
+    assert len(duplicates(checkDeploymentSheets(frame, BULK))) == 2
 
 
 def test_everyRowSaysWhichYearItWasDeployed():
@@ -324,24 +359,33 @@ def test_anAmbiguousSerialIsNotAMismatch():
 
     row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'AMBIGUOUS_SN: raw: 0: also X',
            'image_verify': 'NAN', 'calFile_verify': 'VALID_FILE', 'cleared': False}
-    assert severityOf('deployments', row) == 'review'
+    assert severityOf('deployments', row) == 'verification'
     assert 'too short' in reasonOf('deployments', row)
 
 
 def test_everyVerdictThisCheckEmitsIsRanked():
-    """A verdict with no entry falls through to 'review' and gets the sentence
-    for a row where nothing is wrong. Four of these were added without one."""
+    """A verdict with no entry falls through to the catch-all and gets the
+    sentence for a row where nothing is wrong. Four of these were added without
+    one.
+
+    Presence in the table is what is asserted, not the severity it maps to: the
+    fallback is now the same category as the mapping, so comparing values would
+    pass for a verdict nobody had listed.
+    """
     from rca_metadata.report import SEVERITY, reasonOf, severityOf
 
     ranked = SEVERITY['deploymentSheets']['verdict']
     for verdict in ('SENSOR_NOT_IN_BULK', 'MOORING_NOT_IN_PLATFORM_BULK',
                     'NODE_NOT_IN_NODE_BULK', 'ELECTRICAL_NOT_IN_ENG_BULK',
                     'ASSET_IN_WRONG_BULK_RECORD', 'CRUISE_NOT_IN_CRUISE_LIST',
-                    'DUPLICATE_ASSET_IN_DEPLOYMENT'):
-        assert ranked.get(verdict) == 'problem', verdict
+                    'DUPLICATE_ASSET_IN_DEPLOYMENT', 'DUPLICATE_NODE_IN_DEPLOYMENT',
+                    'DUPLICATE_MOORING_IN_DEPLOYMENT'):
+        assert verdict in ranked, verdict
 
     row = {'verdict': 'ASSET_IN_WRONG_BULK_RECORD: unclassified', 'cleared': False}
-    assert severityOf('deploymentSheets', row) == 'problem'
+    assert severityOf('deploymentSheets', row) == 'verification'
+    ## The sentence is what says which of these it was, now that the category
+    ## does not.
     assert 'unclassified' in reasonOf('deploymentSheets', row)
 
 
@@ -483,3 +527,72 @@ def test_aBlankAssetOnTheSheetDoesNotCrashTheRawVerdict():
     row = {'firstRawFile': 'x.dat', 'rawSN': '999', 'AssetID': float('nan'),
            'refDes': 'RS01SBPS-SF01A-2A-CTDPFA102'}
     assert _rawVerdict(row, {'ATAPL-1': '123'})[0].startswith('MISMATCH')
+
+
+## --- a node is in one place at a time too ---
+
+def nodeDuplicates(rows):
+    return [r for r in rows if r['verdict'].startswith('DUPLICATE_NODE_IN_DEPLOYMENT')]
+
+
+def test_oneNodeHostingManyInstrumentsAtOnceIsNotAFinding():
+    """That is a node doing its job. Its asset is on a row per instrument
+    hanging off it, all at the same time and all at the same place, so the rows
+    are not the comparison -- the places are."""
+    frame = sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-1'),
+                    ('RS03AXBS-MJ03A-06-PRESTA301', 'ATAPL-58340-00003'),
+                    ('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')])
+    assert nodeDuplicates(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_aNodeAtTwoPlacesOverTheSameDaysIsAFinding():
+    """A junction box recorded at RS03AXBS-MJ03A since 2014 and never closed
+    out, while the same box is at RS03CCAL-MJ03F from 2018, is one box on two
+    parts of the seafloor."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-1')], year='2014-08-08T00:00:00'),
+        sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
+    ], ignore_index=True)
+    found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
+    assert len(found) == 2
+    assert {r['verdict'] for r in found} == {
+        'DUPLICATE_NODE_IN_DEPLOYMENT: also at RS03CCAL-MJ03F from 2018-07-06',
+        'DUPLICATE_NODE_IN_DEPLOYMENT: also at RS03AXBS-MJ03A from 2014-08-08'}
+
+
+def test_aNodeMovedBetweenPlacesIsNotAFinding():
+    """Closed out at one place before appearing at the next, which is what
+    moving a box looks like when the sheets are right."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-1')],
+               year='2014-08-08T00:00:00', stop='2018-07-06T00:00:00'),
+        sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
+    ], ignore_index=True)
+    assert nodeDuplicates(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_aNodeAtThreePlacesIsOneFindingPerPlace():
+    """A box at three places is one thing wrong, not six. Each place names the
+    others rather than each pair naming itself."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-1')], year='2014-08-08T00:00:00'),
+        sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
+        sheets([('RS03INT2-MJ03D-12-VEL3DB304', 'ATAPL-1')], year='2018-07-05T00:00:00'),
+    ], ignore_index=True)
+    found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
+    assert len(found) == 3
+    assert all(r['verdict'].count('from') == 2 for r in found)
+
+
+def test_theFindingPointsAtASheetRowSomebodyCanOpen():
+    """The earliest deployment at the place, rather than whichever instrument
+    happened to be compared first."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')], year='2016-01-01T00:00:00'),
+        sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-58340-00003')],
+               year='2014-08-08T00:00:00'),
+        sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
+    ], ignore_index=True)
+    found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
+    here = [r for r in found if r['refDes'].startswith('RS03AXBS')]
+    assert [r['refDes'] for r in here] == ['RS03AXBS-MJ03A-05-HYDLFA301']

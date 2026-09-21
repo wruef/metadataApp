@@ -9,9 +9,12 @@ import type { Facet, Row } from '~/store'
  * numbers come from the same function.
  */
 
-/** Everything a person still has to deal with. */
-export const ATTENTION = 'attention'
 export const ALL = 'all'
+
+/** What schema 2 called the pair of severities that are now one. A filtered
+ *  view is a URL someone sent to whoever owns the instrument, and links written
+ *  before the merge should still land on the rows they were about. */
+const LEGACY_ATTENTION = 'attention'
 
 /**
  * `severity`, `cleared` and `q`, plus one entry per facet key.
@@ -27,14 +30,18 @@ export function matchesWhere(
   where: Where,
   columns: readonly string[] = [],
 ) {
-  const severity = where.severity || ALL
-  if (severity === ATTENTION) {
+  const asked = where.severity || ALL
+  const severity = asked === LEGACY_ATTENTION ? 'verification' : asked
+  if (severity === 'verification') {
     // A sign-off is a person having dealt with the row, so a cleared row is not
     // waiting on anyone — even though the failing check stays on it, and the
-    // 'Cleared only' filter and the badge both still show it.
+    // 'Cleared only' filter and the badge both still show it. A current run
+    // puts such a row in the cleared category itself, but one published before
+    // that category existed still carries it as work, and an old run must not
+    // read as having work somebody already did.
     if (row.cleared) return false
-    if (row.severity !== 'problem' && row.severity !== 'review') return false
-  } else if (severity !== ALL && row.severity !== severity) return false
+  }
+  if (severity !== ALL && row.severity !== severity) return false
 
   if (where.cleared === 'cleared' && !row.cleared) return false
   if (where.cleared === 'open' && row.cleared) return false

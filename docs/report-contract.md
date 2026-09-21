@@ -23,11 +23,17 @@ Every row carries four things the dashboard should not have to work out itself:
 - **`severity`** — the review status: the category the row is in. Shown in the
   dashboard as **Review status**, because that is what it now says — a sign-off
   is a category, not a degree of badness. The field keeps its name so published
-  reports stay readable. One of `problem`, `review`, `unchecked`,
-  `cleared`, `ok` or `excluded`, taken as the worst of the row's verdicts, so a
-  queue can be ranked by consequence rather than by row order. A verdict with no
-  mapping counts as `review`, so a new one reaches a person instead of quietly
+  reports stay readable. One of `verification`, `unchecked`, `cleared`, `ok` or
+  `excluded`, taken as the worst of the row's verdicts. A verdict with no mapping
+  counts as `verification`, so a new one reaches a person instead of quietly
   passing.
+
+  `verification` was two categories until schema 3, `problem` where one record
+  disagreed with another and `review` where nothing had established the row
+  either way. The split asked a reviewer to sort by consequence before working
+  the queue, and the sorting was the work: both kinds end in the same place,
+  somebody reading the row and deciding. Runs published under schema 2 are still
+  readable — the dashboard folds the two on the way in.
 
   **`excluded`** is outside what the check can judge: asset-management holds no
   calibration for the instrument at all, so there was nothing to compare and
@@ -55,12 +61,13 @@ Every row carries four things the dashboard should not have to work out itself:
   someone would use out loud. A queue is worked by people, and
   `MISMATCH: raw: 379: ATAPL-68020-00002` is a verdict, not a reason.
 
-Each check's `summary` counts every category, and beside them `attention` — the
-problem and review rows, which a signed-off row is never one of — `verified`,
-agreed plus cleared, and `considered`, the rows the check could judge at all,
-which is the row count less the excluded ones. `attention` is what *needs attention* means
-everywhere: the rail, the segmented control and the overview queue all read it,
-so they cannot disagree about how much is left. `verified` is what the headline
+Each check's `summary` counts every category, and beside them `verified`, agreed
+plus cleared, and `considered`, the rows the check could judge at all, which is
+the row count less the excluded ones. The `verification` count is what *needs
+verification* means everywhere: the rail, the segmented control and the overview
+queue all read it, so they cannot disagree about how much is left. A signed-off
+row is never in it. Schema 2 carried that number separately as `attention`,
+because two categories made it up. `verified` is what the headline
 tiles count, because a sign-off is how the things a check cannot settle get
 settled, and leaving them out would leave the record looking permanently
 unfinished.
@@ -247,19 +254,22 @@ queue. **Sensor bulk drops from 131 rows needing a person to 62.**
 
 ## One instrument, two data streams
 
-The deployment sheets are checked for the same asset appearing twice in one
-deployment, because an instrument cannot be in two places at once. One pair is
-exempt: **RASFLA301 and D1000A301 share an asset ID because they are the same
+The deployment sheets are checked for one asset being in the water twice at
+once, which no instrument can be. One pair is exempt: **RASFLA301 and D1000A301 share an asset ID because they are the same
 hardware.** Two reference designators exist because two data streams are
 required of it, and the sheets name the asset once under each.
 
 That pair accounted for 24 of the 26 rows this check reported. The two rows
 left were a DOSTA on a deep profiler until 22 September 2014 and on a platform
 from the 27th: the same year and the same deployment number, which is all the
-old rule compared, and never in the water twice at once. The check now compares
-the time each deployment was in the water, so a recovered-and-redeployed asset is
-not a finding and an overlap between deployment 3 of one designator and
-deployment 7 of another is. Today it reports nothing.
+old rule compared, and never in the water twice at once.
+
+The check now compares the days each deployment was in the water and nothing
+else. A recovered-and-redeployed asset is not a finding; an overlap is, whether
+the two rows share a designator or not. Same-designator overlaps were skipped as
+redeployments for a while, and that hid both of the findings there are: two
+five-beam velocity meters whose earlier deployment was never given a stop date,
+so the sheets say each is in the water twice.
 
 The exemption is on the pair, not on either name alone: a RAS sharing an asset
 with anything else is still reported.

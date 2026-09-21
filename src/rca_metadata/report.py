@@ -25,15 +25,23 @@ import subprocess
 import numpy as np
 import pandas as pd
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 ## Worst first. A row takes the worst severity of any of its verdicts, unless a
 ## reviewer has signed it off -- a sign-off is a category of its own.
-SEVERITIES = ['problem', 'review', 'unchecked', 'cleared', 'ok', 'excluded']
+##
+## 'verification' was two categories until schema 3: a problem, where one record
+## disagreed with another, and a review, where nothing disagreed and nothing had
+## established the row either. The split asked a reviewer to sort by
+## consequence before working the queue, and the sorting was the work: both
+## kinds end in the same place, somebody reading the row and deciding. They are
+## one category now and the ordering that used to separate them is gone with
+## them.
+SEVERITIES = ['verification', 'unchecked', 'cleared', 'ok', 'excluded']
 
 ## The severities that put a row in front of a person. 'cleared' is deliberately
 ## not among them: a sign-off is a person having already been.
-OPEN = ('problem', 'review')
+OPEN = ('verification',)
 
 ## What a reviewer's sign-off looks like in the 2i-HITL sheets.
 CLEARED = 'Clear'
@@ -60,38 +68,38 @@ WARNING = 'warning'
 ## row's own status: they qualify one.
 NEUTRAL = (EXCLUDED, WARNING)
 
-## verdict -> severity, per field. A verdict absent here is 'review', so a new
+## verdict -> severity, per field. A verdict absent here is 'verification', so a new
 ## one surfaces in the queue rather than disappearing into a pass.
 SEVERITY = {
     'sensorBulk': {'verdict': {
         ## The same number written two ways -- a prefix one record carries and
         ## the other does not. The instrument is the instrument, so the records
         ## agree about which one it is, which is what this check asks.
-        'MATCH': 'ok', 'FORMAT_MATCH': 'ok', 'MISMATCH': 'problem',
-        'MISSING_FROM_RCA_LIST': 'review', 'MISSING_FROM_SENSOR_BULK': 'problem',
+        'MATCH': 'ok', 'FORMAT_MATCH': 'ok', 'MISMATCH': 'verification',
+        'MISSING_FROM_RCA_LIST': 'verification', 'MISSING_FROM_SENSOR_BULK': 'verification',
         'NO_BULK_SERIAL': 'unchecked'}},
     'calibrations': {
         'vendorMatch': {
             ## COMPARED_XML is no longer produced -- DOFSTA is compared against
             ## its .cal only -- but reports published before that rule can still
-            ## be opened, and an unmapped verdict would read as 'review'.
-            'COMPARED': 'ok', 'COMPARED_XML': 'ok', 'MISMATCH': 'problem',
-            'MISSING_COEFFICIENT': 'problem', 'NO_VENDOR_FILE': 'problem',
-            'CONSTANT_MISMATCH': 'review', 'PDF_NOTCOMPARED': 'unchecked',
+            ## be opened, and an unmapped verdict would read as 'verification'.
+            'COMPARED': 'ok', 'COMPARED_XML': 'ok', 'MISMATCH': 'verification',
+            'MISSING_COEFFICIENT': 'verification', 'NO_VENDOR_FILE': 'verification',
+            'CONSTANT_MISMATCH': 'verification', 'PDF_NOTCOMPARED': 'unchecked',
             ## The vendor has a calibration for this asset within days of the
             ## one named here. Matching is on the whole file name, so a date one
             ## digit out matches nothing -- the fix is a file name rather than a
             ## hunt for a calibration nobody ever published.
-            'VENDOR_DATE_NEAR_MISS': 'problem',
+            'VENDOR_DATE_NEAR_MISS': 'verification',
             ## The near file was read and holds exactly these coefficients, so
             ## the two are one calibration under two dates. Nothing about the
             ## numbers is in doubt; a file name is wrong. That needs a person,
             ## not an alarm.
-            'VENDOR_DATE_MISNAMED': 'review',
+            'VENDOR_DATE_MISNAMED': 'verification',
             ## No vendor measures these -- an ADCP's scale factors, a
             ## hydrophone's gain -- so the record is held to the fixed values
             ## instead, and agreeing with them is a pass like any other.
-            'COMPARED_CONSTANTS': 'ok', 'NO_CONSTANTS': 'review',
+            'COMPARED_CONSTANTS': 'ok', 'NO_CONSTANTS': 'verification',
             ## The file holds only how the instrument was set up for this
             ## deployment -- a transformation matrix, a bin size -- and none of
             ## that is a calibration anyone can check.
@@ -103,24 +111,27 @@ SEVERITY = {
             'NOTCOMPARED': 'unchecked', 'NAN': 'unchecked'},
         ## NOT_EXPECTED: no vendor publishes a file for this instrument, so its
         ## absence says nothing about the record and is counted as nothing.
-        'calRepo_check': {'MATCH': 'ok', 'NOMATCH': 'review', 'NOT_EXPECTED': 'excluded'},
-        'fileParse': {'SUCCESS_TYPE1': 'ok', 'SUCCESS_TYPE2': 'ok', 'FAIL': 'problem'},
+        'calRepo_check': {'MATCH': 'ok', 'NOMATCH': 'verification', 'NOT_EXPECTED': 'excluded'},
+        'fileParse': {'SUCCESS_TYPE1': 'ok', 'SUCCESS_TYPE2': 'ok', 'FAIL': 'verification'},
         'serialNumber': {
-            'MATCH_SENSORBULK': 'ok', 'MISMATCH_SENSORBULK': 'problem', 'MULTIPLE': 'problem',
-            'PARSING_ERROR': 'problem', 'NOTFOUND_FILE': 'unchecked',
+            'MATCH_SENSORBULK': 'ok', 'MISMATCH_SENSORBULK': 'verification', 'MULTIPLE': 'verification',
+            'PARSING_ERROR': 'verification', 'NOTFOUND_FILE': 'unchecked',
             'NOTFOUND_SENSORBULK': 'unchecked'},
         ## Repeated coefficient names only matter when the values disagree.
         'duplicateCoeff': {'NONE': 'ok', 'DUPLICATES_IDENTICAL': 'ok',
-                           'DUPLICATES_NOTIDENTICAL': 'problem'}},
+                           'DUPLICATES_NOTIDENTICAL': 'verification'}},
     'deploymentSheets': {'verdict': {
-        'SENSOR_NOT_IN_BULK': 'problem', 'MOORING_NOT_IN_PLATFORM_BULK': 'problem',
-        'NODE_NOT_IN_NODE_BULK': 'problem', 'ELECTRICAL_NOT_IN_ENG_BULK': 'problem',
+        'SENSOR_NOT_IN_BULK': 'verification', 'MOORING_NOT_IN_PLATFORM_BULK': 'verification',
+        'NODE_NOT_IN_NODE_BULK': 'verification', 'ELECTRICAL_NOT_IN_ENG_BULK': 'verification',
         ## In a bulk record, just not the one this column calls for.
-        'ASSET_IN_WRONG_BULK_RECORD': 'problem',
-        'CRUISE_NOT_IN_CRUISE_LIST': 'problem', 'DUPLICATE_ASSET_IN_DEPLOYMENT': 'problem'}},
+        'ASSET_IN_WRONG_BULK_RECORD': 'verification',
+        'CRUISE_NOT_IN_CRUISE_LIST': 'verification',
+        'DUPLICATE_ASSET_IN_DEPLOYMENT': 'verification',
+        'DUPLICATE_NODE_IN_DEPLOYMENT': 'verification',
+        'DUPLICATE_MOORING_IN_DEPLOYMENT': 'verification'}},
     'deployments': {
-        'verificationStatus': {'VERIFIED': 'ok', 'RAW_SN_POSSIBLE': 'review',
-                               'NOT_VERIFIED': 'review'},
+        'verificationStatus': {'VERIFIED': 'ok', 'RAW_SN_POSSIBLE': 'verification',
+                               'NOT_VERIFIED': 'verification'},
         ## NAN on either of these means there was nothing to check, not that a
         ## check was skipped: the instrument class writes no serial into its raw
         ## data, or nobody photographed it. Neither is a gap, and counting them
@@ -131,7 +142,7 @@ SEVERITY = {
         ## instrument from another of the same model. Nothing disagrees, so it
         ## is not a mismatch; nothing was established either, so it is not a
         ## match. Unchecked, like a serial nobody has extracted yet.
-        'rawFile_verify': {'MATCH': 'ok', 'MISMATCH': 'problem', 'NO_FILE': 'review',
+        'rawFile_verify': {'MATCH': 'ok', 'MISMATCH': 'verification', 'NO_FILE': 'verification',
                            'AMBIGUOUS_SN': 'unchecked',
                            'NO_SN': 'unchecked', 'NAN': 'excluded'},
         ## A photograph does not confirm a deployment, so it does not condemn
@@ -142,7 +153,7 @@ SEVERITY = {
         ## from it, so there is nothing to compare -- excluded, like no photograph.
         'image_verify': {'MATCH': 'ok', 'MISMATCH': 'warning', 'NAN': 'excluded',
                          'NO_IMAGE_ASSET': 'excluded'},
-        'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'problem',
+        'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'verification',
                            ## Worth noticing, not worth holding a row for: a
                            ## deployment the raw archive or a reviewer has
                            ## confirmed is confirmed whether or not the
@@ -156,18 +167,18 @@ SEVERITY = {
                            ## holds none at all. That is worse than one dated
                            ## after the deployment, which is already a problem,
                            ## so reading it as merely 'unchecked' undersold it.
-                           'none': 'problem', 'NAN': 'unchecked'}},
+                           'none': 'verification', 'NAN': 'unchecked'}},
     'positions': {'verdict': {
-        'MATCH': 'ok', 'MISMATCH': 'problem', 'NEEDS_HITL': 'review',
-        'NO_POSITION': 'review', 'NO_POSITION_NAME': 'review',
-        'BAD_POSITION_RECORD': 'review', 'HITL_PIN_NOT_FOUND': 'review'}},
+        'MATCH': 'ok', 'MISMATCH': 'verification', 'NEEDS_HITL': 'verification',
+        'NO_POSITION': 'verification', 'NO_POSITION_NAME': 'verification',
+        'BAD_POSITION_RECORD': 'verification', 'HITL_PIN_NOT_FOUND': 'verification'}},
 }
 
 
 def severityOf(check, row):
     """The worst severity among a row's verdicts.
 
-    A verdict with no mapping counts as 'review' rather than 'ok', so adding a
+    A verdict with no mapping counts as 'verification' rather than 'ok', so adding a
     verdict without adding it here puts rows in front of a person instead of
     quietly passing them.
 
@@ -183,7 +194,7 @@ def severityOf(check, row):
             continue
         ## A verdict can carry detail after a colon -- 'MISMATCH: raw: 1130: AT...'
         verdict = str(row[field]).split(':')[0].strip()
-        severity = mapping.get(verdict, 'review')
+        severity = mapping.get(verdict, 'verification')
         if severity in NEUTRAL:
             ## Describes the row without ranking it.
             excluded = excluded or severity == EXCLUDED
@@ -341,8 +352,11 @@ def _sheetReason(row):
         return f'The asset is in the bulk records, but under {where} rather than its own'
     if verdict == 'DUPLICATE_ASSET_IN_DEPLOYMENT':
         ## Runs published before the verdict named the other place carry no detail.
-        return (f'The same asset was in the water somewhere else at the same time, {where}'
+        return (f'The same asset was in the water twice at the same time, {where}'
                 if where else 'The same asset appears twice in one deployment')
+    if verdict in ('DUPLICATE_NODE_IN_DEPLOYMENT', 'DUPLICATE_MOORING_IN_DEPLOYMENT'):
+        thing = 'node' if 'NODE' in verdict else 'mooring'
+        return (f'The same {thing} was in two places over the same days, {where}')
     return {
         'SENSOR_NOT_IN_BULK': 'The sheet names an asset the sensor bulk record does not have',
         'MOORING_NOT_IN_PLATFORM_BULK': 'The sheet names a mooring the platform record does not have',
@@ -417,10 +431,6 @@ def summarise(rows):
     ## category and no other -- named separately because 'cleared' reads as a
     ## count of sign-offs wherever the severities are not in view.
     counts['cleared'] = sum(1 for row in rows if row['cleared'])
-    ## What is still waiting on somebody. Counted here rather than in the
-    ## dashboard so the rail, the segmented control and the overview queue
-    ## cannot drift into disagreeing about how much is left.
-    counts['attention'] = sum(counts[severity] for severity in OPEN)
     ## Settled: agreed with the record on its own, or settled by a reviewer.
     counts['verified'] = counts['ok'] + counts['cleared']
     ## Rows this check could judge at all. An excluded row is in no other

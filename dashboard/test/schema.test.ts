@@ -160,10 +160,10 @@ describe('what the dashboard reads off a row', () => {
 describe('the counts the report settles', () => {
   const count = (check: Check, of: (row: Row) => boolean) => check.rows.filter(of).length
 
-  it('counts what is waiting on a person, and leaves sign-offs out of it', () => {
+  it('counts what still needs verifying, and leaves sign-offs out of it', () => {
     for (const check of Object.values(REPORT.checks)) {
-      const waiting = count(check, (row) => row.severity === 'problem' || row.severity === 'review')
-      expect(check.summary.attention).toBe(waiting)
+      const waiting = count(check, (row) => row.severity === 'verification')
+      expect(check.summary.verification).toBe(waiting)
     }
   })
 
