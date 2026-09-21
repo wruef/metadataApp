@@ -186,7 +186,7 @@ export const CHECKS = [
       { key: 'HITLstatus', label: 'Any sign-off', of: (row) => String(row.HITLstatus ?? '') },
     ] },
   { key: 'deploymentSheets', title: 'Duplicate asset deployments', icon: 'fa-table',
-    blurb: 'One asset in the water twice at once, one node in two places, and sheet entries naming something no other record knows.',
+    blurb: 'One asset in the water twice at once, one node in two places, a deployment never closed out, and sheet entries naming something no other record knows.',
     columns: ['refDes', 'deployNum', 'deployYear', 'value', 'verdict'],
     facets: [
       { key: 'verdict', label: 'Any verdict', of: (row) => String(row.verdict ?? '') },

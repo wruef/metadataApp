@@ -14,7 +14,7 @@ import {
   type SheetEntry,
   type SignoffEntry,
 } from '../app/batch'
-import { PRELIMINARY_NOTE } from '../app/deployfile'
+import { kindOfField, PRELIMINARY_NOTE } from '../app/deployfile'
 
 /** A real DOFSTA file, and a second one on another instrument. */
 const DOFSTA = [
@@ -210,6 +210,36 @@ describe('gathering deployment sheet corrections', () => {
     expect(built.files[SHEET_PATH]).toContain('ATAPL-58315-00005')
     expect(built.body).toContain('| `lat` | 45.830481 | 45.830512 |')
     expect(built.body).toContain('| `sensor.uid` | ATAPL-58315-00002 | ATAPL-58315-00005 |')
+  })
+
+  it('carries an end date onto a deployment that had none', () => {
+    // The sheet check's own correction: the column holds nothing, so the guard
+    // is an empty value rather than a value to match.
+    const endDate: SheetEntry = {
+      batch: 'sheets',
+      key: sheetKey('stopDateTime', 'RS03AXPS-PC03A-05-ADCPTD302', 1),
+      kind: 'stopDateTime',
+      refDes: 'RS03AXPS-PC03A-05-ADCPTD302',
+      deployNum: 1,
+      source: 'The next deployment of this reference designator starts here.',
+      corrections: [{ field: 'stopDateTime', from: '2015-07-09T00:00:00',
+                      to: '2015-07-01T00:00:00' }],
+    }
+    const built = buildBatch('sheets', [endDate], { [SHEET_PATH]: SHEET }, BY, 'WR', WHEN)
+    expect(built.files[SHEET_PATH]).toContain('2015-07-01T00:00:00')
+    expect(built.body).toContain('| `stopDateTime` | 2015-07-09T00:00:00 | 2015-07-01T00:00:00 |')
+  })
+
+  it('lets an asset correction from either check replace the other', () => {
+    // Which instrument a deployment names can be corrected from the deployments
+    // check or from the sheet check. Both are the same claim about the same
+    // cell, so they must share a key rather than both travel and contradict
+    // themselves in one pull request.
+    expect(sheetKey(kindOfField('sensor.uid'), 'RS03AXPS-PC03A-05-ADCPTD302', 1))
+      .toBe(sheetKey('asset', 'RS03AXPS-PC03A-05-ADCPTD302', 1))
+    // An end date is its own claim and keeps its own place in the queue.
+    expect(sheetKey(kindOfField('stopDateTime'), 'RS03AXPS-PC03A-05-ADCPTD302', 1))
+      .not.toBe(sheetKey('asset', 'RS03AXPS-PC03A-05-ADCPTD302', 1))
   })
 
   it('says what each correction was taken from, once per record', () => {

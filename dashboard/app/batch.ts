@@ -14,6 +14,7 @@ import {
   deploymentSection,
   deploymentTitle,
   isNodeRefDes,
+  kindOfField,
   sheetPathFor,
   type FieldCorrection,
 } from '~/deployfile'
@@ -144,7 +145,10 @@ export interface SheetEntry {
   /** Kind and deployment together, so correcting where a deployment sat does
    *  not replace the correction of which instrument it was. */
   key: string
-  kind: 'position' | 'asset'
+  /** One deployment can be corrected several ways at once, and each has to
+   *  stand on its own in the queue. For a field correction the kind is the
+   *  column, so two corrections to one row never replace each other. */
+  kind: 'position' | 'asset' | string
   refDes: string
   deployNum: string | number
   /** One sentence saying what the new values were taken from, which is the
@@ -441,6 +445,15 @@ export const useBatch = defineStore('batch', () => {
     queueSheet('sheets', 'asset', refDes, deployNum, source, [{ field: ASSET_FIELD, from, to }])
   }
 
+  /** Any one column of one deployment row, which is what most deployment-sheet
+   *  findings come down to: an asset nothing has heard of, a cruise that is not
+   *  in the list, an end date nobody wrote down. */
+  function queueField(refDes: string, deployNum: string | number, field: string,
+                      from: string, to: string, source: string) {
+    queueSheet(isNodeRefDes(refDes) ? 'nodes' : 'sheets', kindOfField(field), refDes, deployNum,
+               source, [{ field, from, to }])
+  }
+
   /** --- the fork guard, asked before a reviewer types rather than after --- */
 
   const refusalFor = (fork: ForkKey) => sync.refusal[fork] ?? null
@@ -508,6 +521,6 @@ export const useBatch = defineStore('batch', () => {
 
   return { entries, count, pending, shown, byFork, submitting, results,
            forBatch, entryFor, queue, unqueue, discard,
-           queueSignoff, unqueueSignoff, decisionFor, queueCalibration, queuePosition, queueAsset,
+           queueSignoff, unqueueSignoff, decisionFor, queueCalibration, queuePosition, queueAsset, queueField,
            refusalFor, checkingFor, checkSync, submit, submitAll }
 })

@@ -144,6 +144,7 @@ const comparing = ref(false)
          that belongs to another asset is a sheet to fix, not a judgement to
          write down. -->
     <asset-correction v-if="check === 'deployments'" :row="row" class="mt-4" />
+    <sheet-correction v-if="check === 'deploymentSheets'" :row="row" class="mt-4" />
     <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
   </div>
 </template>

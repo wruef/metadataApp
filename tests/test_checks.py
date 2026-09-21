@@ -379,7 +379,7 @@ def test_everyVerdictThisCheckEmitsIsRanked():
                     'NODE_NOT_IN_NODE_BULK', 'ELECTRICAL_NOT_IN_ENG_BULK',
                     'ASSET_IN_WRONG_BULK_RECORD', 'CRUISE_NOT_IN_CRUISE_LIST',
                     'DUPLICATE_ASSET_IN_DEPLOYMENT', 'DUPLICATE_NODE_IN_DEPLOYMENT',
-                    'DUPLICATE_MOORING_IN_DEPLOYMENT'):
+                    'DUPLICATE_MOORING_IN_DEPLOYMENT', 'DEPLOYMENT_MISSING_END_DATE'):
         assert verdict in ranked, verdict
 
     row = {'verdict': 'ASSET_IN_WRONG_BULK_RECORD: unclassified', 'cleared': False}
@@ -596,3 +596,73 @@ def test_theFindingPointsAtASheetRowSomebodyCanOpen():
     found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
     here = [r for r in found if r['refDes'].startswith('RS03AXBS')]
     assert [r['refDes'] for r in here] == ['RS03AXBS-MJ03A-05-HYDLFA301']
+
+
+## --- a deployment that was never closed out ---
+
+def missingEnd(rows):
+    return [r for r in rows if r['verdict'].startswith('DEPLOYMENT_MISSING_END_DATE')]
+
+
+def test_anOpenDeploymentFollowedByAnotherIsMissingItsEndDate():
+    """The later deployment is the proof that the earlier one ended. Nobody
+    wrote down when, so the earlier runs to the end of time everywhere it is
+    read and swallows every deployment of that slot after it."""
+    frame = pd.concat([
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2019-06-25T00:00:00', deployNum=5, stop='2024-08-20T00:00:00'),
+    ], ignore_index=True)
+    found = missingEnd(checkDeploymentSheets(frame, BULK))
+    assert [r['deployNum'] for r in found] == [4]
+    assert found[0]['verdict'] == 'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'
+
+
+def test_theSlotBeingRefittedWithADifferentInstrumentIsStillFound():
+    """This is the case the rule exists for. Two assets in one place is not two
+    places, so the duplicate-asset rule cannot see it, and the sheet is just as
+    wrong."""
+    frame = pd.concat([
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-58340-00003')],
+               year='2019-06-25T00:00:00', deployNum=5),
+    ], ignore_index=True)
+    rows = checkDeploymentSheets(frame, BULK)
+    assert [r['deployNum'] for r in missingEnd(rows)] == [4]
+    ## Different assets, so nothing is in two places.
+    assert duplicates(rows) == []
+
+
+def test_theDeploymentInTheWaterNowIsNotAFinding():
+    """An open deployment with nothing after it is the current one."""
+    frame = pd.concat([
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4, stop='2019-06-25T00:00:00'),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-58340-00003')],
+               year='2019-06-25T00:00:00', deployNum=5),
+    ], ignore_index=True)
+    assert missingEnd(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_anOpenDeploymentOnADifferentDesignatorIsNotEvidence():
+    """Another slot being redeployed says nothing about this one."""
+    frame = pd.concat([
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4),
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-58340-00003')],
+               year='2019-06-25T00:00:00', deployNum=5),
+    ], ignore_index=True)
+    assert missingEnd(checkDeploymentSheets(frame, BULK)) == []
+
+
+def test_onlyTheEarlierOfTwoOpenDeploymentsIsReported():
+    """Both run to the end of time, but the later one is legitimately open."""
+    frame = pd.concat([
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')],
+               year='2016-07-13T00:00:00', deployNum=2),
+        sheets([('RS03AXBS-MJ03A-12-VEL3DB301', 'ATAPL-1')],
+               year='2019-07-07T00:00:00', deployNum=3),
+    ], ignore_index=True)
+    assert [r['deployNum'] for r in missingEnd(checkDeploymentSheets(frame, BULK))] == [2]

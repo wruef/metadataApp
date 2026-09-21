@@ -43,6 +43,46 @@ export const POSITION_FIELDS = ['lat', 'lon', 'water_depth', 'deployment_depth']
  *  is a finding about this column and nothing else on the row. */
 export const ASSET_FIELD = 'sensor.uid'
 
+/** When a deployment came out of the water. Blank means it is still in. */
+export const STOP_FIELD = 'stopDateTime'
+
+/**
+ * Which column a deployment-sheet finding is about, where one row's column is
+ * the whole fix.
+ *
+ * Deliberately partial. `ASSET_IN_WRONG_BULK_RECORD` is left out because the
+ * asset is real and filed under a different bulk record, so the fix is usually
+ * to that record rather than to this sheet. `DUPLICATE_NODE_IN_DEPLOYMENT` is
+ * left out because a node is named on a row per instrument hanging off it, and
+ * correcting one row would leave the rest saying the box is still there —
+ * that one needs an edit per row, by hand, and a reviewer should see them all
+ * before starting.
+ */
+export const VERDICT_FIELD: Record<string, string> = {
+  DUPLICATE_ASSET_IN_DEPLOYMENT: ASSET_FIELD,
+  DEPLOYMENT_MISSING_END_DATE: STOP_FIELD,
+  SENSOR_NOT_IN_BULK: ASSET_FIELD,
+  MOORING_NOT_IN_PLATFORM_BULK: 'mooring.uid',
+  NODE_NOT_IN_NODE_BULK: 'node.uid',
+  ELECTRICAL_NOT_IN_ENG_BULK: 'electrical.uid',
+  CRUISE_NOT_IN_CRUISE_LIST: 'CUID_Deploy',
+}
+
+/**
+ * The queue's name for a correction to one column.
+ *
+ * The column, except where an editor already owns it. Which instrument a
+ * deployment names can be corrected from the deployments check or from the
+ * sheet check, and the two are the same claim about the same cell: they have to
+ * replace each other in the queue rather than both travel and contradict
+ * themselves in one pull request.
+ */
+export const kindOfField = (field: string) => (field === ASSET_FIELD ? 'asset' : field)
+
+/** A verdict without the detail after the colon, which is what names the
+ *  column the finding is about. */
+export const verdictOf = (verdict: unknown) => String(verdict ?? '').split(':')[0]!.trim()
+
 /** A deployment sheet carries this until a position is confirmed. Once it is,
  *  the note is no longer true, so correcting a position clears it -- which is
  *  what `applyPositions` in positions.py does to the same column. */

@@ -128,7 +128,8 @@ SEVERITY = {
         'CRUISE_NOT_IN_CRUISE_LIST': 'verification',
         'DUPLICATE_ASSET_IN_DEPLOYMENT': 'verification',
         'DUPLICATE_NODE_IN_DEPLOYMENT': 'verification',
-        'DUPLICATE_MOORING_IN_DEPLOYMENT': 'verification'}},
+        'DUPLICATE_MOORING_IN_DEPLOYMENT': 'verification',
+        'DEPLOYMENT_MISSING_END_DATE': 'verification'}},
     'deployments': {
         'verificationStatus': {'VERIFIED': 'ok', 'RAW_SN_POSSIBLE': 'verification',
                                'NOT_VERIFIED': 'verification'},
@@ -357,6 +358,9 @@ def _sheetReason(row):
     if verdict in ('DUPLICATE_NODE_IN_DEPLOYMENT', 'DUPLICATE_MOORING_IN_DEPLOYMENT'):
         thing = 'node' if 'NODE' in verdict else 'mooring'
         return (f'The same {thing} was in two places over the same days, {where}')
+    if verdict == 'DEPLOYMENT_MISSING_END_DATE':
+        return ('No end date, but this slot was deployed again afterwards, so it '
+                f'did end and nobody wrote down when: {where}')
     return {
         'SENSOR_NOT_IN_BULK': 'The sheet names an asset the sensor bulk record does not have',
         'MOORING_NOT_IN_PLATFORM_BULK': 'The sheet names a mooring the platform record does not have',

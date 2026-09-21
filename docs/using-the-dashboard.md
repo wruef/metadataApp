@@ -98,7 +98,7 @@ rows waiting for a person, and a red dot when any of them is a problem.
 | Deployments | is the instrument on the sheet the one that was in the water? |
 | Positions | do the deployment sheets agree with the RCA position spreadsheet? |
 | Sensor bulk | do serial numbers agree between the RCA list and OOI's record? |
-| Duplicate asset deployments | is one asset in the water twice at once, or one node in two places? |
+| Duplicate asset deployments | is one asset in the water twice at once, one node in two places, or a deployment never closed out? Correctable inline. |
 
 **This run**: the Changes view, which compares two runs; the reference
 designators the run covered; the vendor calibrations that have no repository

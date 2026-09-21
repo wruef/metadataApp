@@ -10,6 +10,9 @@ import {
   NODE_PATH,
   PRELIMINARY_NOTE,
   sheetPathFor,
+  STOP_FIELD,
+  VERDICT_FIELD,
+  verdictOf,
 } from '../app/deployfile'
 
 /**
@@ -250,5 +253,53 @@ describe('where a deployment row lives', () => {
     const corrections = [{ field: 'lat', from: '1', to: '2' }]
     expect(deploymentSection(NODE_PATH, 'CE02SHBP-LJ01D', 1, '', corrections, false))
       .toContain('`NODE_deployments.csv`')
+  })
+})
+
+describe('which column a sheet finding is about', () => {
+  it('names one for the findings a single row can fix', () => {
+    expect(VERDICT_FIELD.DUPLICATE_ASSET_IN_DEPLOYMENT).toBe(ASSET_FIELD)
+    expect(VERDICT_FIELD.DEPLOYMENT_MISSING_END_DATE).toBe(STOP_FIELD)
+    expect(VERDICT_FIELD.CRUISE_NOT_IN_CRUISE_LIST).toBe('CUID_Deploy')
+  })
+
+  it('names none for the findings one row cannot fix', () => {
+    // A node is named on a row per instrument hanging off it, so correcting one
+    // row would leave the rest saying the box is still there. An asset in the
+    // wrong bulk record is real, and the fix belongs to that record.
+    expect(VERDICT_FIELD.DUPLICATE_NODE_IN_DEPLOYMENT).toBeUndefined()
+    expect(VERDICT_FIELD.ASSET_IN_WRONG_BULK_RECORD).toBeUndefined()
+  })
+
+  it('reads the verdict without the detail after the colon', () => {
+    expect(verdictOf('DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'))
+      .toBe('DEPLOYMENT_MISSING_END_DATE')
+    expect(verdictOf(undefined)).toBe('')
+  })
+})
+
+describe('writing an end date onto a deployment that has none', () => {
+  const OPEN = `TN313,,,,RS03AXPS-PC03A-4A-DOSTAD303,3,1,2016-07-14T00:00:00,,`
+    + `ATAPL-67762-30001,ATAPL-69839-00103,ATAPL-58315-00002,45.8,-129.7,,187,2611,,,`
+  const sheet = [HEAD, OPEN].join('\n')
+
+  it('fills the empty column and leaves the rest of the row alone', () => {
+    const { text } = applyDeploymentCorrections(
+      sheet, 'RS03AXPS-PC03A-4A-DOSTAD303', 3,
+      [{ field: STOP_FIELD, from: '', to: '2017-07-30T00:00:00' }],
+    )
+    const line = text.split('\n')[1]!.split(',')
+    expect(line[8]).toBe('2017-07-30T00:00:00')
+    // start, and the asset, untouched
+    expect(line[7]).toBe('2016-07-14T00:00:00')
+    expect(line[11]).toBe('ATAPL-58315-00002')
+  })
+
+  it('refuses when the sheet has gained an end date since the run', () => {
+    const filled = sheet.replace(',2016-07-14T00:00:00,,', ',2016-07-14T00:00:00,2017-01-01,')
+    expect(() => applyDeploymentCorrections(
+      filled, 'RS03AXPS-PC03A-4A-DOSTAD303', 3,
+      [{ field: STOP_FIELD, from: '', to: '2017-07-30T00:00:00' }],
+    )).toThrow(/stopDateTime now reads/)
   })
 })

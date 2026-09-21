@@ -20,7 +20,7 @@ The package is the source of truth; nothing is maintained in two places.
 | `deployments` | is the instrument on the sheet the one that was in the water, and did it have a calibration? |
 | `positions` | do the deployment sheets agree with the RCA position spreadsheet? |
 | `sensorBulk` | do serial numbers agree between the RCA instrument list and the OOI sensor bulk record? |
-| `deploymentSheets` | is one asset in the water twice at once, is one node in two places, and is every asset a sheet names in the bulk record it belongs to? |
+| `deploymentSheets` | is one asset in the water twice at once, is one node in two places, was every deployment closed out, and is every asset a sheet names in the bulk record it belongs to? |
 
 Every verdict each of them can return, and whether it counts as passing, is in
 [docs/what-each-check-decides.md](docs/what-each-check-decides.md).

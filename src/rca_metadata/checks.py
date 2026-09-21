@@ -384,11 +384,12 @@ def checkDeploymentSheets(deployments, bulk):
     years = pd.to_datetime(deployments['startDateTime']).dt.year
     rows = []
 
-    def record(index, value, verdict):
+    def record(index, value, verdict, **extra):
         row = deployments.loc[index]
         rows.append({'refDes': row['Reference Designator'],
                      'deployNum': row['deploymentNumber'],
-                     'deployYear': int(years.loc[index]), 'value': value, 'verdict': verdict})
+                     'deployYear': int(years.loc[index]), 'value': value, 'verdict': verdict,
+                     **extra})
 
     known = bulk['assetIDs']
     for column, expected, verdict in ASSET_COLUMNS:
@@ -475,6 +476,34 @@ def checkDeploymentSheets(deployments, bulk):
                 first = min(byPlace[here], key=lambda index: starts[index])
                 record(first, asset,
                        f'DUPLICATE_{kind}_IN_DEPLOYMENT: also at ' + ', '.join(clashes))
+
+    ## A deployment with no end date is the one in the water now. If another
+    ## deployment of the same reference designator started after it, it is not:
+    ## the later one is the proof that the earlier ended, and nobody wrote down
+    ## when. The asset is not part of this. The same instrument left open is
+    ## caught by the rule above as one asset in the water twice, but a slot
+    ## refitted with a *different* instrument is invisible there -- two assets in
+    ## one place is not two places -- and the sheet is wrong either way.
+    ##
+    ## It matters beyond tidiness: an open deployment runs to the end of time
+    ## everywhere it is read, so it swallows every later deployment of that slot
+    ## when anything asks what was in the water on a given day.
+    blank = pd.to_datetime(deployments['stopDateTime']).isna()
+    for _, group in deployments.groupby(designator):
+        for index in group.index[blank[group.index]]:
+            after = [other for other in group.index if starts[other] > starts[index]]
+            if not after:
+                continue
+            following = min(after, key=lambda other: starts[other])
+            ## The following deployment's start, carried as a field rather
+            ## than left inside the sentence: it is the value the dashboard
+            ## offers as the missing end date, and reading it back out of a
+            ## verdict is not a contract.
+            record(index, deployments.at[index, 'sensor.uid'],
+                   'DEPLOYMENT_MISSING_END_DATE: deployment '
+                   f"{deployments.at[following, 'deploymentNumber']} starts "
+                   f'{starts[following]:%Y-%m-%d}',
+                   endsBefore=deployments.at[following, 'startDateTime'])
     return rows
 
 

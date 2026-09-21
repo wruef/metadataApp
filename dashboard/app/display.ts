@@ -89,6 +89,7 @@ export const VERDICTS: Record<string, Record<string, Record<string, Severity | '
       DUPLICATE_ASSET_IN_DEPLOYMENT: 'verification',
       DUPLICATE_NODE_IN_DEPLOYMENT: 'verification',
       DUPLICATE_MOORING_IN_DEPLOYMENT: 'verification',
+      DEPLOYMENT_MISSING_END_DATE: 'verification',
     },
   },
   deployments: {

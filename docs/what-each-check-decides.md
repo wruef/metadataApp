@@ -248,14 +248,15 @@ the rows that say `MISSING_FROM_RCA_LIST`, because only the RCA list names one.
 ## Duplicate asset deployments
 
 Is one asset in the water twice at the same time, is one node or mooring in two
-places at once, and does every asset a deployment sheet names exist in the bulk
-record it belongs to?
+places at once, was a deployment ever closed out, and does every asset a
+deployment sheet names exist in the bulk record it belongs to?
 
 | verdict | status | meaning |
 |---|---|---|
 | `DUPLICATE_ASSET_IN_DEPLOYMENT` | Needs verification | the same sensor asset was in the water twice at the same time; the verdict names the deployment it overlaps |
 | `DUPLICATE_NODE_IN_DEPLOYMENT` | Needs verification | one node asset is recorded at two places over the same days; the verdict names the others |
 | `DUPLICATE_MOORING_IN_DEPLOYMENT` | Needs verification | one mooring asset is recorded at two sites over the same days |
+| `DEPLOYMENT_MISSING_END_DATE` | Needs verification | no end date, but the same slot was deployed again afterwards, so it did end and nobody wrote down when |
 | `SENSOR_NOT_IN_BULK` | Needs verification | `sensor.uid` is not in the sensor record |
 | `MOORING_NOT_IN_PLATFORM_BULK` | Needs verification | `mooring.uid` is not in the platform record |
 | `NODE_NOT_IN_NODE_BULK` | Needs verification | `node.uid` is not in the node record |
@@ -279,6 +280,37 @@ the water twice. Both VEL3D findings today are that shape.
 A deployment with no stop date runs until now, which is what makes an unclosed
 one visible. One ending the day the next begins is a turnaround, not an overlap:
 the comparison is strict at both ends.
+
+Most of these are one column of one row, and the row opens with an editor for
+it, the way a deployments row does: the asset for a duplicate or an asset the
+bulk record has never heard of, the cruise for a cruise not in the list, the end
+date for a deployment nobody closed out. A missing end date offers the next
+deployment's start as the value to take, since that is the latest the slot can
+have been occupied. The correction joins the deployment-sheet batch and writes
+the same file a position correction does.
+
+Two are not offered. An asset in the wrong bulk record is real and filed under a
+different record, so the fix usually belongs to that record. A node in two
+places is named on a row per instrument hanging off it, so correcting one row
+would leave the rest saying the box is still there; that one is edited by hand,
+after reading all of them.
+
+### A deployment nobody closed out
+
+A deployment with no end date is the one in the water now. If another deployment
+of the same reference designator started after it, it is not: the later one is
+the proof that the earlier ended, and the end date is simply missing.
+
+The asset is not part of this test. The same instrument left open is caught by
+the duplicate rule as well, as one asset in the water twice, but a slot refitted
+with a **different** instrument is invisible there, because two assets in one
+place is not two places. The sheet is wrong either way.
+
+It matters beyond tidiness. An open deployment runs to the end of time
+everywhere it is read, so it swallows every later deployment of that slot when
+anything asks what was in the water on a given day. Two deployments read that
+way today, both five-beam velocity meters, and both are the same rows the
+duplicate rule reports.
 
 ### Nodes and moorings
 
