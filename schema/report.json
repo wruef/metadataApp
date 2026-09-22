@@ -63,7 +63,7 @@
   "//rows": "Per check, on top of the four above. hitlKey is the line a sign-off writes to, settled by the run rather than rebuilt in a browser.",
   "//optional": "Written only where the run has something to say. rawAssetID is the asset a mismatching raw serial belongs to, where it could be placed; rawFilesTried and rawAttemptedAt are what the archive was asked for, so a row with no serial says which files were read.",
   "optional": {
-    "deployments": ["rawAssetID", "rawFilesTried", "rawAttemptedAt"],
+    "deployments": ["rawAssetID", "rawFilesTried", "rawAttemptedAt", "imageSerialNumber"],
     "deploymentSheets": ["endsBefore"]
   },
   "rows": {

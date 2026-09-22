@@ -418,3 +418,52 @@ def test_aSerialKeepsItsLeadingZerosThroughTheParameterFile(tmp_path):
         'deployYear': 2014, 'rawFile': 'http://x/c.dat', 'rawSerialNumber': '05400031',
         'attemptedAt': '2026-09-21', 'filesTried': ''}])
     assert set(merged['rawSerialNumber']) == {'0002085', '05400030', '05400031'}
+
+
+## --- every serial an asset is on record for ---
+
+def test_everySerialIsBothRecords():
+    """The bulk record carries one number, the primary component of the
+    assembly. The RCA instrument list carries the rest and says what each
+    belongs to."""
+    from rca_metadata.instruments import everySerial
+
+    serialByAsset = {'ATAPL-70248-00002': 'P2-SUBC13114'}
+    assets = {'ATAPL-70248-00002': {'mfgSN': ['13114', '12099', '12100', '70501'],
+                                    'SNnotes': 'Prod2Cam, LEDs, LEDs, PT'}}
+    assert everySerial('ATAPL-70248-00002', serialByAsset, assets) == [
+        'P2-SUBC13114', '13114', '12099', '12100', '70501']
+
+
+def test_everySerialDropsWhatIsNotANumber():
+    from rca_metadata.instruments import everySerial
+
+    assert everySerial('ATAPL-1', {'ATAPL-1': 'nan'}, {'ATAPL-1': {'mfgSN': [' 24494', '']}}) \
+        == ['24494']
+    assert everySerial('ATAPL-2', {}, {}) == []
+
+
+def test_aComponentSerialStillNamesTheAssetItBelongsTo():
+    """A camera's pressure-tilt unit reads 70501. The bulk record carries only
+    the Prod2Cam, so until every recorded serial was read this placed nothing."""
+    from rca_metadata.instruments import everySerial
+
+    assets = {'ATAPL-70248-00002': {'mfgSN': ['13114', '12099', '12100', '70501']}}
+    held = everySerial('ATAPL-70248-00002', {'ATAPL-70248-00002': 'P2-SUBC13114'}, assets)
+    assert any(sameSerial('70501', serial) for serial in held)
+    assert not sameSerial('70501', 'P2-SUBC13114')
+
+
+def test_aSerialMatchesFromTheEndAndNotFromTheMiddle():
+    """`117` sits inside the vendor part number `16P71176-7231`, which belongs
+    to another instrument entirely. Matching anywhere inside made a confirmed
+    CTD read as ambiguous against it."""
+    assert sameSerial('117', '16-50117')
+    assert not sameSerial('117', '16P71176-7231')
+
+
+def test_aSerialRecordedBesideItsTagNumberIsStillFound():
+    """One asset carries `5277187-0138/TAG#: 116117`. Each part is compared on
+    its own, so the serial is found and the tag number does not swallow it."""
+    assert sameSerial('138', '5277187-0138/TAG#: 116117')
+    assert not sameSerial('99', '5277187-0138/TAG#: 116117')

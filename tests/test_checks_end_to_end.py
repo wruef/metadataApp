@@ -43,9 +43,12 @@ IMAGE_COLUMNS = ['referenceDesignator', 'deployNum', 'deployYear', 'imageFile', 
 
 
 def run(byRefDes, rawRows=(), imageRows=(), hitlRows=(), calHistory=None, calibrated=('CTDPFB',),
-        aliases=None):
+        aliases=None, serials=None, assets=None):
     params = {
-        'serialByAsset': {'ATAPL-58345-00001': '0117', 'ATAPL-58345-00002': '0118', 'ATAPL-58345-00005': '23340', 'ATAPL-67639-00009': '999'},
+        'serialByAsset': serials or {'ATAPL-58345-00001': '0117', 'ATAPL-58345-00002': '0118', 'ATAPL-58345-00005': '23340', 'ATAPL-67639-00009': '999'},
+        ## Every serial the RCA instrument list records, which is where an
+        ## assembly's components live.
+        'assets': assets or {},
         'rawSN': table(rawRows, RAW_COLUMNS),
         'imageSN': table(imageRows, IMAGE_COLUMNS),
         'serialAliases': aliases or {},
@@ -116,13 +119,50 @@ def test_aPhotographConfirmsWhenTheRawDataContradictsNothing():
     one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
     [agree] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '117', 'ATAPL-58345-00001', '')])
     [differ] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '118', 'ATAPL-58345-00002', '')])
-    [unread] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '118', None, '')])
+    [unread] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', None, None, '')])
     [none] = run(one)
     assert [r['image_verify'] for r in (agree, differ, unread, none)] == ['MATCH', 'MISMATCH', 'NO_IMAGE_ASSET', 'NAN']
     ## A photograph naming the asset the sheet names, with no raw serial to say
     ## otherwise, confirms the deployment. The other three say nothing.
     assert agree['verificationStatus'] == 'VERIFIED'
     assert {r['verificationStatus'] for r in (differ, unread, none)} == {'RAW_SN_POSSIBLE'}
+
+
+def test_aPhotographWithOnlyASerialStillNamesAnAsset():
+    """Forty-seven rows carry a number somebody read off the photograph and no
+    asset. They used to say no asset could be read; the number places the
+    instrument the same way a serial out of the raw archive does."""
+    one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
+    [mine] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '117', None, '')])
+    assert (mine['image_verify'], mine['imageAssetID']) == ('MATCH', 'ATAPL-58345-00001')
+    ## The number it was placed from, so a reader can see why the photograph
+    ## names an asset the file does not.
+    assert mine['imageSerialNumber'] == '117'
+    assert mine['verificationStatus'] == 'VERIFIED'
+
+    [other] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '118', None, '')])
+    assert (other['image_verify'], other['imageAssetID']) == ('MISMATCH', 'ATAPL-58345-00002')
+
+
+def test_aSerialNothingInTheFamilyAnswersToPlacesNothing():
+    """Vendor spellings the bulk record does not carry, and a few rows with an
+    asset ID typed into the serial column. Nothing to compare."""
+    one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
+    [row] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '16P71179-7233', None, '')])
+    assert (row['image_verify'], row['imageAssetID']) == ('NO_IMAGE_ASSET', 'undef')
+
+
+def test_aSerialThatFitsTwoOfTheFamilySettlesNothing():
+    """Serial `4` belongs to nine assets across the array. Within one family it
+    usually belongs to one; where it does not, picking the first would confirm a
+    deployment against a coin toss."""
+    one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
+    ## 117 is a tail of both 0117 and 20117.
+    params = {'ATAPL-58345-00001': '0117', 'ATAPL-58345-00002': '20117'}
+    [row] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '117', None, '')],
+                serials=params)
+    assert row['image_verify'] == 'AMBIGUOUS_SN'
+    assert row['imageAssetID'] == 'undef'
 
 
 def test_theCalibrationInForceIsTheNewestBeforeTheDeployment():
@@ -224,3 +264,27 @@ def test_aSignOffIsCarriedOnTheRowWithoutErasingTheFinding(tmp_path):
 def test_aFileWhoseNameCarriesNoDateIsSkippedNotCrashedOn(tmp_path):
     result = runCalibrations(tmp_path, {ADCP_FILE: adcpCsv(), 'ATOSU-69826-00002.csv': adcpCsv()})
     assert [row['fileName'] for row in result['files']] == [ADCP_FILE]
+
+
+def test_aFifthBeamSerialNamesTheAdcpItBelongsTo():
+    """A five-beam ADCP's raw data reports the electronics that answer for its
+    fifth beam. The RCA list records both numbers against the asset; the bulk
+    record carries only the four-beam system, so this used to read as a mismatch
+    against an asset nothing could name."""
+    one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
+    [row] = run(one, rawRows=[(REFDES['ctd'], 3, 2020, 'f.dat', '24494')],
+                serials={'ATAPL-58345-00001': '61247'},
+                assets={'ATAPL-58345-00001': {'mfgSN': [' 24494', '61247'],
+                                              'SNnotes': '4 beam, 5th beam'}})
+    assert row['rawFile_verify'] == 'MATCH'
+    assert row['verificationStatus'] == 'VERIFIED'
+
+
+def test_aComponentSerialOnAPhotographNamesTheAsset():
+    """70501 is a camera's pressure-tilt unit, on record in the RCA list and not
+    in the bulk record."""
+    one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
+    [row] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '70501', None, '')],
+                serials={'ATAPL-58345-00001': 'P2-SUBC13114'},
+                assets={'ATAPL-58345-00001': {'mfgSN': ['13114', '12099', '12100', '70501']}})
+    assert (row['image_verify'], row['imageAssetID']) == ('MATCH', 'ATAPL-58345-00001')

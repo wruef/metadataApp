@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .calibrations import compareCalCoefficients, comparisonRule, isConstantsOnly
-from .instruments import expectsRawSerial, partialMatch, sameSerial
+from .instruments import everySerial, expectsRawSerial, partialMatch, sameSerial
 from .loading import (
     NO_CALIBRATION,
     NO_VALID_CALIBRATION,
@@ -540,7 +540,28 @@ def _assignCalFile(deployment, calHistory):
     return files[0], 'VALID_FILE'
 
 
-def _rawVerdict(deployment, serialByAsset, aliases=None):
+def _assetsFitting(serial, family, serialByAsset, assets, aliases=None):
+    """Every asset of one family whose record answers to this serial.
+
+    The family is the asset ID's first eleven characters, which is the model.
+    Scoped that way because a short serial will appear in something somewhere,
+    and the deployment sheet already says which model was in the water: serial
+    `4` belongs to nine assets across the array and to one within `ATAPL-67653`.
+
+    Every serial on record counts, not only the one the bulk record carries.
+    Fifty-one assets list a component the bulk record does not -- a camera's
+    lights, a five-beam ADCP's electronics -- and a number read off a photograph
+    or out of a raw file is as likely to be one of those as the primary.
+    """
+    aliases = aliases or {}
+    return sorted(asset for asset in set(serialByAsset) | set(assets)
+                  if str(asset).startswith(family)
+                  and (serial == aliases.get(asset)
+                       or any(sameSerial(serial, held)
+                              for held in everySerial(asset, serialByAsset, assets))))
+
+
+def _rawVerdict(deployment, serialByAsset, aliases=None, assets=None):
     """Does the serial number in the raw file match the deployed asset?
 
     Returns ``(verdict, asset)``, where ``asset`` is the one the serial actually
@@ -564,19 +585,16 @@ def _rawVerdict(deployment, serialByAsset, aliases=None):
     if '-99999' in rawSN:
         return 'NO_SN', None
 
-    assetID = deployment['AssetID']
-    bulkSerial = str(serialByAsset.get(assetID, ''))
-    if sameSerial(rawSN, bulkSerial) or rawSN == aliases.get(assetID):
+    assetID = str(deployment['AssetID'])
+    fits = _assetsFitting(rawSN, assetID[:11], serialByAsset, assets or {}, aliases)
+    if assetID in fits:
         ## Agreement is not always equality. The extractor keeps a tail of the
         ## serial for most instrument classes, and a pressure sensor reports
         ## 05400030 where the record carries 5471540-0030 -- the same number in
         ## two dresses. So the serial that agrees here may also agree with the
         ## instrument beside it, and a match that fits two assets settles
-        ## nothing. Ask the rest of the family before calling it.
-        family = str(assetID)[:11]
-        rival = next((other for other, serial in serialByAsset.items()
-                      if other != assetID and str(other).startswith(family)
-                      and sameSerial(rawSN, serial)), None)
+        ## nothing.
+        rival = next((other for other in fits if other != assetID), None)
         if rival:
             ## The rival is an asset the serial *also* fits, which is the reason
             ## this row cannot be settled -- the opposite of a correction to
@@ -585,12 +603,50 @@ def _rawVerdict(deployment, serialByAsset, aliases=None):
         return 'MATCH', None
     ## Name the asset the raw serial actually belongs to, where one can be found --
     ## a swapped pair is the common cause and the answer is more useful than the finding.
-    found = None
-    for assetID, serial in serialByAsset.items():
-        if str(deployment['AssetID'])[0:11] in assetID and (
-                sameSerial(rawSN, serial) or rawSN == aliases.get(assetID)):
-            found = assetID
+    found = fits[0] if fits else None
     return f'MISMATCH: raw: {rawSN}: {found or "unknown"}', found
+
+
+def _imageVerdict(imageRow, deployment, serialByAsset, assets):
+    """What the pre-deploy photograph says, and which asset it names.
+
+    Returns ``(verdict, asset, serial)``. ``asset`` is what the photograph
+    places, which is what the row reports; ``serial`` is the number it was
+    placed from, and is None when the photograph named an asset outright.
+
+    Most rows name an asset. Forty-seven name only a serial number, and those
+    used to say nothing at all -- a photograph was on file, somebody had read a
+    number off it, and the check reported that no asset could be read. The
+    number places the instrument the same way a serial out of the raw archive
+    does: against the asset the sheet names first, then against the rest of that
+    asset's family.
+
+    Scoped to the family for the same reason the raw check is, and more sharply.
+    Serial `4` belongs to nine assets across the array; within `ATAPL-67653` it
+    belongs to one. A serial that fits two of the family settles nothing and
+    says so, rather than picking the first.
+    """
+    if imageRow is None:
+        return 'NAN', None, None
+    named = None if pd.isna(imageRow.imageAssetID) else str(imageRow.imageAssetID).strip()
+    if named:
+        return ('MATCH' if named in str(deployment['AssetID']) else 'MISMATCH'), named, None
+
+    serial = getattr(imageRow, 'imageSerialNumber', None)
+    serial = '' if serial is None or pd.isna(serial) else str(serial).strip()
+    if not serial:
+        return 'NO_IMAGE_ASSET', None, None
+
+    asset = str(deployment['AssetID'])
+    fits = _assetsFitting(serial, asset[:11], serialByAsset, assets)
+    if len(fits) > 1:
+        return 'AMBIGUOUS_SN', None, serial
+    if not fits:
+        ## A number nothing of this family answers to. Vendor spellings the bulk
+        ## record does not carry, and a few rows with an asset ID typed into the
+        ## serial column. Nothing to compare, which is what this has always said.
+        return 'NO_IMAGE_ASSET', None, serial
+    return ('MATCH' if fits[0] == asset else 'MISMATCH'), fits[0], serial
 
 
 def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, imageSN=None):
@@ -644,7 +700,7 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             else:
                 row['rawSN'], row['firstRawFile'] = 'undef', 'undef'
             row['rawFile_verify'], named = _rawVerdict(
-                row, serialByAsset, params.get('serialAliases'))
+                row, serialByAsset, params.get('serialAliases'), params.get('assets'))
             ## Only where the run could place it. Absent is absent: a row that
             ## names nothing must not read as naming something.
             if named:
@@ -659,19 +715,18 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
                     if value is not None and not pd.isna(value) and str(value).strip():
                         row[field] = str(value).strip()
 
-            imageRow = _lookupRow(images, refDes, deployment['deployNum'], year, single)
-            imageAsset = (None if imageRow is None or pd.isna(imageRow.imageAssetID)
-                          else str(imageRow.imageAssetID).strip())
-            row['imageAssetID'] = imageAsset or 'undef'
             ## A photograph nobody could read an asset from contradicts nothing.
             ## The blank used to become the string 'nan', which is in no asset ID,
             ## and 48 deployments carried a warning no photograph ever raised.
-            if imageRow is None:
-                row['image_verify'] = 'NAN'
-            elif not imageAsset:
-                row['image_verify'] = 'NO_IMAGE_ASSET'
-            else:
-                row['image_verify'] = 'MATCH' if imageAsset in str(deployment['AssetID']) else 'MISMATCH'
+            imageRow = _lookupRow(images, refDes, deployment['deployNum'], year, single)
+            verdict, imageAsset, imageSerial = _imageVerdict(
+                imageRow, deployment, params['serialByAsset'], params.get('assets') or {})
+            row['image_verify'] = verdict
+            row['imageAssetID'] = imageAsset or 'undef'
+            ## Only where the asset was placed from it, so a reader can see why
+            ## the photograph names an asset the file does not.
+            if imageSerial:
+                row['imageSerialNumber'] = imageSerial
 
             ## What confirms a deployment. The serial number recovered from the
             ## first raw file, or a reviewer's sign-off: either alone is enough.

@@ -8,6 +8,8 @@ lived in checks.py the extractor had to import them inside a function to dodge
 the cycle.
 """
 
+import re
+
 ## Instrument types whose serial number can be read out of a raw file.
 ##
 ## 'PHSENH' and not 'PHSEN': only the Sea-Bird Deep SeapHox2 prints a serial at
@@ -42,6 +44,13 @@ def expectsRawSerial(refDes):
 SERIAL_DIGITS = 4
 
 
+## A recorded serial is sometimes several things in one field: a serial and the
+## tag number beside it, `5277187-0138/TAG#: 116117`. Each is compared on its
+## own, because a number that ends one of them identifies the instrument and a
+## number that merely appears somewhere in the run of characters does not.
+_PARTS = re.compile(r'[/;,]')
+
+
 def sameSerial(raw, recorded):
     """Whether a serial read out of raw data names the asset the record does.
 
@@ -57,14 +66,42 @@ def sameSerial(raw, recorded):
     one, and that is exact enough to identify it: no other pressure sensor on
     record ends the same way.
     """
-    raw, recorded = str(raw).strip(), str(recorded).strip()
-    if not raw or not recorded or 'nan' in (raw, recorded):
+    raw = str(raw).strip()
+    if not raw or raw.lower() == 'nan':
         return False
-    if raw == recorded or raw in recorded:
-        return True
     digits = ''.join(c for c in raw if c.isdigit()).lstrip('0')
-    held = ''.join(c for c in recorded if c.isdigit())
-    return len(digits) >= SERIAL_DIGITS and held.endswith(digits)
+    for part in _PARTS.split(str(recorded)):
+        part = part.strip()
+        if not part or part.lower() == 'nan':
+            continue
+        if raw == part or part.endswith(raw):
+            return True
+        held = ''.join(c for c in part if c.isdigit())
+        if len(digits) >= SERIAL_DIGITS and held.endswith(digits):
+            return True
+    return False
+
+
+def everySerial(asset, serialByAsset, assets):
+    """Every serial number on record for one asset.
+
+    The bulk record carries one: the instrument's own, or the primary component
+    of an assembly. The RCA instrument list carries the rest, and says in
+    `SNnotes` what each belongs to -- a camera plus its two lights and two
+    lasers, a seafloor package plus its Lily, Iris and Paros instruments, a
+    five-beam ADCP plus the electronics that answer for its fifth beam.
+
+    Fifty-four assets carry more than one and fifty-one of those list something
+    the bulk record does not, so a number read off a photograph or out of a raw
+    file could belong to the deployed asset and match nothing. A camera's
+    pressure-tilt unit, serial 70501, was one of them.
+    """
+    held = [str(serialByAsset.get(asset, ''))]
+    listed = assets.get(asset, {}).get('mfgSN') if asset in assets else None
+    if isinstance(listed, (list, tuple)):
+        held += [str(serial) for serial in listed]
+    return [serial.strip() for serial in held
+            if serial.strip() and serial.strip().lower() != 'nan']
 
 
 def partialMatch(str1, str2, minCharacters):

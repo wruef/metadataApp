@@ -331,15 +331,37 @@ def test_aTailThatFitsOnlyThisInstrumentConfirmsIt():
 def test_aTailThatFitsTheInstrumentBesideItConfirmsNothing():
     """Four PREST deployments matched on a single digit, and the same digit fits
     the instrument beside them. That is not evidence, and it was reading as a
-    confirmed deployment."""
+    confirmed deployment. Both serials here end in the same digit, which is what
+    it takes to be confused with one another now that a serial has to match from
+    the end rather than anywhere inside."""
     from rca_metadata.checks import _rawVerdict
 
-    bulk = {'ATAPL-67639-00004': '5471540-0030', 'ATAPL-67639-00001': '5463757-0012'}
+    bulk = {'ATAPL-67639-00004': '5471540-0030', 'ATAPL-67639-00001': '5463757-0010'}
     verdict, named = _rawVerdict(rawRow('0', 'ATAPL-67639-00004'), bulk)
     ## an asset the serial *also* fits is not a correction to offer
     assert named is None
     assert verdict.startswith('AMBIGUOUS_SN')
     assert 'ATAPL-67639-00001' in verdict
+
+
+def test_aNumberInsideALongerPartNumberIsNotThatInstrument():
+    """`117` sits in the middle of the vendor part number `16P71176-7231`, and
+    matching anywhere inside made a confirmed CTD read as ambiguous against an
+    instrument it has nothing to do with. A serial identifies from the end."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATOSU-69828-00003': '16-50117', 'ATOSU-69828-00001': '16P71176-7231'}
+    verdict, named = _rawVerdict(rawRow('117', 'ATOSU-69828-00003'), bulk)
+    assert (verdict, named) == ('MATCH', None)
+
+
+def test_aSerialRecordedBesideItsTagNumberStillMatches():
+    """One asset carries `5277187-0138/TAG#: 116117` in the serial field. The
+    serial is the first of those, and a number ending it is the instrument."""
+    from rca_metadata.checks import _rawVerdict
+
+    bulk = {'ATAPL-1': '5277187-0138/TAG#: 116117'}
+    assert _rawVerdict(rawRow('138', 'ATAPL-1'), bulk) == ('MATCH', None)
 
 
 def test_anotherModelEntirelyDoesNotMakeASerialAmbiguous():

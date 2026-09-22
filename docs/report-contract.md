@@ -141,6 +141,10 @@ That confirms 97 deployments. Eighty-seven of them leave the queue outright. The
 other ten stay open for a reason of their own, which the row's sentence names:
 eight have no raw file at all, and two have no calibration on record.
 
+Every serial an asset is on record for counts: the one in OOI's bulk record and
+every one the RCA instrument list holds beside it, which is where an assembly's
+components live. Fifty-one assets list a component the bulk record does not.
+
 The serial comparison is not an equality, and deliberately so. The two records
 often spell a serial differently: a pressure sensor reports `05400030` where
 both the RCA list and the sensor bulk record carry `5471540-0030`, the same

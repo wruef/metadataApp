@@ -152,8 +152,11 @@ SEVERITY = {
         ## is said on the row, but it does not rank it.
         ## NO_IMAGE_ASSET: a photograph is on record and no asset could be read
         ## from it, so there is nothing to compare -- excluded, like no photograph.
+        ## AMBIGUOUS_SN: the number read off the photograph fits two assets of
+        ## the same family, so it places neither. Nothing to compare, like a
+        ## photograph nobody could read an asset from.
         'image_verify': {'MATCH': 'ok', 'MISMATCH': 'warning', 'NAN': 'excluded',
-                         'NO_IMAGE_ASSET': 'excluded'},
+                         'NO_IMAGE_ASSET': 'excluded', 'AMBIGUOUS_SN': 'excluded'},
         'calFile_verify': {'VALID_FILE': 'ok', 'NO_VALID_FILE': 'verification',
                            ## Worth noticing, not worth holding a row for: a
                            ## deployment the raw archive or a reviewer has

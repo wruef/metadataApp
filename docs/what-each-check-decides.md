@@ -185,6 +185,22 @@ way. `PHSEND` and `PHSENA` are Sunburst SAMI2-pH, whose records carry a one-byte
 device id that is not the serial and changes between deployments, so nothing in
 their raw data says which instrument wrote them and they stay `NAN`.
 
+**Every serial an asset is on record for counts, not only the bulk record's.**
+The bulk record carries one number per asset: the instrument, or the primary
+component of an assembly. The RCA instrument list carries the rest and says in
+`SNnotes` what each belongs to — a camera plus its two lights and two lasers, a
+seafloor package plus its Lily, Iris and Paros instruments. Fifty-four assets
+carry more than one and fifty-one of those list something the bulk record does
+not, so a number read off a photograph or out of a raw file is as likely to be a
+component as the primary. A camera's pressure-tilt unit, serial `70501`, matched
+nothing until both records were read.
+
+A serial matches **from the end**. `117` sits in the middle of the vendor part
+number `16P71176-7231`, which belongs to another instrument entirely, and
+matching anywhere inside made a confirmed CTD read as ambiguous against it.
+Where a field holds a serial and something else — `5277187-0138/TAG#: 116117` —
+each part is compared on its own.
+
 A five-beam ADCP is the other way round: its raw data reports a serial that
 shares nothing with the record's, because the record holds the system serial
 and the PD0 ensembles hold the electronics'. `params/serialAliases.csv` pairs
@@ -204,7 +220,23 @@ rewrites `sensor.uid` on that deployment's line of its array's sheet. See
 | `MATCH` | Agreed | the asset read from the photograph is the one on the sheet |
 | `MISMATCH` | *warning* | it is not — noted on the row, but it does not hold the row open |
 | `NO_IMAGE_ASSET` | Excluded | a photograph is on record and no asset could be read from it, so there is nothing to compare |
+| `AMBIGUOUS_SN` | Excluded | the number read off the photograph fits two assets of the same family, so it places neither |
 | `NAN` | Excluded | no photograph is on record |
+
+Most rows in `params/imageSN.csv` name an asset. Forty-seven name only a serial
+number somebody read off the photograph, and those used to say no asset could be
+read. The number now places the instrument the same way a serial out of the raw
+archive does: against the asset the sheet names, then against the rest of that
+asset's family. Where it places one, the row reports that asset and carries
+`imageSerialNumber` so a reader can see why the photograph names an asset the
+file does not.
+
+Scoped to the family for the same reason the raw check is, and more sharply.
+Serial `4` belongs to nine assets across the array; within `ATAPL-67653` it
+belongs to one. A number that fits two of the family is `AMBIGUOUS_SN` and
+places neither, and one nothing in the family answers to reads as before: vendor
+spellings the bulk record does not carry, and a few rows with an asset ID typed
+into the serial column.
 
 ### The calibration in force — `calFile_verify`
 
