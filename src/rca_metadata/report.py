@@ -301,9 +301,14 @@ def _deploymentReason(row):
         return 'Flagged in 2i-HITL review'
     status = _verdict(row, 'verificationStatus')
     if status == 'VERIFIED':
-        ## A sign-off returned above, so the raw archive is the only thing left
-        ## that could have confirmed this.
-        evidence = 'The serial number in the raw archive'
+        ## A sign-off returned above, so what is left is the raw archive or a
+        ## photograph the raw data does not contradict. Which one has to be said:
+        ## a row confirmed by a photograph and reading 'the serial number in the
+        ## raw archive confirms it' sends a reader looking for a serial nobody
+        ## extracted.
+        evidence = ('The serial number in the raw archive'
+                    if _verdict(row, 'rawFile_verify') == 'MATCH'
+                    else 'The pre-deploy photograph agrees and nothing in the raw data disagrees')
         ## Confirmed by one thing while another was never looked at. Read off
         ## the finding rather than from the fields, because the finding is the
         ## worst of every verdict on the row and this sentence has to explain
@@ -316,12 +321,11 @@ def _deploymentReason(row):
     if status == 'RAW_SN_POSSIBLE':
         return ('The serial number is recoverable from the raw archive but has not been '
                 'extracted' + stale)
-    ## The photograph agrees and the row is still not confirmed, which is worth
-    ## saying outright -- otherwise the sentence below claims nothing was found
-    ## when something was, and a reader goes looking for it.
-    if _verdict(row, 'image_verify') == 'MATCH':
-        return ('A pre-deploy photograph agrees, but a photograph alone does not confirm a '
-                'deployment' + stale)
+    ## No branch here for a photograph that agrees. A photograph naming the
+    ## asset the sheet names now confirms the deployment unless the raw data
+    ## contradicts it, and every way it can -- a mismatch, an ambiguous serial --
+    ## has returned its own sentence above. So a row reaching this line has no
+    ## photograph worth mentioning.
     return 'Nothing independent of the deployment sheet can confirm this instrument' + stale
 
 

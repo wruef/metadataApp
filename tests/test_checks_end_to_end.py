@@ -112,15 +112,17 @@ def test_twoDeploymentsInOneYearDoNotShareAnUnkeyedRow():
     assert [row['rawFile_verify'] for row in rows] == ['NO_FILE', 'NO_FILE']
 
 
-def test_thePhotographIsReportedButConfirmsNothing():
+def test_aPhotographConfirmsWhenTheRawDataContradictsNothing():
     one = {REFDES['ctd']: [deployment(REFDES['ctd'], 3, 2020, 'ATAPL-58345-00001')]}
     [agree] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '117', 'ATAPL-58345-00001', '')])
     [differ] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '118', 'ATAPL-58345-00002', '')])
     [unread] = run(one, imageRows=[(REFDES['ctd'], 3, 2020, 'a.jpg', '118', None, '')])
     [none] = run(one)
     assert [r['image_verify'] for r in (agree, differ, unread, none)] == ['MATCH', 'MISMATCH', 'NO_IMAGE_ASSET', 'NAN']
-    ## none of the four confirms the deployment
-    assert {r['verificationStatus'] for r in (agree, differ, unread, none)} == {'RAW_SN_POSSIBLE'}
+    ## A photograph naming the asset the sheet names, with no raw serial to say
+    ## otherwise, confirms the deployment. The other three say nothing.
+    assert agree['verificationStatus'] == 'VERIFIED'
+    assert {r['verificationStatus'] for r in (differ, unread, none)} == {'RAW_SN_POSSIBLE'}
 
 
 def test_theCalibrationInForceIsTheNewestBeforeTheDeployment():

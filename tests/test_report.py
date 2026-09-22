@@ -41,13 +41,34 @@ def test_aDeploymentIsConfirmedByItsRawSerialOrASignOff():
     assert 'raw archive' in reasonOf('deployments', confirmed)
 
 
-def test_aPhotographAloneLeavesADeploymentUnconfirmed():
+def test_aPhotographTheRawDataContradictsLeavesADeploymentUnconfirmed():
+    """A photograph agreeing is not the end of it. Both ways the raw data can
+    contradict one keep the row open, and each says which two things disagree
+    rather than crediting the photograph."""
     from rca_metadata.report import reasonOf
 
-    row = {'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'NAN',
+    def reason(rawVerdict):
+        return reasonOf('deployments', {
+            'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': rawVerdict,
+            'image_verify': 'MATCH', 'calFile_verify': 'VALID_FILE', 'cleared': False})
+
+    assert severityOf('deployments', {
+        'verificationStatus': 'NOT_VERIFIED', 'rawFile_verify': 'MISMATCH: raw: 379: ATAPL-2',
+        'image_verify': 'MATCH', 'calFile_verify': 'VALID_FILE', 'cleared': False}) == 'verification'
+    assert 'is not the asset on the deployment sheet' in reason('MISMATCH: raw: 379: ATAPL-2')
+    assert 'too short to tell' in reason('AMBIGUOUS_SN: raw: 4: also ATAPL-2')
+
+
+def test_aConfirmingPhotographSaysSoRatherThanNamingTheRawArchive():
+    """The row is confirmed by the photograph, so a sentence crediting a serial
+    number nobody extracted would send a reader looking for one."""
+    from rca_metadata.report import reasonOf
+
+    row = {'verificationStatus': 'VERIFIED', 'rawFile_verify': 'NAN',
            'image_verify': 'MATCH', 'calFile_verify': 'VALID_FILE', 'cleared': False}
-    assert severityOf('deployments', row) == 'verification'
-    assert 'photograph alone' in reasonOf('deployments', row)
+    reason = reasonOf('deployments', row)
+    assert 'photograph agrees and nothing in the raw data disagrees' in reason
+    assert 'serial number in the raw archive' not in reason
 
 
 def test_nothingToCheckIsNotTheSameAsNotChecked():

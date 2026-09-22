@@ -105,7 +105,13 @@ existing, the line stays in the sheet and matches nothing, and until this field
 existed it was invisible: no row carried it, so no screen showed it. Each entry
 carries `key`, `status`, `reviewers`, `dateReviewed` and `notes`. Only sign-offs
 somebody actually decided are listed; a key with nothing written against it is a
-line somebody added and never came back to. The dashboard shows them under
+line somebody added and never came back to.
+
+The dashboard separates two kinds. A key naming an **instrument** has lost what
+it was about: correct it or delete it. A key naming a **node** — the profiler
+docks — matches no row because a node deployment is read only by the positions
+check, and that check carries no sign-off column. Those are kept on purpose and
+are not counted as work. The dashboard shows them under
 *Sign-offs with nothing to sign*, which is a list to fix rather than a queue to
 work: the correction is an edit to the sheet.
 
@@ -122,10 +128,18 @@ and **either alone is enough**:
   serial in the sensor bulk record, or
 - a reviewer signed the deployment off.
 
-A pre-deploy photograph is **not** one of them. It is still read, still reported
-in `image_verify`, and a photograph that disagrees with the sheet is still a
-problem. But a photograph of an instrument is not evidence of which instrument
-went in the water, and 127 deployments were reading as confirmed on that alone.
+A third answers it **only together with the raw check**: a pre-deploy photograph
+naming the asset the sheet names, where the raw data contradicts nothing. A
+photograph alone is not evidence of which instrument went in the water, and 127
+deployments once read as confirmed on one. Alongside an instrument's own data
+naming no other asset, it is. What would contradict it is a serial belonging to
+a different asset, or one that fits this asset and another equally well; a class
+that writes no serial, or a file the archive does not hold, disagrees with
+nothing.
+
+That confirms 97 deployments. Eighty-seven of them leave the queue outright. The
+other ten stay open for a reason of their own, which the row's sentence names:
+eight have no raw file at all, and two have no calibration on record.
 
 The serial comparison is not an equality, and deliberately so. The two records
 often spell a serial differently: a pressure sensor reports `05400030` where

@@ -673,14 +673,21 @@ def checkDeployments(byRefDes, params, hitl, calHistory, calibratedInstruments, 
             else:
                 row['image_verify'] = 'MATCH' if imageAsset in str(deployment['AssetID']) else 'MISMATCH'
 
-            ## Two things confirm a deployment, and either alone is enough: the
-            ## serial number recovered from the first raw file, or a reviewer's
-            ## sign-off. A photograph is not one of them. It agrees or it
-            ## disagrees -- a disagreement is still a finding, and it is still
-            ## reported in image_verify -- but a photograph of an instrument is
-            ## not evidence of which instrument went in the water, and 127
-            ## deployments were reading as confirmed on that alone.
-            if row['rawFile_verify'] == 'MATCH' or row['HITLstatus'] == 'Clear':
+            ## What confirms a deployment. The serial number recovered from the
+            ## first raw file, or a reviewer's sign-off: either alone is enough.
+            ##
+            ## A photograph is not enough alone, and 127 deployments once read
+            ## as confirmed on one -- it shows an instrument, not which
+            ## instrument went in the water. It is enough alongside a raw check
+            ## that contradicts nothing: the photograph names the asset the
+            ## sheet names, and the instrument's own data names no other. What
+            ## would contradict it is a serial belonging to a different asset,
+            ## or one that fits this asset and another equally well. A class
+            ## that writes no serial, or a file the archive does not hold,
+            ## disagrees with nothing.
+            contradicted = str(row['rawFile_verify']).startswith(('MISMATCH', 'AMBIGUOUS_SN'))
+            if (row['rawFile_verify'] == 'MATCH' or row['HITLstatus'] == 'Clear'
+                    or (row['image_verify'] == 'MATCH' and not contradicted)):
                 row['verificationStatus'] = 'VERIFIED'
             elif expectsRawSerial(refDes):
                 row['verificationStatus'] = 'RAW_SN_POSSIBLE'

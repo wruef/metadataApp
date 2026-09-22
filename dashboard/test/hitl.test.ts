@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
+import { isNodeSignOff } from '../app/signoff'
+
 import { applyDecisions, hitlDate, withReviewer } from '../app/hitl'
 
 /** The real sheet, so the tests are against the format the team actually keeps. */
@@ -112,5 +114,27 @@ describe('applying decisions to the real sheet', () => {
     const after = applyDecisions(null, KEY, [{ key: 'x.csv', status: 'Clear', notes: '' }], 'WR', WHEN)
     expect(rows(after)[0]).toBe('githubFile,Reviewers,DateReviewed,Status,HITLnotes')
     expect(rows(after).length).toBe(2)
+  })
+})
+
+describe('a sign-off that matches no row', () => {
+  /** The profiler docks. A node deployment is read only by the positions check,
+   *  and that check has no sign-off column, so these match nothing and never
+   *  will — which is different from a key whose row is gone. */
+  it('is a node sign-off when the key names a node', () => {
+    expect(isNodeSignOff('deployments', 'CE04OSPD-PD01B.2014.1')).toBe(true)
+    expect(isNodeSignOff('deployments', 'RS03AXPD-PD03A.2019.5')).toBe(true)
+  })
+
+  it('is a lost one when the key names an instrument', () => {
+    expect(isNodeSignOff('deployments', 'RS01SUM1-LJ01B-05-HYDLFA104.2013.1')).toBe(false)
+    expect(isNodeSignOff('deployments', 'CE04OSPD-DP01B-00-ENG000000.2014.1')).toBe(false)
+  })
+
+  it('is never a node sign-off on the other two sheets', () => {
+    // Those are keyed by a file name and an asset ID, which are not designators
+    // at all and must not be measured as if they were.
+    expect(isNodeSignOff('calibrations', 'ATAPL-58337-00006__20150507.csv')).toBe(false)
+    expect(isNodeSignOff('sensorBulk', 'ATAPL-58320-00002')).toBe(false)
   })
 })

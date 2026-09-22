@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { repoFile } from '~/paths'
-import { HITL_SHEETS, type SheetKey } from '~/signoff'
+import { HITL_SHEETS, isNodeSignOff, type SheetKey } from '~/signoff'
 import { CHECKS, useStore, type UnmatchedSignOff } from '~/store'
 
 /**
@@ -31,16 +31,25 @@ const all = computed(() =>
   ),
 )
 
-const shown = computed(() => {
+/** Sign-offs on node deployments, which match no row because no check reads
+ *  them yet rather than because they lost what they were about. */
+const waiting = computed(() => all.value.filter((row) => isNodeSignOff(row.check, row.key)))
+/** The rest: the key names something that is gone from the records. */
+const lost = computed(() => all.value.filter((row) => !isNodeSignOff(row.check, row.key)))
+
+function matching(rows: (UnmatchedSignOff & { check: string })[]) {
   const term = search.value.trim().toLowerCase()
-  if (!term) return all.value
-  return all.value.filter(
+  if (!term) return rows
+  return rows.filter(
     (row) =>
       row.key.toLowerCase().includes(term) ||
       row.notes.toLowerCase().includes(term) ||
       row.reviewers.toLowerCase().includes(term),
   )
-})
+}
+
+const shown = computed(() => matching(lost.value))
+const shownWaiting = computed(() => matching(waiting.value))
 
 /** Which sheet a line has to be edited in — the same mapping a sign-off writes
  *  through, so the two cannot name different files. */
@@ -69,7 +78,7 @@ const rowId = (row: UnmatchedSignOff & { check: string }) => `${row.check}:${row
 
     <div class="flex gap-3 items-center">
       <u-input v-model="search" placeholder="Filter" icon="i-lucide-search" class="max-w-xs" />
-      <span class="text-gray-500 text-sm">{{ shown.length }} of {{ all.length }}</span>
+      <span class="text-gray-500 text-sm">{{ shown.length }} of {{ lost.length }}</span>
     </div>
 
     <div class="border border-gray-200 overflow-hidden rounded-lg">
@@ -131,8 +140,50 @@ const rowId = (row: UnmatchedSignOff & { check: string }) => `${row.check}:${row
         </tbody>
       </table>
       <p v-if="!shown.length" class="px-3 py-3 text-gray-500 text-sm">
-        {{ all.length ? 'Nothing matches that filter.' : 'Every sign-off in the sheets matches a row in this run.' }}
+        {{ lost.length ? 'Nothing matches that filter.' : 'Every sign-off in the sheets matches a row in this run.' }}
       </p>
+    </div>
+
+    <!-- Kept on purpose, so they are not in the count above and carry no
+         instruction to correct or delete. -->
+    <div v-if="waiting.length">
+      <h2 class="font-semibold text-lg">Node sign-offs, waiting on a check</h2>
+      <p class="max-w-prose mt-1 text-gray-600 text-sm">
+        These name a <b>node</b> rather than an instrument — the profiler docks and their
+        neighbours. They match no row because a node deployment is read only by the positions
+        check, and that check has no sign-off column. They are judgements waiting for somewhere to
+        put them, not judgements that lost what they were about, so leave them alone.
+      </p>
+
+      <div class="border border-gray-200 mt-3 overflow-hidden rounded-lg">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-gray-600">
+            <tr>
+              <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">Node</th>
+              <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">Decision</th>
+              <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">Reviewed</th>
+              <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in shownWaiting" :key="rowId(row)" class="border-t border-gray-100">
+              <td class="font-mono px-3 py-1.5">{{ row.key }}</td>
+              <td class="px-3 py-1.5">
+                <span v-if="row.status === 'Clear'" class="b ok">Cleared</span>
+                <span v-else-if="row.status === 'NotClear'" class="b crit">Flagged</span>
+                <span v-else class="text-gray-600">{{ row.status }}</span>
+              </td>
+              <td class="px-3 py-1.5 text-gray-600">{{ row.dateReviewed || '—' }}</td>
+              <td class="max-w-md px-3 py-1.5 text-[12.5px] text-gray-600 truncate" :title="row.notes">
+                {{ row.notes || '—' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-if="!shownWaiting.length" class="px-3 py-3 text-gray-500 text-sm">
+          Nothing matches that filter.
+        </p>
+      </div>
     </div>
   </div>
 </template>

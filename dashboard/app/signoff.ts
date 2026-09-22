@@ -1,3 +1,5 @@
+import { isNodeRefDes } from '~/deployfile'
+
 /** The three checks a reviewer signs off, and the sheet each one is recorded in.
  *  `key` is the column that identifies a row, and matches how the check itself
  *  looks a sign-off up. `of` rebuilds that identifier for a run published
@@ -41,4 +43,22 @@ export function hitlKeyOf(sheet: SheetKey, row: Record<string, unknown>) {
   return typeof row.hitlKey === 'string' && row.hitlKey
     ? row.hitlKey
     : HITL_SHEETS[sheet].of(row)
+}
+
+/**
+ * Whether an unmatched sign-off is a node sign-off rather than a lost one.
+ *
+ * A deployment sign-off is keyed by a reference designator with its year and
+ * deployment number. Most name an instrument; a few name a **node** — the
+ * profiler docks, `CE04OSPD-PD01B.2014.1` and its neighbours. Those match no
+ * row and never will, because a node deployment is only read by the positions
+ * check and that check carries no sign-off column at all.
+ *
+ * So they are not judgements that lost what they were about. They are
+ * judgements waiting on somewhere to put them, kept on purpose, and telling a
+ * reviewer to correct or delete them would be wrong. The distinction is
+ * structural: a node designator is the site and the node and nothing else.
+ */
+export function isNodeSignOff(check: string, key: string) {
+  return check === 'deployments' && isNodeRefDes(key.split('.')[0] ?? '')
 }

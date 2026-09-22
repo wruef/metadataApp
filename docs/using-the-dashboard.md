@@ -110,7 +110,9 @@ written against a key — a calibration file name, a reference designator with i
 year and deployment number, an asset ID — and when the thing behind that key
 stops existing, the line stays in the sheet and matches nothing. It is a list to
 fix rather than a queue to work: open a row and it names the sheet to correct
-the key in or delete the line from.
+the key in or delete the line from. Sign-offs naming a node sit in a section of
+their own below, uncounted: they match no row because nothing reads node
+sign-offs yet, and they are held for when something does.
 
 **Settings**, at the foot, showing who you are signed in as.
 

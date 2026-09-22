@@ -2,6 +2,7 @@
 import { useAuth } from '~/auth'
 import { GUIDE, REVIEW_GUIDE } from '~/paths'
 import { useBatch } from '~/batch'
+import { isNodeSignOff } from '~/signoff'
 import { useStore } from '~/store'
 
 const store = useStore()
@@ -22,10 +23,15 @@ const vendorOnly = computed(
 )
 
 /** Sign-offs whose key matches no row this run produced. Nothing else on any
- *  screen shows them, which is the reason the rail carries a count. */
+ *  screen shows them, which is the reason the rail carries a count.
+ *
+ *  Node sign-offs are left out. They match no row because no check reads them
+ *  yet, and they are kept on purpose, so counting them here would be the rail
+ *  asking for work nobody intends to do. */
 const orphaned = computed(() =>
-  Object.values(store.report?.unmatchedSignOffs ?? {}).reduce(
-    (total, rows) => total + (rows?.length ?? 0),
+  Object.entries(store.report?.unmatchedSignOffs ?? {}).reduce(
+    (total, [check, rows]) =>
+      total + (rows ?? []).filter((row) => !isNodeSignOff(check, row.key)).length,
     0,
   ),
 )

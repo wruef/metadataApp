@@ -751,7 +751,7 @@
      "finding": "verification",
      "cleared": false,
      "severity": "verification",
-     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03ECAL-MJ03E-12-CTDPFB306",
@@ -1303,7 +1303,7 @@
      "finding": "verification",
      "cleared": false,
      "severity": "verification",
-     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03INT1-MJ03C-07-PPSDNA301",
@@ -1327,7 +1327,7 @@
      "finding": "verification",
      "cleared": false,
      "severity": "verification",
-     "reason": "A pre-deploy photograph agrees, but a photograph alone does not confirm a deployment"
+     "reason": "Nothing independent of the deployment sheet can confirm this instrument"
     },
     {
      "refDes": "RS03INT1-MJ03C-05-CAMDSB303",

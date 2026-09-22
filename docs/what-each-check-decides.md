@@ -131,17 +131,23 @@ did it have a calibration?
 ### Confirmation — `verificationStatus`
 
 **Two things confirm a deployment, and either alone is enough:** the serial
-number read out of the deployment's raw data, or a reviewer's sign-off.
+number read out of the deployment's raw data, or a reviewer's sign-off. A third
+confirms it only in company: a pre-deploy photograph naming the asset the sheet
+names, where the raw data contradicts nothing.
 
 | verdict | status | meaning |
 |---|---|---|
-| `VERIFIED` | Agreed | the raw serial matches, or a reviewer signed it off |
+| `VERIFIED` | Agreed | the raw serial matches, or a reviewer signed it off, or the photograph agrees and the raw data does not disagree |
 | `RAW_SN_POSSIBLE` | Needs verification | nothing confirms it yet, but this instrument class writes its serial into its raw data, so extraction would settle it |
 | `NOT_VERIFIED` | Needs verification | nothing could confirm it |
 
-A pre-deploy photograph is **not** one of the two. It is still read and still
-reported, and one that disagrees is still shown, but a photograph of an
-instrument is not evidence of which instrument went in the water.
+A photograph is not evidence on its own of which instrument went in the water,
+and 127 deployments once read as confirmed on one. It is evidence alongside an
+instrument's own data naming no other asset. What would contradict it is a
+`MISMATCH` or an `AMBIGUOUS_SN`; `NAN` and `NO_FILE` contradict nothing, so a
+photograph carries those rows. A row confirmed this way can still be open for a
+different reason — a missing raw file is worth knowing about whatever confirmed
+the asset — and its sentence says which.
 
 ### The serial in the raw archive — `rawFile_verify`
 
