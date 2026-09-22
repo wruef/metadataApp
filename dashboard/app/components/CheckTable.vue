@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '~/auth'
-import { compareValues, identity, splitVerdict, toneOf, SEVERITY_TONE, type Tone } from '~/display'
+import { columnLabel, compareValues, identity, splitVerdict, toneOf, verdictLabel,
+         SEVERITY_TONE, type Tone } from '~/display'
 import { ALL, matchesWhere, type Where } from '~/query'
 import { useBatch } from '~/batch'
 import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
@@ -250,7 +251,8 @@ const paged = computed(() =>
       const tone = toneOf(checkKey, column, text)
       if (tone) {
         const { token, detail } = splitVerdict(text)
-        return { tone, token, detail, dim: '', strong: '', tail: '', text: '' }
+        return { tone, token: verdictLabel(column, token), detail,
+                 dim: '', strong: '', tail: '', text: '' }
       }
       return { tone: null, token: '', detail: '', dim: '', strong: '', tail: '', text }
     }),
@@ -267,9 +269,7 @@ watch(page, () => {
   opened.value = null
 })
 
-function label(column: string) {
-  return column.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
-}
+const label = columnLabel
 </script>
 
 <template>

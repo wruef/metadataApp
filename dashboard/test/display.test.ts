@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { VERDICTS, assetNamedByRawSerial, compareValues, identity, readDifference, siteOf, splitVerdict, toneOf, yearOf } from '../app/display'
+import { VERDICTS, VERDICT_LABEL, assetNamedByRawSerial, columnLabel, compareValues, identity, readDifference, siteOf, splitVerdict, toneOf, verdictLabel, yearOf } from '../app/display'
 
 describe('verdict tone', () => {
   it('colours a verdict by the severity the run gives it', () => {
@@ -195,5 +195,43 @@ describe('the asset a raw serial number belongs to', () => {
     for (const verdict of ['MATCH', 'NO_FILE', 'NO_SN', 'NAN', '']) {
       expect(assetNamedByRawSerial(verdict)).toBeNull()
     }
+  })
+})
+
+describe('what a column and its verdicts are called on screen', () => {
+  it('renames the three that read wrongly on the calibrations table', () => {
+    expect(columnLabel('calRepo_check')).toBe('Vendor file')
+    expect(columnLabel('vendorMatch')).toBe('Github comparison')
+    expect(columnLabel('HITLstatus')).toBe('HITL status')
+  })
+
+  it('names the deployments columns for what they are evidence from', () => {
+    expect(columnLabel('rawFile_verify')).toBe('Raw archive')
+    expect(columnLabel('image_verify')).toBe('Cruise image')
+    expect(columnLabel('calFile_verify')).toBe('Calibration')
+  })
+
+  it('opens out any other field name rather than needing an entry', () => {
+    expect(columnLabel('deployYear')).toBe('deploy Year')
+    expect(columnLabel('serialNumber')).toBe('serial Number')
+  })
+
+  it('says whether the vendor original is on file, not whether something matched', () => {
+    expect(verdictLabel('calRepo_check', 'MATCH')).toBe('On file')
+    expect(verdictLabel('calRepo_check', 'NOMATCH')).toBe('Missing')
+    expect(verdictLabel('calRepo_check', 'NOT_EXPECTED')).toBe('Not expected')
+  })
+
+  it('leaves every other column’s verdicts alone', () => {
+    // MATCH under a comparison answers a different question from MATCH under
+    // the vendor file, and only one of the two is being renamed.
+    expect(verdictLabel('vendorMatch', 'MATCH')).toBe('MATCH')
+    expect(verdictLabel('rawFile_verify', 'MATCH')).toBe('MATCH')
+  })
+
+  it('renames nothing in the report itself', () => {
+    // A filter someone saved reads ?vendorMatch=MISMATCH, and a run published
+    // last season still has to open.
+    expect(Object.keys(VERDICT_LABEL)).toEqual(['calRepo_check'])
   })
 })

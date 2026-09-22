@@ -135,6 +135,51 @@ const HITL: Record<string, Tone> = { Clear: 'ok', NotClear: 'crit', NA: 'na' }
  * and the serial numbers behind it in one string. The verdict is what the
  * column is scanned for, so it is badged and the rest is left as text.
  */
+/**
+ * What a column is called on screen, where its field name is not what a reader
+ * would call it.
+ *
+ * The field names are the report's, and they stay the report's: renaming one
+ * would break every published run and every link somebody sent. Anything not
+ * named here is the field with its underscores and camel humps opened out.
+ */
+export const COLUMN_LABEL: Record<string, string> = {
+  /** It answers whether the vendor original is on file, not what a repository
+   *  check concluded. */
+  calRepo_check: 'Vendor file',
+  /** The comparison is between the file in asset-management and that original,
+   *  and calling it the vendor's made the two columns read as one question
+   *  asked twice. */
+  vendorMatch: 'Github comparison',
+  HITLstatus: 'HITL status',
+  /** On the deployments table: what each column is evidence *from*, rather than
+   *  the name of the check that read it. A reader working the queue is asking
+   *  what the archive said and what the cruise photograph said, not which
+   *  verify step produced the string. */
+  rawFile_verify: 'Raw archive',
+  image_verify: 'Cruise image',
+  calFile_verify: 'Calibration',
+}
+
+/**
+ * What a verdict is called on screen, per column.
+ *
+ * Same rule: the value in the report is unchanged, because a filter someone
+ * saved reads `?vendorMatch=MISMATCH` and a run published last season still has
+ * to open. `MATCH` under *Vendor file* answers a different question from
+ * `MATCH` under a comparison, and reading the same word twice on one row
+ * suggested the two agreed about something when only one of them had looked.
+ */
+export const VERDICT_LABEL: Record<string, Record<string, string>> = {
+  calRepo_check: { MATCH: 'On file', NOMATCH: 'Missing', NOT_EXPECTED: 'Not expected' },
+}
+
+export const columnLabel = (column: string) =>
+  COLUMN_LABEL[column] ?? column.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2')
+
+export const verdictLabel = (column: string, token: string) =>
+  VERDICT_LABEL[column]?.[token] ?? token
+
 export function splitVerdict(value: string) {
   const [token, ...rest] = value.split(':')
   return { token: (token ?? '').trim(), detail: rest.join(':').trim() }

@@ -90,11 +90,20 @@ present manufactures disagreements. Which format each instrument uses is in
 
 ### Whether a vendor original is on record — `calRepo_check`
 
-| verdict | status | meaning |
-|---|---|---|
-| `MATCH` | Agreed | calibrationFiles holds a file under this name |
-| `NOMATCH` | Needs verification | it does not |
-| `NOT_EXPECTED` | Excluded | no vendor publishes one for this instrument and none ever will |
+Shown as **Vendor file**, and its verdicts read as words rather than as a second
+`MATCH` on the same row. The field and its values in the report are unchanged: a
+filter someone saved reads `?vendorMatch=MISMATCH`, and a run published last
+season still has to open.
+
+| verdict | on screen | status | meaning |
+|---|---|---|---|
+| `MATCH` | On file | Agreed | calibrationFiles holds a file under this name |
+| `NOMATCH` | Missing | Needs verification | it does not |
+| `NOT_EXPECTED` | Not expected | Excluded | no vendor publishes one for this instrument and none ever will |
+
+`vendorMatch` is shown as **Github comparison**, because it compares the file in
+asset-management against that original and calling it the vendor's made the two
+columns read as one question asked twice.
 
 ### Whether the file could be read — `fileParse`
 
