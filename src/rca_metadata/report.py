@@ -354,6 +354,18 @@ def _sensorBulkReason(row):
 
 
 def _sheetReason(row):
+    ## A deployment can fail several ways at once and its row carries every
+    ## verdict. Each gets its sentence, because a reader clearing one has to see
+    ## the other: a velocity meter with no end date is both an asset in the
+    ## water twice and a deployment nobody closed out, and one sentence would
+    ## send them away having fixed half of it.
+    verdicts = row.get('verdicts')
+    if verdicts and len(verdicts) > 1:
+        return '; '.join(_oneSheetReason({**row, 'verdict': one}) for one in verdicts)
+    return _oneSheetReason(row)
+
+
+def _oneSheetReason(row):
     verdict = _verdict(row, 'verdict')
     where = str(row.get('verdict', '')).partition(':')[2].strip()
     if verdict == 'ASSET_IN_WRONG_BULK_RECORD':

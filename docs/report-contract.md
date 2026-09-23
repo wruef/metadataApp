@@ -97,6 +97,12 @@ always written, so null means there is no comparison and the field being absent
 means the run predates it — the dashboard treats the two the same, because no
 run published before then ever carried one.
 
+A deployment-sheet row carries `verdicts`, every finding against that
+deployment, and `values` beside it, what the sheet holds for the column each
+finding is about. `verdict` and `value` are those joined, so the field that
+ranks the row and the field a table shows are what they always were. Runs
+published before rows were combined carry one finding per row and neither list.
+
 It also carries `unmatchedSignOffs` — per check, the sign-offs whose key matches
 no row the run produced. A sheet is keyed by whatever identified a row when
 somebody signed it: a calibration file name, a reference designator with its

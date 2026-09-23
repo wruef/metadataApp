@@ -105,6 +105,15 @@ designators the run covered; the vendor calibrations that have no repository
 file; the sign-offs that match no row; the deployment history the run built; and
 your queue of changes waiting to be proposed.
 
+**Reference designators** opens on everything the run covered and offers four
+other views: what the sheets say is in the water now, which is every designator
+with a deployment that has no end date, and what is not; and what went in the
+water in a chosen year, and what did not. Each pair covers the whole list, so a
+designator is in exactly one of the two. The absent views are the ones worth
+opening after a cruise: a designator missing from a season is either an
+instrument nobody turned around, which is expected, or one whose deployment
+never reached the sheets, which is not.
+
 *Sign-offs with nothing to sign* appears only when there are some. A sign-off is
 written against a key — a calibration file name, a reference designator with its
 year and deployment number, an asset ID — and when the thing behind that key

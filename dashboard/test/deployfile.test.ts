@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyDeploymentCorrections,
   ASSET_FIELD,
+  correctableFields,
   deploymentPath,
   deploymentSection,
   deploymentTitle,
@@ -301,5 +302,50 @@ describe('writing an end date onto a deployment that has none', () => {
       filled, 'RS03AXPS-PC03A-4A-DOSTAD303', 3,
       [{ field: STOP_FIELD, from: '', to: '2017-07-30T00:00:00' }],
     )).toThrow(/stopDateTime now reads/)
+  })
+})
+
+describe('the columns a deployment-sheet row offers to correct', () => {
+  it('offers one per finding when a deployment carries several', () => {
+    // A velocity meter with no end date is both an asset in the water twice and
+    // a deployment nobody closed out. Offering only the first would leave a
+    // reviewer having fixed half of it.
+    expect(correctableFields({
+      verdict: 'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5; '
+             + 'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25',
+      verdicts: ['DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5',
+                 'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'],
+      values: ['ATAPL-67979-00002', 'ATAPL-67979-00002'],
+      value: 'ATAPL-67979-00002',
+    })).toEqual([
+      { verdict: 'DUPLICATE_ASSET_IN_DEPLOYMENT', field: ASSET_FIELD, held: 'ATAPL-67979-00002' },
+      // The end date column holds nothing; the value beside that finding is the
+      // asset, and the asset is not what is being changed.
+      { verdict: 'DEPLOYMENT_MISSING_END_DATE', field: STOP_FIELD, held: '' },
+    ])
+  })
+
+  it('takes the value beside each finding, not the row’s joined one', () => {
+    expect(correctableFields({
+      verdicts: ['SENSOR_NOT_IN_BULK', 'CRUISE_NOT_IN_CRUISE_LIST'],
+      values: ['ATAPL-NOPE', 'TN999'],
+      value: 'ATAPL-NOPE, TN999',
+    })).toEqual([
+      { verdict: 'SENSOR_NOT_IN_BULK', field: ASSET_FIELD, held: 'ATAPL-NOPE' },
+      { verdict: 'CRUISE_NOT_IN_CRUISE_LIST', field: 'CUID_Deploy', held: 'TN999' },
+    ])
+  })
+
+  it('leaves out the findings one row cannot fix', () => {
+    expect(correctableFields({
+      verdicts: ['DUPLICATE_NODE_IN_DEPLOYMENT: also at RS03CCAL-MJ03F from 2018-07-06'],
+      values: ['ATAPL-65244-00023'],
+    })).toEqual([])
+  })
+
+  it('reads a run published before rows were combined', () => {
+    expect(correctableFields({ verdict: 'SENSOR_NOT_IN_BULK', value: 'ATAPL-NOPE' })).toEqual([
+      { verdict: 'SENSOR_NOT_IN_BULK', field: ASSET_FIELD, held: 'ATAPL-NOPE' },
+    ])
   })
 })

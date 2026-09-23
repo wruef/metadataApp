@@ -103,8 +103,19 @@ BULK = {'assetIDs': {'sensors': {'ATAPL-1', 'ATAPL-58340-00003'},
         'cruises': pd.DataFrame({'CUID': ['CRUISE']})}
 
 
+def matching(rows, prefix):
+    """The rows one rule fired on. A row carries every verdict it earned, so a
+    test about one rule reads the list rather than the joined string."""
+    return [r for r in rows if any(v.startswith(prefix) for v in r['verdicts'])]
+
+
+def verdicts(rows, prefix):
+    """Just that rule's verdicts, for a test that asserts their wording."""
+    return {v for r in rows for v in r['verdicts'] if v.startswith(prefix)}
+
+
 def duplicates(rows):
-    return [r for r in rows if r['verdict'].startswith('DUPLICATE_ASSET_IN_DEPLOYMENT')]
+    return matching(rows, 'DUPLICATE_ASSET_IN_DEPLOYMENT')
 
 
 def test_theSameAssetInTwoPlacesAtOnceIsAFinding():
@@ -155,10 +166,10 @@ def test_overlappingDeploymentsAreFoundWhateverTheirNumbers():
         sheets([('RS01SBPD-DP01A-06-DOSTAD104', 'ATAPL-1')], year='2020-08-01T00:00:00', deployNum=3),
         sheets([('RS03AXPS-PC03A-4A-DOSTAD303', 'ATAPL-1')], year='2020-09-01T00:00:00', deployNum=7),
     ], ignore_index=True)
-    found = duplicates(checkDeploymentSheets(frame, BULK))
-    assert len(found) == 2
+    rows = checkDeploymentSheets(frame, BULK)
+    assert len(duplicates(rows)) == 2
     ## each row names the other place
-    assert {r['verdict'] for r in found} == {
+    assert verdicts(rows, 'DUPLICATE_ASSET_IN_DEPLOYMENT') == {
         'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps RS03AXPS-PC03A-4A-DOSTAD303 deployment 7',
         'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps RS01SBPD-DP01A-06-DOSTAD104 deployment 3'}
 
@@ -174,11 +185,11 @@ def test_aRedeploymentThatOverlapsTheLastOneIsStillTwoPlacesAtOnce():
         sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
                year='2019-06-25T00:00:00', deployNum=5, stop='2024-08-20T00:00:00'),
     ], ignore_index=True)
-    found = duplicates(checkDeploymentSheets(frame, BULK))
-    assert len(found) == 2
+    rows = checkDeploymentSheets(frame, BULK)
+    assert len(duplicates(rows)) == 2
     ## One designator, so naming it in the verdict would say nothing. The
     ## deployment number is what tells the two rows apart.
-    assert {r['verdict'] for r in found} == {
+    assert verdicts(rows, 'DUPLICATE_ASSET_IN_DEPLOYMENT') == {
         'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5',
         'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 4'}
 
@@ -554,7 +565,7 @@ def test_aBlankAssetOnTheSheetDoesNotCrashTheRawVerdict():
 ## --- a node is in one place at a time too ---
 
 def nodeDuplicates(rows):
-    return [r for r in rows if r['verdict'].startswith('DUPLICATE_NODE_IN_DEPLOYMENT')]
+    return matching(rows, 'DUPLICATE_NODE_IN_DEPLOYMENT')
 
 
 def test_oneNodeHostingManyInstrumentsAtOnceIsNotAFinding():
@@ -575,9 +586,9 @@ def test_aNodeAtTwoPlacesOverTheSameDaysIsAFinding():
         sheets([('RS03AXBS-MJ03A-05-HYDLFA301', 'ATAPL-1')], year='2014-08-08T00:00:00'),
         sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
     ], ignore_index=True)
-    found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
-    assert len(found) == 2
-    assert {r['verdict'] for r in found} == {
+    rows = checkDeploymentSheets(frame, BULK)
+    assert len(nodeDuplicates(rows)) == 2
+    assert verdicts(rows, 'DUPLICATE_NODE_IN_DEPLOYMENT') == {
         'DUPLICATE_NODE_IN_DEPLOYMENT: also at RS03CCAL-MJ03F from 2018-07-06',
         'DUPLICATE_NODE_IN_DEPLOYMENT: also at RS03AXBS-MJ03A from 2014-08-08'}
 
@@ -601,9 +612,9 @@ def test_aNodeAtThreePlacesIsOneFindingPerPlace():
         sheets([('RS03CCAL-MJ03F-08-SCTAAA301', 'ATAPL-1')], year='2018-07-06T00:00:00'),
         sheets([('RS03INT2-MJ03D-12-VEL3DB304', 'ATAPL-1')], year='2018-07-05T00:00:00'),
     ], ignore_index=True)
-    found = nodeDuplicates(checkDeploymentSheets(frame, BULK))
-    assert len(found) == 3
-    assert all(r['verdict'].count('from') == 2 for r in found)
+    rows = checkDeploymentSheets(frame, BULK)
+    assert len(nodeDuplicates(rows)) == 3
+    assert all(v.count('from') == 2 for v in verdicts(rows, 'DUPLICATE_NODE_IN_DEPLOYMENT'))
 
 
 def test_theFindingPointsAtASheetRowSomebodyCanOpen():
@@ -623,7 +634,7 @@ def test_theFindingPointsAtASheetRowSomebodyCanOpen():
 ## --- a deployment that was never closed out ---
 
 def missingEnd(rows):
-    return [r for r in rows if r['verdict'].startswith('DEPLOYMENT_MISSING_END_DATE')]
+    return matching(rows, 'DEPLOYMENT_MISSING_END_DATE')
 
 
 def test_anOpenDeploymentFollowedByAnotherIsMissingItsEndDate():
@@ -636,9 +647,10 @@ def test_anOpenDeploymentFollowedByAnotherIsMissingItsEndDate():
         sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
                year='2019-06-25T00:00:00', deployNum=5, stop='2024-08-20T00:00:00'),
     ], ignore_index=True)
-    found = missingEnd(checkDeploymentSheets(frame, BULK))
-    assert [r['deployNum'] for r in found] == [4]
-    assert found[0]['verdict'] == 'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'
+    rows = checkDeploymentSheets(frame, BULK)
+    assert [r['deployNum'] for r in missingEnd(rows)] == [4]
+    assert verdicts(rows, 'DEPLOYMENT_MISSING_END_DATE') == {
+        'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'}
 
 
 def test_theSlotBeingRefittedWithADifferentInstrumentIsStillFound():
@@ -688,3 +700,48 @@ def test_onlyTheEarlierOfTwoOpenDeploymentsIsReported():
                year='2019-07-07T00:00:00', deployNum=3),
     ], ignore_index=True)
     assert [r['deployNum'] for r in missingEnd(checkDeploymentSheets(frame, BULK))] == [2]
+
+
+def test_oneDeploymentIsOneRowHoweverManyThingsAreWrong():
+    """A velocity meter left without an end date is both an asset in the water
+    twice and a deployment nobody closed out. Two rows naming one deployment
+    read as two deployments, and a reviewer clearing one found the other still
+    there."""
+    frame = pd.concat([
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2018-06-26T00:00:00', deployNum=4),
+        sheets([('RS01SUM1-LJ01B-12-VEL3DB104', 'ATAPL-1')],
+               year='2019-06-25T00:00:00', deployNum=5, stop='2024-08-20T00:00:00'),
+    ], ignore_index=True)
+    rows = checkDeploymentSheets(frame, BULK)
+    [d4] = [r for r in rows if r['deployNum'] == 4]
+
+    assert d4['verdicts'] == [
+        'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5',
+        'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25']
+    ## The joined text is what ranks the row and what a table shows, so both
+    ## stay what they always were.
+    assert d4['verdict'] == '; '.join(d4['verdicts'])
+    ## One value per verdict, so an editor correcting one knows what it replaces.
+    assert len(d4['values']) == len(d4['verdicts'])
+
+
+def test_eachVerdictKeepsItsOwnSentence():
+    """A reader clearing one has to see the other, and one sentence would send
+    them away having fixed half of it."""
+    from rca_metadata.report import reasonOf
+
+    row = {'verdict': 'DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5; '
+                      'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25',
+           'verdicts': ['DUPLICATE_ASSET_IN_DEPLOYMENT: overlaps deployment 5',
+                        'DEPLOYMENT_MISSING_END_DATE: deployment 5 starts 2019-06-25'],
+           'cleared': False}
+    reason = reasonOf('deploymentSheets', row)
+    assert 'in the water twice' in reason
+    assert 'nobody wrote down when' in reason
+
+
+def test_aDeploymentWithOneThingWrongIsUnchanged():
+    rows = checkDeploymentSheets(sheets([('RS01SBPD-DP01A-06-DOSTAD104', 'ATAPL-UNKNOWN')]), BULK)
+    assert [r['verdict'] for r in rows] == ['SENSOR_NOT_IN_BULK']
+    assert rows[0]['verdicts'] == ['SENSOR_NOT_IN_BULK']

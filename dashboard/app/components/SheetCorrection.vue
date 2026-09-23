@@ -23,22 +23,15 @@ import { type Row } from '~/store'
  * per instrument hanging off it, and correcting one row would leave the rest
  * saying the box is still there.
  */
-const { row } = defineProps<{ row: Row }>()
+const { row, field, held } = defineProps<{ row: Row; field: string; held: string }>()
 
 const auth = useAuth()
 const batch = useBatch()
 
 const refDes = computed(() => String(row.refDes ?? ''))
 const deployNum = computed(() => row.deployNum as string | number)
-const verdict = computed(() => verdictOf(row.verdict))
-const field = computed(() => VERDICT_FIELD[verdict.value] ?? '')
 
-/** What the sheet says now, which is what the correction has to still find.
- *  A missing end date is a column holding nothing, not a column holding the
- *  value the finding is about — that is the asset, and it is not being changed. */
-const held = computed(() => (field.value === STOP_FIELD ? '' : String(row.value ?? '')))
-
-const id = computed(() => sheetKey(kindOfField(field.value), refDes.value, deployNum.value))
+const id = computed(() => sheetKey(kindOfField(field), refDes.value, deployNum.value))
 /** What this correction would replace, if the reviewer already queued one. */
 const queuedAlready = computed(() => {
   const entry = batch.entryFor('sheets', id.value)
@@ -50,11 +43,11 @@ const queuedAlready = computed(() => {
  *  no later than this — which makes it the obvious value and still a reviewer's
  *  decision, because the true recovery was some hours or days before it. */
 const follows = computed(() =>
-  (field.value === STOP_FIELD && typeof row.endsBefore === 'string' ? row.endsBefore : ''))
+  (field === STOP_FIELD && typeof row.endsBefore === 'string' ? row.endsBefore : ''))
 
 const typed = ref('')
 const wanted = computed(() => typed.value.trim())
-const changed = computed(() => Boolean(wanted.value) && wanted.value !== held.value)
+const changed = computed(() => Boolean(wanted.value) && wanted.value !== held)
 
 const LABEL: Record<string, string> = {
   'sensor.uid': 'The instrument on the sheet',
@@ -71,7 +64,7 @@ function take() {
 
 function add() {
   batch.queueField(
-    refDes.value, deployNum.value, field.value, held.value, wanted.value,
+    refDes.value, deployNum.value, field, held, wanted.value,
     wanted.value === follows.value
       ? 'The next deployment of this reference designator starts here, so this one '
         + 'had ended by then.'
@@ -87,7 +80,7 @@ const editUrl = computed(() => {
 </script>
 
 <template>
-  <div v-if="field" class="border-gray-200 border-t pt-3">
+  <div class="border-gray-200 border-t pt-3">
     <h4 class="font-semibold text-[11px] text-gray-500 tracking-wider uppercase">
       {{ LABEL[field] ?? field }}
     </h4>

@@ -83,6 +83,35 @@ export const kindOfField = (field: string) => (field === ASSET_FIELD ? 'asset' :
  *  column the finding is about. */
 export const verdictOf = (verdict: unknown) => String(verdict ?? '').split(':')[0]!.trim()
 
+/**
+ * Every column one deployment-sheet row offers to correct, with what the sheet
+ * holds for each.
+ *
+ * A row can carry several findings — an asset in the water twice *and* no end
+ * date — and each is a different column. Offering only the first would leave a
+ * reviewer having fixed half of it and no way to see the rest.
+ *
+ * `verdicts` and `values` stay parallel in the report, so a finding's value is
+ * the one beside it. Runs published before rows were combined carry neither and
+ * fall back to the single verdict they do have.
+ */
+export function correctableFields(row: Record<string, unknown>) {
+  const verdicts = Array.isArray(row.verdicts) && row.verdicts.length
+    ? (row.verdicts as string[])
+    : [String(row.verdict ?? '')]
+  const values = Array.isArray(row.values) ? (row.values as string[]) : []
+  const found: { verdict: string; field: string; held: string }[] = []
+  verdicts.forEach((verdict, index) => {
+    const field = VERDICT_FIELD[verdictOf(verdict)]
+    if (!field || found.some((each) => each.field === field)) return
+    // A missing end date is a column holding nothing. The value beside that
+    // finding is the asset, and the asset is not what is being changed.
+    const held = field === STOP_FIELD ? '' : String(values[index] ?? row.value ?? '')
+    found.push({ verdict: verdictOf(verdict), field, held })
+  })
+  return found
+}
+
 /** A deployment sheet carries this until a position is confirmed. Once it is,
  *  the note is no longer true, so correcting a position clears it -- which is
  *  what `applyPositions` in positions.py does to the same column. */

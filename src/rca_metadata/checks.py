@@ -504,7 +504,43 @@ def checkDeploymentSheets(deployments, bulk):
                    f"{deployments.at[following, 'deploymentNumber']} starts "
                    f'{starts[following]:%Y-%m-%d}',
                    endsBefore=deployments.at[following, 'startDateTime'])
-    return rows
+    return _combined(rows)
+
+
+def _combined(rows):
+    """One row per deployment, however many things are wrong with it.
+
+    A sheet row can fail several ways at once -- a velocity meter left without
+    an end date is both an asset in the water twice and a deployment nobody
+    closed out -- and each used to be a row of its own. Two rows naming one
+    deployment read as two deployments, and a reviewer clearing one found the
+    other still there.
+
+    The row carries every verdict in ``verdicts`` and the joined text in
+    ``verdict``, so the field that ranks the row and the field a table shows are
+    what they always were.
+    """
+    combined = {}
+    for row in rows:
+        key = (row['refDes'], row['deployNum'], row['deployYear'])
+        held = combined.get(key)
+        if held is None:
+            combined[key] = {**row, 'verdicts': [row['verdict']],
+                             'values': [row['value']]}
+            continue
+        held['verdicts'].append(row['verdict'])
+        held['values'].append(row['value'])
+        ## Later findings may carry a field of their own -- the date the next
+        ## deployment starts -- and nothing may be lost by the merge.
+        for field, value in row.items():
+            held.setdefault(field, value)
+    for row in combined.values():
+        ## `verdicts` and `values` stay parallel: each finding's value is what
+        ## the sheet holds for the column that finding is about, and an editor
+        ## correcting one has to know which.
+        row['verdict'] = '; '.join(row['verdicts'])
+        row['value'] = ', '.join(dict.fromkeys(row['values']))
+    return list(combined.values())
 
 
 def _lookupRow(table, refDes, deployNum, year, singleThatYear=True):

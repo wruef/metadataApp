@@ -328,13 +328,21 @@ A deployment with no stop date runs until now, which is what makes an unclosed
 one visible. One ending the day the next begins is a turnaround, not an overlap:
 the comparison is strict at both ends.
 
-Most of these are one column of one row, and the row opens with an editor for
-it, the way a deployments row does: the asset for a duplicate or an asset the
+**One deployment is one row, however many things are wrong with it.** A
+velocity meter left without an end date is both an asset in the water twice and
+a deployment nobody closed out, and each used to be a row of its own: two rows
+naming one deployment read as two deployments, and a reviewer clearing one found
+the other still there. The row carries every verdict in `verdicts`, the joined
+text in `verdict`, and a sentence for each.
+
+Most findings are one column of one row, and the row opens with an editor for
+each of them, the way a deployments row does: the asset for a duplicate or an asset the
 bulk record has never heard of, the cruise for a cruise not in the list, the end
-date for a deployment nobody closed out. A missing end date offers the next
-deployment's start as the value to take, since that is the latest the slot can
-have been occupied. The correction joins the deployment-sheet batch and writes
-the same file a position correction does.
+date for a deployment nobody closed out. A row with two findings opens with two
+editors. A missing end date offers the next deployment's start as the value to
+take, since that is the latest the slot can have been occupied. The correction
+joins the deployment-sheet batch and writes the same file a position correction
+does.
 
 Two are not offered. An asset in the wrong bulk record is real and filed under a
 different record, so the fix usually belongs to that record. A node in two

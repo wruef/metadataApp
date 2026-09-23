@@ -26,12 +26,54 @@ const missing = computed<VendorOnly[]>(() =>
   ),
 )
 
-const shown = computed(() => {
+const found = computed(() => {
   const term = search.value.trim().toLowerCase()
   return missing.value.filter(
     (entry) =>
       entry.file.toLowerCase().includes(term) || entry.instrument.toLowerCase().includes(term),
   )
+})
+
+/**
+ * Sorting, off until a header is clicked, the way a check table sorts.
+ *
+ * A third click returns the list to the order it opens in, so there is always a
+ * way back. The list runs to a hundred and forty names and the question a
+ * reader arrives with is usually about one instrument or about what nobody has
+ * decided yet, and neither is answerable by reading a file-name order.
+ */
+type Column = 'file' | 'instrument' | 'HITLstatus'
+const sortColumn = ref<Column | null>(null)
+const ascending = ref(true)
+
+function sortBy(column: Column) {
+  if (sortColumn.value !== column) {
+    sortColumn.value = column
+    ascending.value = true
+  } else if (ascending.value) {
+    ascending.value = false
+  } else {
+    sortColumn.value = null
+  }
+}
+
+/** What a screen reader announces, and what the arrow in the header shows. */
+const sortState = (column: Column) =>
+  (sortColumn.value !== column ? 'none' : ascending.value ? 'ascending' : 'descending')
+
+const shown = computed(() => {
+  const column = sortColumn.value
+  if (!column) return found.value
+  const direction = ascending.value ? 1 : -1
+  // A sign-off sorts by what it says rather than alphabetically: a flagged row
+  // and a cleared one are the two ends of the question, and NA is neither.
+  const rank = { NotClear: 0, NA: 1, Clear: 2 } as Record<string, number>
+  return [...found.value].sort((a, b) => {
+    if (column === 'HITLstatus') {
+      return direction * ((rank[a.HITLstatus] ?? 1) - (rank[b.HITLstatus] ?? 1))
+    }
+    return direction * a[column].localeCompare(b[column])
+  })
 })
 
 /** One open at a time, the way a check table opens a row. */
@@ -67,7 +109,7 @@ const queuedFor = (entry: VendorOnly) => batch.decisionFor('calibrations', entry
 
     <div class="flex gap-3 items-center">
       <u-input v-model="search" placeholder="Filter" icon="i-lucide-search" class="max-w-xs" />
-      <span class="text-gray-500 text-sm">{{ shown.length }} of {{ missing.length }}</span>
+      <span class="text-gray-500 text-sm">{{ found.length }} of {{ missing.length }}</span>
     </div>
 
     <div class="border border-gray-200 overflow-hidden rounded-lg">
@@ -75,14 +117,22 @@ const queuedFor = (entry: VendorOnly) => batch.decisionFor('calibrations', entry
         <thead class="bg-gray-50 text-gray-600">
           <tr>
             <th class="w-8" />
-            <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">
-              File name
+            <!-- Every header sorts. A third click returns the list to the order
+                 it opens in, so there is always a way back. -->
+            <th class="sortable" :aria-sort="sortState('file')">
+              <button type="button" @click="sortBy('file')">
+                File name<i class="ind" :class="sortState('file')" />
+              </button>
             </th>
-            <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">
-              Instrument
+            <th class="sortable" :aria-sort="sortState('instrument')">
+              <button type="button" @click="sortBy('instrument')">
+                Instrument<i class="ind" :class="sortState('instrument')" />
+              </button>
             </th>
-            <th class="font-semibold px-3 py-2 text-left text-[10px] tracking-wider uppercase">
-              Sign-off
+            <th class="sortable" :aria-sort="sortState('HITLstatus')">
+              <button type="button" @click="sortBy('HITLstatus')">
+                Sign-off<i class="ind" :class="sortState('HITLstatus')" />
+              </button>
             </th>
           </tr>
         </thead>

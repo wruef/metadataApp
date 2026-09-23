@@ -64,7 +64,7 @@
   "//optional": "Written only where the run has something to say. rawAssetID is the asset a mismatching raw serial belongs to, where it could be placed; rawFilesTried and rawAttemptedAt are what the archive was asked for, so a row with no serial says which files were read.",
   "optional": {
     "deployments": ["rawAssetID", "rawFilesTried", "rawAttemptedAt", "imageSerialNumber"],
-    "deploymentSheets": ["endsBefore"]
+    "deploymentSheets": ["endsBefore", "verdicts", "values"]
   },
   "rows": {
     "calibrations": ["fileName", "instrument", "hitlKey", "calRepo_check", "fileParse"],

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { correctableFields } from '~/deployfile'
 import { VERDICTS } from '~/display'
 import { hitlKeyOf, HITL_SHEETS, type SheetKey } from '~/signoff'
 import { useStore, type Row } from '~/store'
@@ -144,7 +145,17 @@ const comparing = ref(false)
          that belongs to another asset is a sheet to fix, not a judgement to
          write down. -->
     <asset-correction v-if="check === 'deployments'" :row="row" class="mt-4" />
-    <sheet-correction v-if="check === 'deploymentSheets'" :row="row" class="mt-4" />
+    <!-- One per column the row's findings are about: a deployment can be an
+         asset in the water twice *and* one nobody closed out, and each is a
+         different cell of the sheet. -->
+    <sheet-correction
+      v-for="each in check === 'deploymentSheets' ? correctableFields(row) : []"
+      :key="each.field"
+      :row="row"
+      :field="each.field"
+      :held="each.held"
+      class="mt-4"
+    />
     <sign-off v-if="sheet" :sheet="sheet" :row="row" class="mt-4" />
   </div>
 </template>
